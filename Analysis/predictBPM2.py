@@ -80,7 +80,8 @@ JOIN League3PTFreq l3freq
     ON ps.season_year = l3freq.season_year
 JOIN LeagueAdjoe ladjoe
     ON ps.season_year = ladjoe.season_year
-WHERE ps.season_year = ?;
+WHERE ps.season_year = ?
+AND total_minutes > 100;
 """
 
 playerRostersIncomingSeason = \
@@ -107,7 +108,7 @@ def predictBasedOnPlayerYear(year):
     prevSznStat_df = pd.read_sql_query(statsFromPreviousSeason, conn, params=(year,))
     incomingRoster_df = pd.read_sql_query(playerRostersIncomingSeason, conn, params=(year + 1,))
 
-    distinctTeams = incomingRoster_df['team_name'].unique()
+    distinctTeams = incomingRoster_df['next_team_name'].unique()
 
     # Initialize empty DataFrames for combined training data
     combined_X = pd.DataFrame()
@@ -119,7 +120,7 @@ def predictBasedOnPlayerYear(year):
 
     for team in distinctTeams:
         # Get the players for the current/incoming team that had a season last year
-        players_ids = incomingRoster_df[incomingRoster_df['team_name'] == team]['player_id'].tolist()
+        players_ids = incomingRoster_df[incomingRoster_df['next_team_name'] == team]['player_id'].tolist()
 
         # Get player stats from the previous season for the current team's roster
         df_team = prevSznStat_df[prevSznStat_df['player_id'].isin(players_ids)]
@@ -197,4 +198,54 @@ def predictBasedOnTeamYear(year):
         print("-" * 40)
         break  # Remove this `break` if you want to process all teams
 
-predictBasedOnPlayerYear(2021)
+
+def predictBasedOnPlayerYears(start_year, end_year):
+    # Initialize empty DataFrames for combined training data
+    combined_X = pd.DataFrame()
+    combined_Y = pd.Series(dtype=float)
+
+    for year in range(start_year, end_year + 1):
+        # Load data for the previous season
+        prevSznStat_df = pd.read_sql_query(statsFromPreviousSeason, conn, params=(year,))
+
+        # Encode the position column
+        label_encoder = LabelEncoder()
+        prevSznStat_df['position_encoded'] = label_encoder.fit_transform(prevSznStat_df['position'])
+
+        # Prepare the dataset for training
+        X = prevSznStat_df.drop(columns=['bpm', 'player_id', 'player_name', 'prev_team_name', 'position'])
+        Y = prevSznStat_df['bpm']
+
+        # Append the year's data to the combined dataset
+        combined_X = pd.concat([combined_X, X], ignore_index=True)
+        combined_Y = pd.concat([combined_Y, Y], ignore_index=True)
+
+    # Split the combined data into training and testing sets
+    X_train, X_test, Y_train, Y_test = train_test_split(combined_X, combined_Y, test_size=0.2, random_state=42)
+
+    # Train the XGBoost model
+    model = XGBRegressor(n_estimators=100, learning_rate=0.1, max_depth=6, random_state=42)
+    model.fit(X_train, Y_train)
+
+    # Make predictions
+    Y_pred = model.predict(X_test)
+
+    # Evaluate the model
+    mae = mean_absolute_error(Y_test, Y_pred)
+    r2 = r2_score(Y_test, Y_pred)
+
+    print(f"Overall Model Performance for Years {start_year}-{end_year}:")
+    print(f"Mean Absolute Error (MAE): {mae:.2f}")
+    print(f"R² Score: {r2:.2f}")
+    print("-" * 40)
+
+    # Feature importance (optional)
+    feature_importances = model.feature_importances_
+    feature_names = combined_X.columns
+    print("Feature Importances:")
+    for name, importance in zip(feature_names, feature_importances):
+        print(f"{name}: {importance:.4f}")
+
+
+# Train the model over multiple years (e.g., 2020 to 2024)
+predictBasedOnPlayerYears(start_year=2020,end_year=2024)
