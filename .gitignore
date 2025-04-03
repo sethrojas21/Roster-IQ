@@ -1,0 +1,8 @@
+__pychache__/
+*.pyc
+NatStat CSVs/
+Torvik-CSVSs/
+rosteriq.db
+TeamPlayerInformation/
+*.csv
+*.pkl
