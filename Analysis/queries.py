@@ -224,7 +224,7 @@ SELECT
     ps.position,
     ps.games_played,
     ps.min_pg * ps.games_played AS total_minutes,
-    tmp.total_team_minutes
+    tmp.total_team_minutes,
     ps.efg_percent, 
     ps.ts_percent, 
     ps.usg_percent, 
@@ -235,9 +235,7 @@ SELECT
     ts.eFG AS team_eFG,
     (ts.adjoe - ts.adjde) AS team_adj_netrg,
     ts.adjoe AS team_adj_off,
-    p3freq.three_freq,
-    
-
+    p3freq.three_freq
 FROM Player_Seasons ps
 JOIN TeamMinutesPlayed tmp
     ON ps.team_name = tmp.team_name
