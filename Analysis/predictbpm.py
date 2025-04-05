@@ -26,10 +26,18 @@ for year in range(2020, 2024):
         on='player_id'
     )
 
+
+    
     for index, player in statsFromTransferPlayersPrevSeasonDF.iterrows():
         player_id = player['player_id']
         new_team = player['new_team']
-
+        bpm_to_predict = statsFromPlayersWhoHadAPreviousSeasonDF[statsFromPlayersWhoHadAPreviousSeasonDF['player_id'] == player_id]['bpm_to_predict'].values[0]
+        
+        if pd.isna(bpm_to_predict):
+            print(f"Skipping player {player['player_name_x']} due to missing bpm_to_predict.")
+            continue
+        
+        
         # Get incoming teammates (who had a previous season)
         teammates = statsFromPlayersWhoHadAPreviousSeasonDF[
             (statsFromPlayersWhoHadAPreviousSeasonDF['next_team_name'] == new_team) &
@@ -47,7 +55,7 @@ for year in range(2020, 2024):
         # Relative features
         rel_bpm = player['bpm'] - avg_teammate_bpm
         rel_usg = player['usg_percent'] - avg_teammate_usg
-
+        
         row = {
             'player_bpm_prev': player['bpm'],
             'player_usg_percent': player['usg_percent'],
@@ -55,12 +63,13 @@ for year in range(2020, 2024):
             'avg_teammate_usg': avg_teammate_usg,
             'rel_bpm': rel_bpm,
             'rel_usg': rel_usg,
-            'bpm_incoming': player['bpm'],  # target
+            'bpm_incoming': bpm_to_predict,  # target
             'player_name': player['player_name_x']  # new key added
         }
         
         feature_rows.append(row)
 
+print("Out the loop")
 # Build DataFrame
 minimal_df = pd.DataFrame(feature_rows)
 

@@ -335,7 +335,7 @@ SELECT
     ps.player_id,
     p.player_name,
     ps.team_name AS next_team_name,
-    ps.bpm AS bpm_incoming
+    ps.bpm AS bpm_to_predict
 FROM Player_Seasons ps
 JOIN Players p
     ON ps.player_id = p.player_id
