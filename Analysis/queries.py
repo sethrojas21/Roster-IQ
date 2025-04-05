@@ -63,7 +63,8 @@ JOIN Players p
 WHERE 
     p1.season_year = ?
     AND p2.season_year = ?
-    AND p1.team_name <> p2.team_name;"""
+    AND p1.team_name <> p2.team_name
+    AND p2.min_pg > 5;"""
 
 gptTransferQuery2 = """
 SELECT 
