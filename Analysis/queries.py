@@ -267,6 +267,7 @@ Player3PTFreq AS (
         ps.season_year,
         ps.threeA * 1.0 / ps.FGA AS three_freq
     FROM Player_Seasons ps
+    GROUP BY ps.player_id, ps.season_year
 ),
 
 League3PTFreq AS (
@@ -289,13 +290,15 @@ SELECT
     ps.player_id,
     p.player_name,
     ps.player_year,
+    ps.season_year,
     ps.team_name AS prev_team_name,
     ts.barthag_rank AS prev_team_barthag_rank, -- Barthag rank of the player's previous team
+    ts.cluster AS prev_team_cluster,
     ps.height_inches,
     ps.position,
     ps.bpm,
     ps.games_played,
-    ps.min_pg * ps.games_played AS total_minutes,
+    ps.min_pg * ps.games_played AS total_player_minutes,
     tmp.total_team_minutes,
     ps.efg_percent, 
     ps.ts_percent, 
@@ -304,9 +307,14 @@ SELECT
     ps.dreb_percent, 
     ps.ast_percent, 
     ps.tov_percent,
+    ps.adrtg,
+    ps.ortg,
     ts.eFG AS team_eFG,
     (ts.adjoe - ts.adjde) AS team_adj_netrg,
     ts.adjoe AS team_adj_off,
+    ps.two_percent,
+    ps.three_percent,
+    ts.adjt,
     p3freq.three_freq,
     l3freq.league_3pt_freq,
     ladjoe.league_avg_adjoe
@@ -326,8 +334,8 @@ JOIN League3PTFreq l3freq
     ON ps.season_year = l3freq.season_year
 JOIN LeagueAdjoe ladjoe
     ON ps.season_year = ladjoe.season_year
-WHERE ps.season_year = ?;
---AND total_minutes > 100;
+WHERE ps.season_year = ?
+AND total_player_minutes > 100;
 """
 
 playerRostersIncomingSeason = \
@@ -335,10 +343,81 @@ playerRostersIncomingSeason = \
 SELECT
     ps.player_id,
     p.player_name,
+    ps.season_year,
     ps.team_name AS next_team_name,
-    ps.bpm AS bpm_to_predict
+    ts.barthag_rank AS next_team_barthag_rank,
+    ps.bpm AS bpm_to_predict,
+    ps.usg_percent AS next_year_usg_rate
 FROM Player_Seasons ps
 JOIN Players p
     ON ps.player_id = p.player_id
+JOIN Team_Seasons ts
+    ON ps.team_name = ts.team_name
+    AND ps.season_year = ts.season_year
 WHERE ps.season_year = ?;
 """
+
+understandFeaturesOfOutliersQuery = """
+SELECT
+    ps.player_id,
+    p.player_name,
+    ps.team_name,
+    ps.season_year,
+    ps.min_pg,
+    ps.games_played,
+    ps.bpm,
+    ps.efg_percent,
+    ps.ts_percent,
+    ps.usg_percent,
+    ps.oreb_percent,
+    ps.dreb_percent,
+    ps.ast_percent,
+    ps.tov_percent,
+    ps.height_inches,
+    ps.weight_lbs,
+    ps.position
+FROM Player_Seasons ps
+JOIN Players p
+    ON ps.player_id = p.player_id
+GROUP BY ps.player_id, ps.season_year;
+"""
+
+test = """
+WITH TeamMinutesPlayed AS (
+    SELECT 
+        ps.team_name,
+        ps.season_year,
+        SUM(ps.min_pg * ps.games_played) AS total_team_minutes
+    FROM Player_Seasons ps
+    GROUP BY ps.team_name, ps.season_year
+),
+
+Player3PTFreq AS (
+    SELECT
+        ps.player_id,
+        ps.season_year,
+        ps.threeA * 1.0 / ps.FGA AS three_freq
+    FROM Player_Seasons ps
+    GROUP BY ps.player_id, ps.season_year
+)
+
+SELECT
+    ps.player_id,
+    ps.team_name,
+    ps.season_year,
+    tmp.total_team_minutes,
+    p3freq.three_freq
+FROM Player_Seasons ps
+JOIN TeamMinutesPlayed tmp
+    ON ps.team_name = tmp.team_name AND ps.season_year = tmp.season_year
+JOIN Player3PTFreq p3freq
+    ON ps.player_id = p3freq.player_id AND ps.season_year = p3freq.season_year
+WHERE ps.season_year = 2023;
+"""
+
+
+### TESTING ###
+# conn = sqlite3.connect('rosteriq.db')
+# import pandas as pd
+# df = pd.read_sql(statsFromPreviousSeason, conn, params=(2023,))
+# print(df[df['prev_team_name'] == "Arizona"][['player_name', 'total_minutes']])
