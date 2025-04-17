@@ -2,9 +2,8 @@ from queries import gptTransferQuery, statsFromPreviousSeason, playerRostersInco
 import sqlite3
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from xgboost import XGBRegressor
-from sklearn.metrics import mean_absolute_error
-from sklearn.preprocessing import LabelEncoder
+from xgboost import XGBClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 import numpy as np
 conn = sqlite3.connect('rosteriq.db')
 
@@ -28,13 +27,13 @@ for year in range(2018, 2024):
     )
 
 
-    label_encoder = LabelEncoder()
-    statsFromTransferPlayersPrevSeasonDF['position_encoded'] = label_encoder.fit_transform(
-        statsFromTransferPlayersPrevSeasonDF['position_x']
-    )
-    statsFromTransferPlayersPrevSeasonDF['team_encoded'] = label_encoder.fit_transform(
-        statsFromTransferPlayersPrevSeasonDF['old_team']
-    )
+    # label_encoder = LabelEncoder()
+    # statsFromTransferPlayersPrevSeasonDF['position_encoded'] = label_encoder.fit_transform(
+    #     statsFromTransferPlayersPrevSeasonDF['position_x']
+    # )
+    # statsFromTransferPlayersPrevSeasonDF['team_encoded'] = label_encoder.fit_transform(
+    #     statsFromTransferPlayersPrevSeasonDF['old_team']
+    # )
     
     for index, player in statsFromTransferPlayersPrevSeasonDF.iterrows():
         player_id = player['player_id']
@@ -63,11 +62,14 @@ for year in range(2018, 2024):
         if teammates.empty and len(teammates) < 8:
             print("Teammates no")
             continue
-
+        
         try:
             incoming_team_barthag_from_last_season = teammates[teammates['prev_team_name'] == new_team].iloc[0, :]['prev_team_barthag_rank']
+            incoming_team_adjoe_from_last_season = teammates[teammates['prev_team_name'] == new_team].iloc[0, :]['team_adj_off']
+            incoming_team_adjde_from_last_season = teammates[teammates['prev_team_name'] == new_team].iloc[0, :]['team_adj_def']
         except:
             continue
+        
 
         # Weighted averages for teammates        
         total_minutes = teammates['total_player_minutes'].sum()
@@ -105,21 +107,26 @@ for year in range(2018, 2024):
             'player_id': player['player_id'],   
             # 'player_position' : player['position_encoded'],
             'prev_year': year,
-            # 'prev_team_cluster' : player['prev_team_cluster'],
+            'prev_team_cluster' : player['prev_team_cluster'],
             # 'team_name': player['team_encoded'],              
-            # 'player_bpm_prev': player['bpm'],
+            'player_bpm_prev': player['bpm'],
             # 'percentOfTeamMinutes' : player['total_player_minutes'] / player['total_team_minutes'],
             # 'player_usg_percent': player['usg_percent'],
             # 'player_ts_prev': player['ts_percent'],
             'player_ast_prev': player['ast_percent'],
             # 'player_tov_prev': player['tov_percent'],
-            # 'player_adrtg' : player['adrtg'],
-            # 'player_ortg' : player['ortg'],
+            'player_aortg' : player['aortg'],
+            'player_adrtg' : player['adrtg'],
             'player_dreb_prev': player['dreb_percent'],
+            # 'player_oreb_prev': player['oreb_percent'],
             'player_height': player['height_inches'],
-            # 'prev_team_barthag_rank': player['prev_team_barthag_rank'],
+            'prev_team_barthag_rank': player['prev_team_barthag_rank'],
             'next_team_barthag' : incoming_team_barthag_from_last_season,
-            'team_eFG': player['team_eFG'],
+            'next_team_adjoe' : incoming_team_adjoe_from_last_season,
+            'next_team_adjde' : incoming_team_adjde_from_last_season,
+            # 'prev_team_adjoe' : player['team_adj_off'],
+            # 'next_team_adjde' : player['team_adj_def'],
+            # 'team_eFG': player['team_eFG'],
             'avg_teammate_bpm': avg_teammate_bpm,
             'avg_teammate_usg': avg_teammate_usg,
             'avg_teammate_efg': avg_teammate_efg,
@@ -137,10 +144,10 @@ for year in range(2018, 2024):
             'rel_usg': rel_usg,
             'rel_efg': rel_efg,
             'rel_ast': rel_ast,
-            # 'rel_adjt': rel_adjt,
+            'rel_adjt': rel_adjt,
             # 'rel_two_percent': rel_two_percent,
             # 'rel_three_percent': rel_three_percent,
-            'bpm_to_predict': bpm_to_predict,  # target value for incoming season BPM
+            'bpm_positive': int(bpm_to_predict > 0),  # target value for incoming season BPM
             # 'delta_bpm' : bpm_to_predict - player['bpm'],
             # 'next_year_usg_rate' : next_year_usg_rate,
             'player_name': player['player_name_x']  # for display/debugging
@@ -152,84 +159,41 @@ for year in range(2018, 2024):
 # Build DataFrame
 minimal_df = pd.DataFrame(feature_rows)
 
-# # One-hot encode the prev_team_cluster column
-# minimal_df = pd.get_dummies(minimal_df, columns=['prev_team_cluster'], prefix='cluster')
-
 # Store player names separately
 X_names = minimal_df['player_name']
 X_ids = minimal_df['player_id']
 X_years = minimal_df['prev_year']
 # Train/test split
-X = minimal_df.drop(columns=['bpm_to_predict', 'player_name', 'player_id','prev_year'])
-y = minimal_df['bpm_to_predict']
+X = minimal_df.drop(columns=['bpm_positive', 'player_name', 'player_id','prev_year'])
+y = minimal_df['bpm_positive']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # Train model
-model = XGBRegressor()
+model = XGBClassifier()
 model.fit(X_train, y_train)
 
 # Evaluate
 preds = model.predict(X_test)
-print("Predictions vs Actual BPM:")
-for actual, pred, name in zip(y_test, preds, X_names[X_test.index]):
-    print(f"Player: {name}, Actual: {actual:.2f}, Predicted: {pred:.2f}")
-    
-mae = mean_absolute_error(y_test, preds)
-print(f"MAE on minimal feature set: {mae:.2f}")
-print("R^2", model.score(X_test, y_test))
- 
-# Error Analysis
-import numpy as np
-import matplotlib.pyplot as plt
-import xgboost as xgb
+probs = model.predict_proba(X_test)[:, 1]  # Probability of positive BPM
+print("Classification Report:")
+print(classification_report(y_test, preds))
+print("Confusion Matrix:")
+print(confusion_matrix(y_test, preds))
+print("Accuracy:", accuracy_score(y_test, preds))
 
-# Compute residual errors for the test set
-errors = y_test - preds
-abs_errors = np.abs(errors)
- 
-print("\nError Analysis:")
-print(f"Mean error: {np.mean(errors):.2f}")
-print(f"Median error: {np.median(errors):.2f}")
-print(f"Standard Deviation of error: {np.std(errors):.2f}")
- 
+results_df = pd.DataFrame({
+    'player_name': X_names.loc[X_test.index],
+    'prev_year': X_years.loc[X_test.index],
+    'actual_label': y_test.values,
+    'predicted_label': preds,
+    'prob_positive_bpm': probs
+})
 
-# Plot feature importance
-xgb.plot_importance(model, max_num_features=20, importance_type='gain')
-plt.title('Top 20 Feature Importances by Gain')
-plt.tight_layout()
-plt.show()
+# Sort by confidence in fit
+top_fit_players = results_df.sort_values('prob_positive_bpm', ascending=False)
 
-# Create a DataFrame combining predictions and actual values
-test_df = X_test.copy()
-test_df['Actual_BPM'] = y_test.values
-test_df['Predicted_BPM'] = preds
-test_df['Error'] = errors
-test_df['Abs_Error'] = abs_errors
- 
-# Add player names to the DataFrame using X_names from the test set
-test_players = X_names.loc[X_test.index]
-test_ids = X_ids.loc[X_test.index]
-test_prev_year = X_years.loc[X_test.index]
-test_df['player_name'] = test_players
-test_df['player_id'] = test_ids
-test_df['prev_year'] = test_prev_year
- 
-print("Top 5 Players with highest absolute error:")
-print(test_df[['player_name', 'Actual_BPM', 'Predicted_BPM', 'Error', 'Abs_Error']].sort_values('Abs_Error', ascending=False).head())
- 
-# Plot the distribution of prediction errors
-plt.figure(figsize=(8, 6))
-plt.hist(errors, bins=20, edgecolor='black')
-plt.title("Distribution of Prediction Errors")
-plt.xlabel("Prediction Error (Actual - Predicted)")
-plt.ylabel("Frequency")
-# plt.show()
+confident_positives = results_df[results_df['prob_positive_bpm'] > 0.8]
+uncertain = results_df[(results_df['prob_positive_bpm'] > 0.45) & (results_df['prob_positive_bpm'] < 0.55)]
 
-# Identify players with prediction error outside of ±2.5
-outliers_df = test_df[(test_df['Error'] < -2.5) | (test_df['Error'] > 2.5)]
-# print(outliers_df)
-import pickle
-with open('Analysis/outliersDF.pkl', 'wb') as file:
-    pickle.dump(outliers_df, file)
-print(outliers_df[['player_name', 'Actual_BPM', 'Predicted_BPM', 'Error', 'Abs_Error']])
-print(len(outliers_df) / len(X_test))
+print(confident_positives.head(10))
+print(len(uncertain))
