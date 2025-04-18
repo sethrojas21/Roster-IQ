@@ -103,18 +103,18 @@ for year in range(2018, 2024):
         # Build feature row
         row = {
             'player_id': player['player_id'],   
-            # 'player_position' : player['position_encoded'],
+            'player_position' : player['position_encoded'],
             'prev_year': year,
             # 'prev_team_cluster' : player['prev_team_cluster'],
             # 'team_name': player['team_encoded'],              
             # 'player_bpm_prev': player['bpm'],
-            # 'percentOfTeamMinutes' : player['total_player_minutes'] / player['total_team_minutes'],
+            'percentOfTeamMinutes' : player['total_player_minutes'] / player['total_team_minutes'],
             # 'player_usg_percent': player['usg_percent'],
             # 'player_ts_prev': player['ts_percent'],
             'player_ast_prev': player['ast_percent'],
             # 'player_tov_prev': player['tov_percent'],
             # 'player_adrtg' : player['adrtg'],
-            # 'player_ortg' : player['ortg'],
+            # 'player_aortg' : player['aortg'],
             'player_dreb_prev': player['dreb_percent'],
             'player_height': player['height_inches'],
             # 'prev_team_barthag_rank': player['prev_team_barthag_rank'],
@@ -152,6 +152,38 @@ for year in range(2018, 2024):
 # Build DataFrame
 minimal_df = pd.DataFrame(feature_rows)
 
+# import seaborn as sns
+import matplotlib.pyplot as plt
+
+# # Choose features for correlation analysis
+# features_to_include = [
+#     'player_ast_prev',
+#     'player_dreb_prev',
+#     'player_height',
+#     'next_team_barthag',
+#     'team_eFG',
+#     'avg_teammate_bpm',
+#     'avg_teammate_usg',
+#     'avg_teammate_efg',
+#     'rel_bpm',
+#     'rel_usg',
+#     'rel_efg',
+#     'rel_ast',
+#     'bpm_to_predict'
+# ]
+
+# # Compute and plot correlation matrix
+# corr_df = minimal_df[features_to_include].corr()
+# plt.figure(figsize=(12, 8))
+# sns.heatmap(corr_df, annot=True, cmap='coolwarm', center=0)
+# plt.title("Feature Correlation Matrix (with bpm_to_predict)")
+# plt.xticks(rotation=45)
+# plt.yticks(rotation=0)
+# plt.tight_layout()
+# plt.show()
+
+# Visualize one decision tree from the XGBoost model
+
 # # One-hot encode the prev_team_cluster column
 # minimal_df = pd.get_dummies(minimal_df, columns=['prev_team_cluster'], prefix='cluster')
 
@@ -165,8 +197,26 @@ y = minimal_df['bpm_to_predict']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # Train model
-model = XGBRegressor()
+model = XGBRegressor(
+    n_estimators=1000,
+    learning_rate=0.01,
+    max_depth=4,
+    subsample=0.8,
+    colsample_bytree=0.8,
+    reg_alpha=0.1,
+    reg_lambda=1.0,
+    random_state=42
+)
 model.fit(X_train, y_train)
+
+from xgboost import plot_tree
+
+# Plot the first tree (you can change the number to see different trees)
+plt.figure(figsize=(40, 20))
+plot_tree(model, num_trees=0, rankdir='LR')
+plt.title("XGBoost - Tree 0 Visualization")
+plt.tight_layout()
+# plt.show()
 
 # Evaluate
 preds = model.predict(X_test)
@@ -197,7 +247,7 @@ print(f"Standard Deviation of error: {np.std(errors):.2f}")
 xgb.plot_importance(model, max_num_features=20, importance_type='gain')
 plt.title('Top 20 Feature Importances by Gain')
 plt.tight_layout()
-plt.show()
+# plt.show()
 
 # Create a DataFrame combining predictions and actual values
 test_df = X_test.copy()

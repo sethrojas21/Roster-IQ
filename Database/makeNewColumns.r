@@ -5,8 +5,8 @@ conn <- dbConnect(RSQLite::SQLite(), dbname = "rosteriq.db")
 
 # Your SQL query to add a column
 add_cluster_number_query <- "
-ALTER TABLE Team_Seasons
-ADD COLUMN cluster INT;
+ALTER TABLE Player_Seasons
+ADD COLUMN TOV INT;
 "
 
 # Run the query
