@@ -17,6 +17,7 @@ FROM Player_Seasons;
 
 df <- dbGetQuery(conn, asttovr_query)
 
+dbBegin(conn)
 for (i in 1:nrow(df)) {
     TOV <- 0
     ast <- df$AST[i]
@@ -43,3 +44,5 @@ for (i in 1:nrow(df)) {
         AND season_year = ?;
     ", params = list(as.integer(TOV), df$player_id[i], df$season_year[i]))
 }
+
+dbCommit(conn)

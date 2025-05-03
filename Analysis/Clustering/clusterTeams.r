@@ -157,8 +157,9 @@ kclu <- kclustering(
 # bad_kclu <- kclustering(bad_cluster_teams, k = 6, labels = rownames(bad_cluster_teams))
 # plot(bad_kclu)
 
-# View(sapply(kclu$ClusterList, length))
-# print(kclu$Profiles$CHI)
+print(sapply(kclu$ClusterList, length))
+profiles_df <- as.data.frame(kclu$Profiles)
+write.csv(profiles_df, "kclu_profiles.csv", row.names = TRUE)
 # print(kclu$Subjects %>% filter(Cluster == 25))
 
 # Add Clusters To DB

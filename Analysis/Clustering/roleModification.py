@@ -1,6 +1,5 @@
 from xgboost import XGBRegressor
 
 model = XGBRegressor()
-model.load_model("xgb_bpm_model.json")
+model.load_model("Analysis/xgb_bpm_model.json")
 
-print(model)
