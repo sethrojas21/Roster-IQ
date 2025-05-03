@@ -6,3 +6,4 @@ rosteriq.db
 TeamPlayerInformation/
 *.csv
 *.pkl
+xgb_bpm_model.json
