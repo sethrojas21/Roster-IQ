@@ -1,6 +1,7 @@
 library(DBI)
 library(BasketballAnalyzeR)
 library(dplyr)
+library(jsonlite)
 
 conn <- dbConnect(RSQLite::SQLite(), dbname = "rosteriq.db")
 
@@ -137,6 +138,7 @@ team_labels <- paste(team_stats_df$team_name, team_stats_df$season_year, sep = "
 df <- scale(subset(team_stats_df, select = -c(team_name, season_year)))
 
 
+
 # View(df)
 set.seed(29)
 num_clusters <- 20  # Can adjust if needed
@@ -150,17 +152,9 @@ kclu <- kclustering(
   algorithm = "Hartigan-Wong"  # default, can change to "Lloyd" if needed
 )
 
-
-# quartz()
-# plot(kclu)
-# bad_cluster_teams <- df[team_labels %in% kclu$Subjects$Label[kclu$Subjects$Cluster == 25], ]
-# bad_kclu <- kclustering(bad_cluster_teams, k = 6, labels = rownames(bad_cluster_teams))
-# plot(bad_kclu)
-
-print(sapply(kclu$ClusterList, length))
-profiles_df <- as.data.frame(kclu$Profiles)
-write.csv(profiles_df, "kclu_profiles.csv", row.names = TRUE)
-# print(kclu$Subjects %>% filter(Cluster == 25))
+# print(sapply(kclu$ClusterList, length))
+# profiles_df <- as.data.frame(kclu$Profiles)
+# write.csv(profiles_df, "kclu_profiles.csv", row.names = TRUE)
 
 # Add Clusters To DB
 # dbBegin(conn)
@@ -179,5 +173,11 @@ write.csv(profiles_df, "kclu_profiles.csv", row.names = TRUE)
 # })
 
 # dbCommit(conn)
+
+scale_center <- attr(df, "scaled:center")
+scale_scale <- attr(df, "scaled:scale")
+
+scale_info <- list(center = scale_center, scale = scale_scale)
+jsonlite::write_json(scale_info, "scaling_params.json", pretty = TRUE, auto_unbox = TRUE)
 
 dbDisconnect(conn)

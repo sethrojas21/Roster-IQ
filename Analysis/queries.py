@@ -416,6 +416,31 @@ JOIN Player3PTFreq p3freq
 WHERE ps.season_year = 2023;
 """
 
+player_features_yearly = """
+SELECT
+    p.player_name,
+    ps.player_id,
+    ps.team_name 
+    ps.adjoe,
+    ps.adjde,
+    ps.TOV,
+    ps.STL,
+    ps.OREB,
+    ps.DREB,
+    ps.FGA,
+    ps.FTA,
+    ps.threeM AS P3M,
+    ps.threeA AS P3A,
+    ts.adjt,
+    ps.eFG
+FROM Player_Seasons ps
+JOIN Players p
+    ON ps.player_id = p.player_id
+JOIN Team_Seasons ts
+    ON ps.team_name = ts.team_name;
+
+"""
+
 
 ### TESTING ###
 # conn = sqlite3.connect('rosteriq.db')

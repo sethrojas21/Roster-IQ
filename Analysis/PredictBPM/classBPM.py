@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
 
 
-df = pd.read_csv("Analysis/bpm_features.csv")
+df = pd.read_csv("Analysis/PredictBPM/bpm_features.csv")
 
 # Classification: BPM Tier Prediction
 def bpm_to_tier(bpm):
@@ -41,3 +41,5 @@ print(classification_report(y_test_cls, cls_preds))
 
 print("Confusion Matrix:")
 print(confusion_matrix(y_test_cls, cls_preds))
+
+# classifier.save_model("Analysis/PredictBPM/xgb_class_bpm_model.json")

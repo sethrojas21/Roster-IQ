@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
 
 
-df = pd.read_csv("/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/bpm_features.csv")
+df = pd.read_csv("Analysis/PredictBPM/bpm_features.csv")
 
 X_names = df['player_name']
 X_ids = df['player_id']
