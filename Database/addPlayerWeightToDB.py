@@ -1,6 +1,6 @@
 import sqlite3
 from pathlib import Path
-from rapidfuzz import process
+from rapidfuzz import process, fuzz
 import pandas as pd
 import math
 
@@ -16,12 +16,11 @@ def getFolderPath(folder, fileType = "pkl"):
     return list(folderPath.glob(f'*.{fileType}'))
 
 def get_best_match(name, compareSet, score_cutoff=70):
-
-    result = process.extractOne(name, compareSet, score_cutoff=score_cutoff)
-    if result:  # If a match is found
+    result = process.extractOne(name, compareSet, scorer=fuzz.WRatio, score_cutoff=score_cutoff)
+    if result:
         match, score, _ = result
-        return match        
-    return None  # No match found
+        return match
+    return None
 
 def addTeamWeightToDB(savedTeamDF, dbTeamDF, teamName, year, cursor, conn):
 
@@ -137,6 +136,6 @@ def main():
     conn.commit()
 
 ### RUN ###
-main()
+# main()
 
 

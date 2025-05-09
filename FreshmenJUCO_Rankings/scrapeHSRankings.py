@@ -17,7 +17,7 @@ def get_position(pos: str):
     else:
         return "C"
 
-rankings_df = pd.DataFrame(columns=["player_name", "position", "height_inches", "ranking", "season_year"])
+rankings_df = pd.DataFrame(columns=["player_name", "position", "height_inches", "ranking", "season_year", "school_committed"])
 
 for year in range(2017, 2026):
     print("Starting ", year)
@@ -36,12 +36,15 @@ for year in range(2017, 2026):
             height_arr = player[4].text.strip().split("'")
             feet, inches = int(height_arr[0]), int(height_arr[1])
             height_int = feet * 12 + inches
+            school_str = player[8].find("span").text
 
-            rankings_df.loc[len(rankings_df)] = [name, position, height_int, ranking_num, year]
+            rankings_df.loc[len(rankings_df)] = [name, position, height_int, ranking_num, year, school_str]
             ranking_num += 1
         except Exception as e:
             print(f"Skipping row due to error: {e}")
+        
     print("Finishing ", year)
     
-    
+
+print(rankings_df)        
 rankings_df.to_csv("espnT100Recruits_2017-2025.csv")

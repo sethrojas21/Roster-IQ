@@ -441,6 +441,46 @@ JOIN Team_Seasons ts
 
 """
 
+players_info_query = \
+"""
+SELECT 
+    p.player_name,
+    ps.player_id,
+    first_season.first_year AS season_year,
+    ps.team_name,
+    ps.height_inches,
+    ps.position
+FROM Players p
+JOIN (
+    SELECT player_id, MIN(season_year) AS first_year
+    FROM Player_Seasons
+    GROUP BY player_id
+) AS first_season
+ON p.player_id = first_season.player_id
+JOIN Player_Seasons ps
+ON ps.player_id = first_season.player_id AND ps.season_year = first_season.first_year;
+"""
+
+team_seasons_barthag_query = \
+"""
+SELECT
+    team_name,
+    season_year,
+    barthag
+FROM Team_Seasons;
+"""
+
+hs_query = """
+SELECT
+    player_name,
+    position,
+    height_inches,
+    ranking,
+    season_year,
+    school_committed as team_name
+FROM HS_Rankings;
+"""
+
 
 ### TESTING ###
 # conn = sqlite3.connect('rosteriq.db')

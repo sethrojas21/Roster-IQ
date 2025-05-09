@@ -25,35 +25,39 @@ def get_request_year(year):
     return requests.get(url, headers=headers)
 
 def get_position(pos: str):
-    if "F" or "Wing" in pos:
+    if "F" in pos or "Wing" in pos:
         return "F"
     elif "G" in pos:
         return "G"
     else:
         return "C"
 
-rankings_df = pd.DataFrame(columns=["player_name", "height_inches", "ranking", "season_year", "school_committed"])
+rankings_df = pd.DataFrame(columns=["player_name", "position", "height_inches", "ranking", "season_year", "school_committed"])
 
-for year in range(2017, 2026):
+for year in range(2023, 2024):
     if year == 2021: continue
     response = get_request_year(year)
     soup = BeautifulSoup(response.text, 'html.parser')
 
     rows = [row.findAll('td') for row in soup.findAll('tr')][1:]
-    
+    ranking = 1
     for player in rows:
         try:
-            ranking = player[0].text
+            # name = player[1].text + " " + player[2].text
             name = player[1].text
             height_arr = player[2].text.split("'")
             feet, inches = int(height_arr[0]), int(height_arr[1])
             height_int = feet * 12 + inches
-            school_commited_to = player[4].text
 
-            rankings_df.loc[len(rankings_df)] = [name, height_int, ranking, year, school_commited_to]
+            position = get_position(player[3].text)
+            # position = ""
+            school_commited_to = player[5].text
+
+            rankings_df.loc[len(rankings_df)] = [name, position, height_int, ranking, year, school_commited_to]
+            ranking += 1
         except Exception as e:
             print(e)     
-    break   
+       
     
 
-print(rankings_df)
+rankings_df.to_csv("FreshmenJUCO_Rankings/jucoT100Rankings_2023.csv")
