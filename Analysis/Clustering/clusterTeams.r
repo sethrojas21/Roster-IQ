@@ -152,6 +152,9 @@ kclu <- kclustering(
   algorithm = "Hartigan-Wong"  # default, can change to "Lloyd" if needed
 )
 
+quartz()
+plot(kclu)
+
 # print(sapply(kclu$ClusterList, length))
 # profiles_df <- as.data.frame(kclu$Profiles)
 # write.csv(profiles_df, "kclu_profiles.csv", row.names = TRUE)
@@ -174,10 +177,10 @@ kclu <- kclustering(
 
 # dbCommit(conn)
 
-scale_center <- attr(df, "scaled:center")
-scale_scale <- attr(df, "scaled:scale")
+# scale_center <- attr(df, "scaled:center")
+# scale_scale <- attr(df, "scaled:scale")
 
-scale_info <- list(center = scale_center, scale = scale_scale)
-jsonlite::write_json(scale_info, "scaling_params.json", pretty = TRUE, auto_unbox = TRUE)
+# scale_info <- list(center = scale_center, scale = scale_scale)
+# jsonlite::write_json(scale_info, "scaling_params.json", pretty = TRUE, auto_unbox = TRUE)
 
 dbDisconnect(conn)

@@ -64,8 +64,12 @@ def get_hs_players_actual_stats(player_df):
             ps.pts_pg,
             ps.min_pg,
             ps.MIN,
-            ps.PTS,
-            ps.adj_gp as gp
+            ps.OREB,
+            ps.DREB,
+            ps.POSS,
+            (ps.OREB / ps.POSS) * 100 AS oreb_100,
+            (ps.DREB / ps.POSS) * 100 AS dreb_100,
+            (ps.PTS / ps.POSS) * 100 AS pts_100
         FROM Player_Seasons ps
         JOIN Players p ON ps.player_id = p.player_id
         WHERE {conditions}
@@ -73,7 +77,7 @@ def get_hs_players_actual_stats(player_df):
     flattened_params = [item for pair in zip(merged_df['player_id'], merged_df['season_year']) for item in pair]
     return pd.read_sql(sql, conn, params=flattened_params)
 
-def match_incomer_with_prev_incomer(player_stats_v, prev_incomer_matrix, prev_incomer_df, k=12):
+def match_incomer_with_prev_incomer(player_stats_v, prev_incomer_matrix, prev_incomer_df, k=7):
     distances = euclidean_distances([player_stats_v], prev_incomer_matrix)[0]
     top_k_idx = np.argsort(distances)[:k]
     return prev_incomer_df.iloc[top_k_idx].assign(distance=distances[top_k_idx])
@@ -91,10 +95,9 @@ def weighted_average_stats(matched_stats):
     }
     
     # Derive per-game stats
-    if 'PTS' in weighted_means and 'gp' in weighted_means:
-        weighted_means['pts_pg'] = weighted_means['PTS'] / weighted_means['gp']
-    if 'MIN' in weighted_means and 'gp' in weighted_means:
-        weighted_means['min_pg'] = weighted_means['MIN'] / weighted_means['gp']
+    weighted_means['pts_100'] = weighted_means['PTS'] / weighted_means['POSS'] * 100
+    weighted_means['oreb_100'] = weighted_means['OREB'] / weighted_means['POSS'] * 100
+    weighted_means['dreb_100'] = weighted_means['DREB'] / weighted_means['POSS'] * 100
 
     return pd.Series(weighted_means)
 
@@ -130,7 +133,7 @@ for i, player_vec in enumerate(X_2023):
                                 ], ignore_index=True)
     print(matched_stats)
     merged_stats = matched_stats.merge(matched_players, on = ["player_name"])
-    print(weighted_average_stats(merged_stats[['bpm', 'PTS', "MIN", "gp", "distance"]]))
+    print(weighted_average_stats(merged_stats[['bpm', "MIN", "OREB", "DREB", "POSS", "distance", ""]]))
     print("Actual: ")
     print(df_stats[df_stats['player_name'] == player_name])
     if i > 10: break

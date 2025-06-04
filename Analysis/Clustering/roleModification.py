@@ -1,6 +1,6 @@
 from xgboost import XGBRegressor
 import json
-from queries import player_features_yearly
+from Analysis.PredictBPM.queries import player_features_yearly
 
 
 def cluster_params_tup():

@@ -1,7 +1,7 @@
 import pickle
 import sqlite3
 import pandas as pd
-from queries import understandFeaturesOfOutliersQuery
+from Analysis.PredictBPM.queries import understandFeaturesOfOutliersQuery
 
 with open('Analysis/outliersDF.pkl', 'rb') as f:
     outliersDF = pickle.load(f)

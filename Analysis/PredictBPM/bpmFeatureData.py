@@ -1,4 +1,4 @@
-from queries import gptTransferQuery, statsFromPreviousSeason, playerRostersIncomingSeason
+from Analysis.PredictBPM.queries import gptTransferQuery, statsFromPreviousSeason, playerRostersIncomingSeason
 import sqlite3
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder

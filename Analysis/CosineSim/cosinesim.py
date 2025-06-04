@@ -3,7 +3,7 @@ import heapq
 from sklearn.preprocessing import StandardScaler
 import sqlite3
 import pandas as pd
-import queries
+import Analysis.PredictBPM.queries as queries
 
 conn = sqlite3.connect('rosteriq.db')
 
