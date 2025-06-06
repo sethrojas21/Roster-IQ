@@ -63,6 +63,14 @@ def get_hs_players_actual_stats(player_df):
             ps.bpm,
             ps.pts_pg,
             ps.min_pg,
+            ps.PTS,
+            ps.adjoe,
+            ps.adrtg AS adjde,
+            ps.TOV,
+            ps.STL,
+            ps.FGM,
+            ps.threeM AS P3M,
+            ps.FGA,            
             ps.MIN,
             ps.OREB,
             ps.DREB,
@@ -88,11 +96,15 @@ def weighted_average_stats(matched_stats):
     matched_stats['weight'] = 1 / (matched_stats['distance'] + 1e-6)
 
     stat_cols = matched_stats.columns
-    weighted_means = {
-        col: np.average(matched_stats[col], weights=matched_stats['weight'])
-        for col in stat_cols
-        if col in matched_stats
-    }
+    weighted_means = {}
+    for col in stat_cols:
+        if col not in matched_stats:
+            continue
+        if col in ["adjoe", "adjde"]:
+            combined_weight = matched_stats['weight'] * matched_stats['POSS']
+            weighted_means[col] = np.average(matched_stats[col], weights=combined_weight)
+        else:
+            weighted_means[col] = np.average(matched_stats[col], weights=matched_stats['weight'])
     
     # Derive per-game stats
     weighted_means['pts_100'] = weighted_means['PTS'] / weighted_means['POSS'] * 100
@@ -133,7 +145,19 @@ for i, player_vec in enumerate(X_2023):
                                 ], ignore_index=True)
     print(matched_stats)
     merged_stats = matched_stats.merge(matched_players, on = ["player_name"])
-    print(weighted_average_stats(merged_stats[['bpm', "MIN", "OREB", "DREB", "POSS", "distance", ""]]))
+    # print(merged_stats)
+    wa_stats = weighted_average_stats(merged_stats[['bpm', "MIN", "OREB", "DREB", "POSS", "distance", "PTS", "adjoe", 'adjde']])
+    df_result = wa_stats.to_frame().T
+    cats_looking_at = ['bpm', 'pts_100', 'oreb_100', 'dreb_100', 'adjoe', 'adjde']
+    print(df_result[cats_looking_at])
     print("Actual: ")
-    print(df_stats[df_stats['player_name'] == player_name])
-    if i > 10: break
+    actual_df = df_stats[df_stats['player_name'] == player_name][cats_looking_at]
+    print(actual_df)
+    try:
+        difference_df = df_result[cats_looking_at] - actual_df[cats_looking_at].values
+        print("DIFFERENCE")
+        print(difference_df)
+    except:
+        print("Failed to find difference")
+    if i > 25: break
+    

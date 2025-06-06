@@ -123,14 +123,14 @@ for year in range(2018, 2025):
         
         
     #Add to database
-    for _, row in df.iterrows():
-        print("Adding", row['player_name'])
-        cursor.execute(
-            """ 
-            UPDATE Player_Seasons2
-            SET ortg = ?
-            WHERE player_id = ? AND season_year = ?;
-            """
-        ,(row['ortg'], row['player_id'], year))
+    # for _, row in df.iterrows():
+    #     print("Adding", row['player_name'])
+    #     cursor.execute(
+    #         """ 
+    #         UPDATE Player_Seasons2
+    #         SET ortg = ?
+    #         WHERE player_id = ? AND season_year = ?;
+    #         """
+    #     ,(row['ortg'], row['player_id'], year))
 
-    conn.commit()
+    # conn.commit()
