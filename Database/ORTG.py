@@ -15,8 +15,8 @@ def pd_standardize_columns(df, columns):
 conn = sqlite3.connect('rosteriq.db')
 cursor = conn.cursor()
 
-def calcInvidualORTG(playerDF, player, Team_ORBp):
-    Team_MP = (playerDF['MIN']).sum()
+def calcInvidualORTG(playerDF, player, Team_ORBp, gp):
+    Team_MP = gp * 40
     Team_AST = (playerDF['AST']).sum()
     Team_PTS = playerDF['PTS'].sum().iloc[0]
     Team_FGA = (playerDF['FGA']).sum()
@@ -25,11 +25,11 @@ def calcInvidualORTG(playerDF, player, Team_ORBp):
     Team_FTA = (playerDF['FTA']).sum()
     Team_ORB = playerDF['OREB'].sum()
     Team_3PM = playerDF['threeM'].sum()
-    Team_TOV = (playerDF['AST'] / playerDF['ast_tov_r']).sum()
+    Team_TOV = (playerDF['TOV']).sum()
     PTS = player['PTS'].iloc[0]
     FGA = player['FGA']
     FGM = player['FGM']
-    TOV = player['AST'] / player['ast_tov_r'] if player['ast_tov_r'] != 0 else 0
+    TOV = player['TOV']
     FTM = player['FTM'].iloc[0]
     FTA = player['FTA']
     ORB = player['OREB']
@@ -74,13 +74,14 @@ def calcInvidualORTG(playerDF, player, Team_ORBp):
     PProd = (PProd_FG_Part + PProd_AST_Part + FTM) * (1 - (Team_ORB / Team_Scoring_Poss) * Team_ORB_Weight * Team_Playp) + PProd_ORB_Part
     
     ortg = 100 * (PProd / TotPoss) if TotPoss != 0 else 0
-    return ortg
+    return (ortg, TotPoss, PProd)
 
 
 for year in range(2018, 2025):
-    teams = pd.read_sql("""SELECT team_name, or_percent FROM Team_Seasons WHERE season_year = ?""", conn, params=(year,))
+    teams = pd.read_sql("""SELECT team_name, or_percent, games_played 
+                        FROM Team_Seasons WHERE season_year = ?""", conn, params=(year,))
     teamNames = set(teams['team_name'])
-    df = pd.DataFrame(columns=['player_name', 'player_id','team_name', 'ortg'])
+    df = pd.DataFrame(columns=['player_name', 'player_id','team_name', 'ortg', 'PProd', 'poss', 'dreb', 'dreb_100'])
 
     for index, team in teams.iterrows():
         team_name = team['team_name']
@@ -97,7 +98,7 @@ for year in range(2018, 2025):
         ps.FTM,
         ps.PTS,
         ps.min_pg,
-        ps.ast_tov_r,
+        ps.TOV,
         ps.MIN,
         ps.PTS,
         ps.OREB,
@@ -105,32 +106,47 @@ for year in range(2018, 2025):
         ps.FTM,
         ps.AST,
         ps.oreb_pg
-        FROM Player_Seasons2 ps
-        JOIN Players2 p ON p.player_id = ps.player_id
+        FROM Player_Seasons ps
+        JOIN Players p ON p.player_id = ps.player_id
         WHERE ps.season_year = ?
         AND ps.team_name = ?;
         -- ORDER BY ps.MIN DESC
         -- LIMIT 12;
-        """
+        """        
 
         Team_ORBp = team['or_percent']
+        gp = team['games_played']
 
         playerDF = pd.read_sql(playerAzQuery, conn, params=(year, team_name))
         print(team_name)
+        print(playerDF)        
         for index, player in playerDF.iterrows():
-            ortg = calcInvidualORTG(playerDF, player, Team_ORBp / 100)
-            df.loc[len(df)] = [player['player_name'], player['player_id'], team_name, ortg]
+            ortg, poss, PProd = calcInvidualORTG(playerDF, player, Team_ORBp / 100, gp)
+                    
+            df.loc[len(df)] = [player['player_name'], player['player_id'], team_name, ortg, PProd, poss, player['OREB'], player['OREB']/poss * 100]
+        break
         
-        
+    print(df)
+    break    
     #Add to database
-    # for _, row in df.iterrows():
-    #     print("Adding", row['player_name'])
-    #     cursor.execute(
-    #         """ 
-    #         UPDATE Player_Seasons2
-    #         SET ortg = ?
-    #         WHERE player_id = ? AND season_year = ?;
-    #         """
-    #     ,(row['ortg'], row['player_id'], year))
+    def commit():
+        for _, row in df.iterrows():
+            print("Adding", row['player_name'])
+            # cursor.execute(
+            #     """ 
+            #     UPDATE Player_Seasons2
+            #     SET ortg = ?
+            #     WHERE player_id = ? AND season_year = ?;
+            #     """
+            # ,(row['ortg'], row['player_id'], year))
+            cursor.execute(
+                """
+                UPDATE Player_Seasons
+                SET POSS = ?
+                WHERE player_id = ? AND season_year = ?;
+                """
+            , (row['poss'], row['player_id'], year))
 
-    # conn.commit()
+        conn.commit()
+
+    # commit()
