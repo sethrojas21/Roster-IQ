@@ -1,23 +1,36 @@
-from Analysis.PredictBPM.queries import gptTransferQuery, statsFromPreviousSeason, playerRostersIncomingSeason
+"""
+bpmFeatureData.py
+
+Build the feature matrix for training the BPM classifier.
+Extracts transfer and returner data from the database, encodes categorical variables,
+computes teammate-based aggregate features, and assembles a feature DataFrame.
+"""
+
+from Analysis.queries import gptTransferQuery, statsFromPreviousSeason, playerRostersIncomingSeason
 import sqlite3
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
+# Connect to the SQLite database containing historical player and team statistics
 conn = sqlite3.connect('rosteriq.db')
 
 feature_rows = []
 
+# Loop through each season year to prepare feature rows for incoming transfers
 for year in range(2018, 2024):
+    # Load transfer list, previous season stats, and the incoming roster for the next season
     transferPlayersDF = pd.read_sql_query(gptTransferQuery, conn, params=(year, year+1))
     statsFromPreviousSeasonDF = pd.read_sql_query(statsFromPreviousSeason, conn, params=(year,))
     playerRostersIncomingSeasonDF = pd.read_sql_query(playerRostersIncomingSeason, conn, params=(year+1,))
 
+    # Merge transfer data with each player's previous season performance
     statsFromTransferPlayersPrevSeasonDF = pd.merge(
         transferPlayersDF,
         statsFromPreviousSeasonDF,
         on='player_id',
     )
 
+    # Identify players returning or transferring by merging roster and stats tables
     statsFromPlayersWhoHadAPreviousSeasonDF = pd.merge(
         statsFromPreviousSeasonDF,
         playerRostersIncomingSeasonDF,
@@ -25,6 +38,7 @@ for year in range(2018, 2024):
     )
 
 
+    # Encode categorical variables: player position and old team for model input
     label_encoder = LabelEncoder()
     statsFromTransferPlayersPrevSeasonDF['position_encoded'] = label_encoder.fit_transform(
         statsFromTransferPlayersPrevSeasonDF['position_x']
@@ -33,9 +47,11 @@ for year in range(2018, 2024):
         statsFromTransferPlayersPrevSeasonDF['old_team']
     )
     
+    # Iterate over each transfer player to compute personalized and teammate-based features
     for index, player in statsFromTransferPlayersPrevSeasonDF.iterrows():
         player_id = player['player_id']
         new_team = player['new_team']
+        # Retrieve target BPM and team strength metrics for upcoming season
         bpm_to_predict = statsFromPlayersWhoHadAPreviousSeasonDF[
             statsFromPlayersWhoHadAPreviousSeasonDF['player_id'] == player_id
             ]['bpm_to_predict'].values[0]
@@ -51,7 +67,7 @@ for year in range(2018, 2024):
             print(f"Skipping player {player['player_name_x']} due to missing bpm_to_predict.")
             continue
                 
-        # Get incoming teammates (who had a previous season)
+        # Select teammates with previous season data to compute aggregate statistics
         teammates = statsFromPlayersWhoHadAPreviousSeasonDF[
             (statsFromPlayersWhoHadAPreviousSeasonDF['next_team_name'] == new_team) &
             (statsFromPlayersWhoHadAPreviousSeasonDF['player_id'] != player_id)
@@ -66,7 +82,7 @@ for year in range(2018, 2024):
         except:
             continue
 
-        # Weighted averages for teammates        
+        # Compute weighted and simple averages of teammate BPM, usage, efficiency, and assists        
         total_minutes = teammates['total_player_minutes'].sum()
         # Weighted and unweighted averages
         weighted_bpm = (teammates['bpm'] * teammates['total_player_minutes']).sum() / total_minutes
@@ -85,7 +101,7 @@ for year in range(2018, 2024):
         avg_teammate_3ptPercent = (teammates['three_percent'] * teammates['total_player_minutes']).sum() / total_minutes
         avg_teammate_adjt = (teammates['adjt'] * teammates['total_player_minutes']).sum() / total_minutes
 
-        # Relative (role fit) features
+        # Compute relative features as deviation from teammate averages (role-fit metrics)
         rel_bpm = player['bpm'] - avg_teammate_bpm
         rel_usg = player['usg_percent'] - avg_teammate_usg
         rel_efg = player['efg_percent'] - avg_teammate_efg
@@ -97,7 +113,7 @@ for year in range(2018, 2024):
 
         diffInBarthagRank = next_team_barthag_rank - player['prev_team_barthag_rank']
         
-        # Build feature row
+        # Assemble the feature row for this player, combining personal, team, and relative metrics
         row = {
             'player_id': player['player_id'],   
             'player_position' : player['position_encoded'],
@@ -146,5 +162,5 @@ for year in range(2018, 2024):
 
         feature_rows.append(row)
 
-# Build DataFrame
+# Combine all feature rows into a single DataFrame for model training
 df = pd.DataFrame(feature_rows)

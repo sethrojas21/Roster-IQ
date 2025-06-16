@@ -37,6 +37,8 @@ def get_hs_players_actual_stats(player_df):
             ps.STL,
             ps.FGM,
             ps.threeM AS P3M,
+            ps.threeA AS P3A,
+            ps.FTA,
             ps.FGA,            
             ps.MIN,
             ps.OREB,
@@ -116,7 +118,7 @@ for year in range(2020, 2024):
     ind = 0
     for i, incoming_player_vector in enumerate(X_current):
         player_name = df_current.iloc[i]['player_name']
-        print(f"\nMatching for Player from {year}: {player_name}")
+        # print(f"\nMatching for Player from {year}: {player_name}")
         # Find top matches from historical freshmen
         top_matches = estimate_freshman_production(incoming_player_vector, X_before_current, df_before_current)
         # Gather actual stats for matched players
@@ -124,11 +126,11 @@ for year in range(2020, 2024):
         estimated_stats = pd.concat([ df_stats[df_stats['player_name'] == player['player_name']]
                                     for _, player in top_matches[['player_name', 'season_year', 'distance']].iterrows()
                                     ], ignore_index=True)
-        print(estimated_stats)
+        # print(estimated_stats)
         # Merge stats with distance information for weighting
         merged_stats = estimated_stats.merge(top_matches, on = ["player_name"])
         # Define stat categories to consider
-        cats_looking_at = ['bpm', 'adjoe', 'adjde', 'TOV', 'STL', 'OREB', 'DREB', 'FGM', 'P3M', 'FGA', 'MIN']
+        cats_looking_at = ['bpm', 'adjoe', 'adjde', 'TOV', 'STL', 'OREB', 'DREB', 'FGM', 'P3M', 'P3A', 'FGA', 'MIN', 'FTA']
         # Compute weighted average stats based on similarity scores
         wa_stats = weighted_average_stats(merged_stats[cats_looking_at + ['distance', 'POSS']])
         df_result = wa_stats.to_frame().T    
@@ -136,15 +138,15 @@ for year in range(2020, 2024):
         # Ensure integer columns for database insertion
         int_cols = cats_looking_at[3:]
         predicted_player_results[int_cols] = predicted_player_results[int_cols].round().astype(int)
-        print("Predicted: ")
-        print(player_df_results)
+        # print("Predicted: ")
+        # print(predicted_player_results)
 
         actual_df = df_stats[df_stats['player_name'] == player_name][cats_looking_at]
-        print("Actual: ")
-        print(actual_df)  
+        # print("Actual: ")
+        # print(actual_df)  
         # Add this to database        
         add_query = """UPDATE HS_Rankings
-                    SET bpm = ?, adjoe = ?, adjde = ?, TOV = ?, STL = ?, OREB = ?, DREB = ?, FGM = ?, P3M = ?, FGA = ?, MIN = ?
+                    SET FTA = ?
                     WHERE player_name = ?""" 
         BPM = float(predicted_player_results['bpm'].iloc[0])       
         ADJOE = float(predicted_player_results['adjoe'].iloc[0])
@@ -155,9 +157,11 @@ for year in range(2020, 2024):
         DREB = int(predicted_player_results['DREB'].iloc[0])        
         FGM = int(predicted_player_results['FGM'].iloc[0])
         P3M = int(predicted_player_results['P3M'].iloc[0])
+        P3A = int(predicted_player_results['P3A'].iloc[0])
         FGA = int(predicted_player_results['FGA'].iloc[0])
         MIN = int(predicted_player_results['MIN'].iloc[0])
-        cursor.execute(add_query, (BPM, ADJOE, ADJDE, TOV, STL, OREB, DREB, FGM, P3M, FGA, MIN, player_name))
+        FTA = int(predicted_player_results['FTA'].iloc[0])
+        cursor.execute(add_query, (FTA, player_name))
 
         if ind == 50:
             conn.commit()

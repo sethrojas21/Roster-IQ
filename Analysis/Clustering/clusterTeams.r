@@ -53,7 +53,8 @@ SELECT
     ps.threeM AS P3M,
     ps.threeA AS P3A,
     ps.adjoe,
-    ps.adrtg
+    ps.adrtg,
+    ps.POSS
 FROM Player_Seasons ps
 JOIN Players p
     ON p.player_id = ps.player_id
@@ -106,11 +107,12 @@ players_df$BLK <- round(players_df$blk_pg * players_df$gp)
 players_df$MIN <- round(players_df$min_pg * players_df$gp)
 
 # This is for teams that I know the end of year totals to make my cluster
-team_stats_df <- players_df %>%
+aggregate_team_stats_from_players_df <- function(players_df) {
+  team_stats_df <- players_df %>%
   mutate(poss = FGA + 0.44 * FTA + TOV - OREB) %>%
   group_by(team_name, season_year) %>%
   summarise(
-    team_adjoe = weighted.mean(adjoe, poss, na.rm = TRUE), 
+    team_adjoe = weighted.mean(adjoe, poss, na.rm = TRUE),
     team_adjde = weighted.mean(adrtg, poss, na.rm = TRUE),
     # team_eff_ratio = team_adjoe / team_adjde,
     # team_ast_per100 = sum(AST) / sum(poss) * 100,
@@ -132,28 +134,32 @@ team_stats_df <- players_df %>%
     # team_possessions = sum(poss),
     .groups = "drop"
   )
+}
 
+
+team_stats_df <- aggregate_team_stats_from_players_df(players_df)
 team_labels <- paste(team_stats_df$team_name, team_stats_df$season_year, sep = " - ")
 
 df <- scale(subset(team_stats_df, select = -c(team_name, season_year)))
 
+gonzaga_df <- read.csv("/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/gonzaga_2021.csv")
 
+View(gonzaga_df)
 
-# View(df)
-set.seed(29)
-num_clusters <- 20  # Can adjust if needed
+# set.seed(29)
+# num_clusters <- 20  # Can adjust if needed
 
-kclu <- kclustering(
-  data = df,
-  k = num_clusters,
-  labels = team_labels,
-  nruns = 50,           # more random starts = better chance to converge
-  iter.max = 500,       # much higher iteration cap
-  algorithm = "Hartigan-Wong"  # default, can change to "Lloyd" if needed
-)
+# kclu <- kclustering(
+#   data = df,
+#   k = num_clusters,
+#   labels = team_labels,
+#   nruns = 50,           # more random starts = better chance to converge
+#   iter.max = 500,       # much higher iteration cap
+#   algorithm = "Hartigan-Wong"  # default, can change to "Lloyd" if needed
+# )
 
-quartz()
-plot(kclu)
+# quartz()
+# plot(kclu)
 
 # print(sapply(kclu$ClusterList, length))
 # profiles_df <- as.data.frame(kclu$Profiles)
