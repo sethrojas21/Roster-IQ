@@ -308,7 +308,7 @@ SELECT
     ps.ast_percent, 
     ps.tov_percent,
     ps.adrtg,
-    ps.aortg,
+    ps.adjoe,
     ts.eFG AS team_eFG,
     (ts.adjoe - ts.adjde) AS team_adj_netrg,
     ts.adjoe AS team_adj_off,

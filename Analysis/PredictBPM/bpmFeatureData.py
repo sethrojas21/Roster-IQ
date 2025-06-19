@@ -37,20 +37,28 @@ for year in range(2018, 2024):
         on=['player_id']
     )
 
+    transfer_players_ids = statsFromTransferPlayersPrevSeasonDF['player_id']
+
+    # Flag incoming players as transfers if their player_id is in the transfer list
+    statsFromPlayersWhoHadAPreviousSeasonDF['is_transfer'] = (
+        statsFromPlayersWhoHadAPreviousSeasonDF['player_id']
+        .isin(transfer_players_ids)
+        .astype(int)
+    )
 
     # Encode categorical variables: player position and old team for model input
     label_encoder = LabelEncoder()
-    statsFromTransferPlayersPrevSeasonDF['position_encoded'] = label_encoder.fit_transform(
-        statsFromTransferPlayersPrevSeasonDF['position_x']
+    statsFromPlayersWhoHadAPreviousSeasonDF['position_encoded'] = label_encoder.fit_transform(
+        statsFromPlayersWhoHadAPreviousSeasonDF['position']
     )
-    statsFromTransferPlayersPrevSeasonDF['team_encoded'] = label_encoder.fit_transform(
-        statsFromTransferPlayersPrevSeasonDF['old_team']
+    statsFromPlayersWhoHadAPreviousSeasonDF['team_encoded'] = label_encoder.fit_transform(
+        statsFromPlayersWhoHadAPreviousSeasonDF['prev_team_name']
     )
     
     # Iterate over each transfer player to compute personalized and teammate-based features
-    for index, player in statsFromTransferPlayersPrevSeasonDF.iterrows():
+    for index, player in statsFromPlayersWhoHadAPreviousSeasonDF.iterrows():
         player_id = player['player_id']
-        new_team = player['new_team']
+        new_team = player['next_team_name']
         # Retrieve target BPM and team strength metrics for upcoming season
         bpm_to_predict = statsFromPlayersWhoHadAPreviousSeasonDF[
             statsFromPlayersWhoHadAPreviousSeasonDF['player_id'] == player_id
@@ -126,11 +134,11 @@ for year in range(2018, 2024):
             # 'player_ts_prev': player['ts_percent'],
             'player_ast_prev': player['ast_percent'],
             # 'player_tov_prev': player['tov_percent'],
-            # 'player_adrtg' : player['adrtg'],
-            # 'player_aortg' : player['aortg'],
+            'player_adrtg' : player['adrtg'],
+            'player_aortg' : player['adjoe'],
             'player_dreb_prev': player['dreb_percent'],
             'player_height': player['height_inches'],
-            # 'prev_team_barthag_rank': player['prev_team_barthag_rank'],
+            'prev_team_barthag_rank': player['prev_team_barthag_rank'],
             'next_team_barthag' : incoming_team_barthag_from_last_season,
             'team_eFG': player['team_eFG'],
             'avg_teammate_bpm': avg_teammate_bpm,
@@ -156,7 +164,8 @@ for year in range(2018, 2024):
             'bpm_to_predict': bpm_to_predict,  # target value for incoming season BPM
             # 'delta_bpm' : bpm_to_predict - player['bpm'],
             # 'next_year_usg_rate' : next_year_usg_rate,
-            'player_name': player['player_name_x']  # for display/debugging
+            'player_name': player['player_name_x'],  # for display/debugging
+            'is_transfer' : player['is_transfer']
         }
 
 
@@ -164,3 +173,6 @@ for year in range(2018, 2024):
 
 # Combine all feature rows into a single DataFrame for model training
 df = pd.DataFrame(feature_rows)
+
+print(df)
+df.to_csv('Analysis/PredictBPM/bpm_features_all.csv')

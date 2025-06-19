@@ -1,7 +1,8 @@
 import sqlite3
 import pandas as pd
 from xgboost import XGBClassifier
-from Analysis.queries import statsFromPreviousSeason
+# from Analysis.queries import statsFromPreviousSeason
+from Analysis.PredictBPM.classBPM import predict_bpm_tier_probs, role_modifier
 
 conn = sqlite3.connect('rosteriq.db')
 
@@ -35,15 +36,14 @@ gonzaga_prev_stats_df = pd.read_sql(f"""
     WHERE prev_ps.season_year = 2020;
 """, conn)
 
-model = XGBClassifier()
-model.load_model('Analysis/PredictBPM/xgb_class_bpm_model.json')
-
 ids = gonzaga_prev_stats_df['player_id']
 names = gonzaga_prev_stats_df['player_name']
-all_player_df = pd.read_sql(statsFromPreviousSeason, conn, params=(2020,))
+gonzaga_prev_stats_df['predicted_bpm'] = None
+gonzaga_prev_stats_df['role_modifier'] = None
+all_player_df = pd.read_csv('Analysis/PredictBPM/bpm_features_all.csv')
 
-xgbc = XGBClassifier()
-model = xgbc.load_model('/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/PredictBPM/xgb_class_bpm_model.json')
+model = XGBClassifier()
+model.load_model('Analysis/PredictBPM/xgb_class_tier_bpm_model.json')
 
 for idx, player_id in enumerate(ids):
     # Retrieve the player's name by position
@@ -52,13 +52,18 @@ for idx, player_id in enumerate(ids):
     # Filter the bpm_features DataFrame for this player's previous year records
     player_df = all_player_df[
         (all_player_df['player_id'] == player_id) &
-        (all_player_df['season_year'] == 2020)
+        (all_player_df['prev_year'] == 2020)
     ]
+    X = player_df.drop(columns=['bpm_to_predict', 'player_name', 'player_id', 'prev_year'])
     print(f"Player: {player_name} (ID: {player_id})")
-    print(player_df)
+    print(X)    
     print("Predicted BPM: ")
-    print(model.predict(player_df))
-
+    probs = predict_bpm_tier_probs(X)
+    print(probs)
+    role_modifier_val = role_modifier(probs)
+    print(role_modifier_val)
+    # gonzaga_prev_stats_df[gonzaga_prev_stats_df['player_id'] == player_id]['predicted_bpm'] = probs['tier_pred']
+    # gonzaga_prev_stats_df[gonzaga_prev_stats_df['player_id'] == player_id]['role_modifier'] = role_modifier_val
 
 
 # Load high-school rankings for 2020
@@ -72,7 +77,7 @@ hs_recruits_df = pd.read_sql(f"""
 combined_df = pd.concat([gonzaga_prev_stats_df, hs_recruits_df], ignore_index=True)
 
 # Print the combined DataFrame for verification
-print("Combined Gonzaga Previous Stats with HS Recruits:")
-print(combined_df)
+# print("Combined Gonzaga Previous Stats with HS Recruits:")
+# print(combined_df)
 
-combined_df.to_csv('gonzaga_2021.csv')
+# combined_df.to_csv('gonzaga_2021.csv')
