@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import classification_report, confusion_matrix
 
-tier_weights = [0.75, 1, 1.25]
+tier_weights = [0.8, 1, 1.2]
 
 def train_test_class_bpm():
     # --- Two-stage BPM classification pipeline ---

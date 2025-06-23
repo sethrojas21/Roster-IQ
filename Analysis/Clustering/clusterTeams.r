@@ -50,6 +50,7 @@ SELECT
     ps.FGA,
     ps.FGM,
     ps.TOV,
+    ps.PTS,
     ps.threeM AS P3M,
     ps.threeA AS P3A,
     ps.adjoe,
@@ -112,26 +113,20 @@ aggregate_team_stats_from_players_df <- function(players_df) {
   mutate(poss = FGA + 0.44 * FTA + TOV - OREB) %>%
   group_by(team_name, season_year) %>%
   summarise(
-    team_adjoe = weighted.mean(adjoe, poss, na.rm = TRUE),
-    team_adjde = weighted.mean(adrtg, poss, na.rm = TRUE),
-    # team_eff_ratio = team_adjoe / team_adjde,
+    adjoe = weighted.mean(adjoe, poss, na.rm = TRUE),
+    adjde = weighted.mean(adrtg, poss, na.rm = TRUE),    
     # team_ast_per100 = sum(AST) / sum(poss) * 100,
-    # team_stl_per100 = sum(STL) / sum(poss) * 100,
-    # team_blk_per100 = sum(BLK) / sum(poss) * 100,
-    team_stltov_ratio = sum(TOV) / sum(STL),
-    # team_asttov_ratio = sum(AST) / sum(TOV),
-    team_oreb_per100 = sum(OREB) / sum(poss) * 100,
-    team_dreb_per100 = sum(DREB) / sum(poss) * 100,
-    # team_ftr = sum(FTA) / sum(FGA),
-    team_eFG = ( sum(FGM) * (0.5 * sum(P3M))) / sum(FGA),
-    # team_rimr = sum(rimA, na.rm = TRUE) / sum(FGA),
-    # team_threer = sum(P3A) / sum(FGA),
-    team_3pt_fga = 3 * (sum(P3M) / sum(FGA)) *  (sum(P3A) / sum(FGA)) * (1/100)**2,
-    team_adjt = first(teams_df$adjt[
-        teams_df$team_name == cur_group()$team_name &
-        teams_df$season_year == cur_group()$season_year
-        ]),
-    # team_possessions = sum(poss),
+    stltov = sum(TOV) / sum(STL),    
+    oreb100 = sum(OREB) / sum(poss) * 100,
+    dreb100 = sum(DREB) / sum(poss) * 100,    
+    eFG = ( sum(FGM) + (0.5 * sum(P3M))) / sum(FGA),    
+    # FGP = sum(FGM) / sum(FGA),
+    # P3P = sum(P3A) / sum(P3M),
+    # P3M = sum(P3A) / sum(FGA),
+    # adjt = first(teams_df$adjt[
+    #     teams_df$team_name == cur_group()$team_name &
+    #     teams_df$season_year == cur_group()$season_year
+    #     ]),
     .groups = "drop"
   )
 }
@@ -142,51 +137,65 @@ team_labels <- paste(team_stats_df$team_name, team_stats_df$season_year, sep = "
 
 df <- scale(subset(team_stats_df, select = -c(team_name, season_year)))
 
-gonzaga_df <- read.csv("/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/gonzaga_2021.csv")
+# View(team_stats_df)
 
-View(gonzaga_df)
+set.seed(29)
+num_clusters <- 10 # Can adjust if needed
 
-# set.seed(29)
-# num_clusters <- 20  # Can adjust if needed
+kclu <- kclustering(
+  data = df,
+  k = num_clusters,
+  labels = team_labels,
+  nruns = 50,           # more random starts = better chance to converge
+  iter.max = 100,       # much higher iteration cap
+  algorithm = "Hartigan-Wong"  # default, can change to "Lloyd" if needed
+)
 
-# kclu <- kclustering(
-#   data = df,
-#   k = num_clusters,
-#   labels = team_labels,
-#   nruns = 50,           # more random starts = better chance to converge
-#   iter.max = 500,       # much higher iteration cap
-#   algorithm = "Hartigan-Wong"  # default, can change to "Lloyd" if needed
-# )
+quartz()
+plot(kclu)
 
-# quartz()
-# plot(kclu)
+print(kclu$Profiles)
+print(length(which(kclu$Profiles['CHI'] < 0.425)))
+print(length(which(kclu$Profiles['CHI'] > 0.5)))
+print(length(which(kclu$Profiles['CHI'] >= 0.6)))
 
-# print(sapply(kclu$ClusterList, length))
-# profiles_df <- as.data.frame(kclu$Profiles)
-# write.csv(profiles_df, "kclu_profiles.csv", row.names = TRUE)
+gonzaga <- team_stats_df %>%
+  filter(
+    team_name   == "Gonzaga",
+    season_year == 2021
+  )
+
+View(gonzaga)
 
 # Add Clusters To DB
-# dbBegin(conn)
+save_cluster_to_db <- function() {
+    dbBegin(conn)
 
-# apply(kclu$Subjects, 1, function(row) {
-#   s_line <- strsplit(row["Label"], split = " - ")[[1]]
-#   team <- s_line[1]
-#   season <- as.integer(s_line[2])
-#   cluster <- as.integer(row["Cluster"])
+    apply(kclu$Subjects, 1, function(row) {
+      s_line <- strsplit(row["Label"], split = " - ")[[1]]
+      team <- s_line[1]
+      season <- as.integer(s_line[2])
+      cluster <- as.integer(row["Cluster"])
 
-#   dbExecute(conn, "
-#     UPDATE Team_Seasons
-#     SET cluster = ?
-#     WHERE team_name = ? AND season_year = ?;
-#   ", params = list(cluster, team, season))
-# })
+      dbExecute(conn, "
+        UPDATE Team_Seasons
+        SET cluster = ?
+        WHERE team_name = ? AND season_year = ?;
+      ", params = list(cluster, team, season))
+    })
 
-# dbCommit(conn)
+    dbCommit(conn)
+}
 
-# scale_center <- attr(df, "scaled:center")
-# scale_scale <- attr(df, "scaled:scale")
+save_cluster_info <- function() {
+    profiles_df <- as.data.frame(kclu$Profiles)
+    write.csv(profiles_df, "kclu_profiles.csv", row.names = TRUE)
+    scale_center <- attr(df, "scaled:center")
+    scale_scale <- attr(df, "scaled:scale")
 
-# scale_info <- list(center = scale_center, scale = scale_scale)
-# jsonlite::write_json(scale_info, "scaling_params.json", pretty = TRUE, auto_unbox = TRUE)
+    scale_info <- list(center = scale_center, scale = scale_scale)
+    jsonlite::write_json(scale_info, "scaling_params.json", pretty = TRUE, auto_unbox = TRUE)
+}
 
+# save_cluster_info()
 dbDisconnect(conn)
