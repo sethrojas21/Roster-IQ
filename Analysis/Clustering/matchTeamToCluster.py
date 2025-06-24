@@ -3,8 +3,8 @@ import pandas as pd
 import numpy as np
 
 def match_team_to_cluster(team_stats,                          
-                          scaling_path='scaling_params.json',
-                          profiles_path='kclu_profiles.csv'):
+                          scaling_path='/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/scaling_params.json',
+                          profiles_path='/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/kclu_profiles.csv'):
     """
     Given:
       • team_stats: dict with keys

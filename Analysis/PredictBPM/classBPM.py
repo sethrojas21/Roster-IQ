@@ -184,7 +184,7 @@ def predict_bpm_tier_probs(features_df, sign_model_path='Analysis/PredictBPM/xgb
 
     return result_df
 
-def role_modifier(probs):
+def role_modifier(probs, tier_weights = [0.8, 1, 1.2]):
     prob_list    = [probs['P_neg'], probs['P_mid'], probs['P_high']]
 
     role_modifier = sum(w*p for w, p in zip(tier_weights, prob_list))
