@@ -48,7 +48,7 @@ def get_incoming_team_roster(conn, team_name, incoming_season_year):
 
 def remove_player_from_team(team_df, player_id):
     player_rmv = team_df[team_df['player_id'] == player_id]
-    return team_df[team_df['player_id'] != player_id]
+    return player_rmv
 
 def get_transfers(conn, incoming_season_year, pos):
     query = """ 

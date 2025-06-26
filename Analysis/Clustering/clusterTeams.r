@@ -197,5 +197,4 @@ save_cluster_info <- function() {
     jsonlite::write_json(scale_info, "scaling_params.json", pretty = TRUE, auto_unbox = TRUE)
 }
 
-save_cluster_to_db()
 dbDisconnect(conn)

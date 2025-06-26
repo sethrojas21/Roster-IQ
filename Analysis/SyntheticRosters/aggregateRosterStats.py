@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 # --- Aggregation function for team stats from player-level DataFrame ---
-def aggregate_team_stats_from_players_df(df):
+def aggregate_team_stats_from_players_df(df, roleModifier = False):
     """
     Given a DataFrame of player stats with columns:
     FGA, FGM, FTA, TOV, STL, OREB, DREB, P3M, P3A, adjoe, adjde, and any other stats,
@@ -13,9 +13,12 @@ def aggregate_team_stats_from_players_df(df):
     df = df.copy()
     # apply role_modifier to each player's stats to forecast next-season impact
     stat_cols = ['adjoe','FGM','P3M','FGA','P3A','TOV','OREB','DREB','STL']
-    df[stat_cols] = df[stat_cols].multiply(df['role_modifier'], axis=0)
-    # compute inverse modifier, but never below 1
-    inv_mod = (1 / df['role_modifier']).clip(lower=1.0)
+    if roleModifier:    
+        df[stat_cols] = df[stat_cols].multiply(df['role_modifier'], axis=0)
+        # compute inverse modifier, but never below 1
+        inv_mod = (1 / df['role_modifier']).clip(lower=1.0)
+    else:
+        inv_mod = 1
     # apply to adjde
     df['adjde'] = df['adjde'] * inv_mod
     df['poss'] = df['FGA'] + 0.44 * df['FTA'] + df['TOV'] - df['OREB']
