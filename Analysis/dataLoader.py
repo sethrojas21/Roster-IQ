@@ -29,22 +29,28 @@ def get_incoming_team_roster(conn, team_name, incoming_season_year):
     JOIN Team_Seasons ts
         ON ts.team_name = prev_ps.team_name
        AND ts.season_year = prev_ps.season_year       
-    WHERE prev_ps.season_year = ?;
+    WHERE prev_ps.season_year = ? AND prev_ps.MIN >= 40;
     """
     returners_df = pd.read_sql(returners_query, 
                                conn, 
                                params=(team_name, 
                                        incoming_season_year, 
-                                       incoming_season_year - 1,))    
+                                       incoming_season_year - 1,))       
 
     hs_query = f"""
     SELECT player_name, position, FGA, FGM, FTA, P3M, P3A, adjoe, adjde, TOV, OREB, DREB, bpm                 
     FROM HS_Rankings
     WHERE season_year = ? AND school_committed = ?
     """
-    hs_df = pd.read_sql(hs_query, conn, params=(incoming_season_year - 1, team_name))
+
+    hs_df = pd.read_sql(hs_query, conn, params=(incoming_season_year - 1, team_name))    
 
     return pd.concat([returners_df, hs_df])
+
+def get_incoming_synthetic_roster(conn, team_name, incoming_season_year, player_id_to_replace):
+    df = get_incoming_team_roster(conn, team_name, incoming_season_year)
+    player_rmvd = df[df['player_id'] == player_id_to_replace]
+    return (df[df['player_id'] != player_id_to_replace], player_rmvd)
 
 def remove_player_from_team(team_df, player_id):
     player_rmv = team_df[team_df['player_id'] == player_id]
@@ -76,7 +82,12 @@ def get_transfers(conn, incoming_season_year, pos):
         p1.TOV,
         p1.STL,                                
         p1.OREB,
-        p1.DREB 
+        p1.DREB,
+        (p1.PTS / p1.POSS) * 100 AS pts100,
+        (p1.AST / p1.POSS) * 100 AS ast100,
+        (p1.OREB / p1.POSS) * 100 AS oreb100,
+        (p1.DREB / p1.POSS) * 100 AS dreb100,
+        (p1.STL / p1.POSS) * 100 AS stl100 
     FROM Player_Seasons AS p1
     JOIN Player_Seasons AS p2
     ON p1.player_id = p2.player_id
