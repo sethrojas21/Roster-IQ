@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from Clustering.matchTeamToCluster import match_team_to_cluster
 from SyntheticRosters.aggregateRosterStats import aggregate_team_stats_from_players_df
-from Analysis.standardization import *
+from standardization import *
 from dataLoader import *
 
 def player_difference(player_stats_df,
@@ -25,18 +25,20 @@ def calculate_VOCRP_teamYear(conn, team_name, incoming_season_year, player_id_to
 
     # Get team stats and match them to a cluster
     synthethic_team_stats = aggregate_team_stats_from_players_df(synthetic_team_df)                      
-    cluster_num, df = match_team_to_cluster(synthethic_team_stats)   
+    cluster_num, df = match_team_to_cluster(synthethic_team_stats, incoming_season_year)   
 
-    transfer_data = get_transfers(conn, incoming_season_year, player_rmvd['position'].values[0])
-
-    query_snippet = """
-        (ps.PTS / ps.POSS) * 100 AS pts100,
+    query_snippet = """(ps.PTS / ps.POSS) * 100 AS pts100,
         (ps.AST / ps.POSS) * 100 AS ast100,
         (ps.OREB / ps.POSS) * 100 AS oreb100,
         (ps.DREB / ps.POSS) * 100 AS dreb100,
+        (CAST(ps.STL AS REAL) * 100 / ps.POSS) AS stl100,
+        (CAST(ps.BLK AS REAL) * 100 / ps.POSS) AS blk100,
         ps.efg_percent,
-        ps.tov_percent
+        ps.ts_percent,
+        ps.ast_tov_r
     """
+
+    transfer_data = get_transfers(conn, incoming_season_year, player_rmvd['position'].values[0], query_snippet)
 
     scaler, nPercentile_vals_df = get_nPercentile_info(query_snippet, 
                                                        conn, 
@@ -62,4 +64,4 @@ df = calculate_VOCRP_teamYear(conn, "Gonzaga", 2021, 49449)
 
 sorted_df = df.sort_values(by='vocrp', ascending=False)
 
-sorted_df.to_csv('gonzagaVOCRP.csv')
+print(sorted_df)

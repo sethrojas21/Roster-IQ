@@ -4,7 +4,7 @@ def composite_ranking_percentiles(fs_df, vocrp_df):
     # Merge on player_name (or player_id if that’s more reliable)
     df = fs_df.merge(vocrp_df, on='player_name')
 
-    # Compute percentiles (0–1) for each metric
+    # Compute percentiles (0–1c) for each metric
     df['fit_pct']   = df['sim_score'].rank(pct=True)
     df['value_pct'] = df['vocrp'].rank(pct=True)
 

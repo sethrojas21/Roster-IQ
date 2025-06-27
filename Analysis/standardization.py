@@ -3,32 +3,19 @@ import sqlite3
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import StandardScaler
+from dataLoader import load_players_from_cluster
 
 class Position(Enum):
     GUARD = "G"
     FOWARD = "F"
     CENTER = "C"
 
+column_shift = 4
+
 def get_standardized_player_rate_stats(stat_query,conn, year, cluster_num, pos : str, normalized = True):
-    query = f"""
-    SELECT
-        p.player_name,
-        ps.player_id,
-        ps.season_year,
-        {stat_query}
-    FROM Player_Seasons ps
-            JOIN Team_Seasons ts
-                ON ps.team_name = ts.team_name AND ps.season_year = ts.season_year
-            JOIN Players p
-                ON ps.player_id = p.player_id
-            WHERE ps.season_year < ? AND ts.cluster = ? AND ps.position = ?
-    """
+    rate_stats_df = load_players_from_cluster(stat_query, conn, year, cluster_num, pos)
     
-    rate_stats_df = pd.read_sql(
-        query, conn, params= (year, cluster_num, pos)
-    )
-    
-    columns = rate_stats_df.columns[3:]    
+    columns = rate_stats_df.columns[column_shift:]    
 
     df = rate_stats_df.copy()
 
@@ -36,8 +23,8 @@ def get_standardized_player_rate_stats(stat_query,conn, year, cluster_num, pos :
     scaler = None
     if normalized:
         scaler = StandardScaler().fit(df[columns])
-        scaled_vals = scaler.transform(df[columns])
-        # overwrite only the rate columns with their scaled versions
+        scaled_vals = scaler.transform(df[columns])                
+        # overwrite only the rate columns with their scaled versions                   
         df[columns] = pd.DataFrame(scaled_vals, columns=columns, index=df.index)
     
     return (df, scaler)
@@ -47,7 +34,7 @@ def get_nPercentile_info(query, conn, year, cluster_num, pos : str, percentile =
     return (scaler, get_nPercentile_rate_stats_df(df, percentile))
 
 def get_nPercentile_rate_stats_df(nPercentile_players_df, percentile=0.5):
-    columns = nPercentile_players_df.columns[3:]
+    columns = nPercentile_players_df.columns[column_shift:]
     nPercentile_df = pd.DataFrame(columns=columns)
     nPercentile_data = []
 

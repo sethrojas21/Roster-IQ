@@ -2,20 +2,10 @@ import json
 import pandas as pd
 import numpy as np
 
-def match_team_to_cluster(team_stats,                          
-                          scaling_path='/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/scaling_params.json',
-                          profiles_path='/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/kclu_profiles.csv'):
-    """
-    Given:
-      • team_stats: dict with keys
-            ['team_adjoe','team_adjde','team_stltov_ratio',
-             'team_oreb_per100','team_dreb_per100','team_eFG','team_P3M']
-      • scaling_path: path to your scaling_params.json
-      • profiles_path: path to your kclu_profiles.csv
-    Returns:
-      • cluster_id of the nearest centroid
-      • DataFrame of all clusters sorted by distance
-    """
+def match_team_to_cluster(team_stats, year):
+    scaling_path = f'/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/ClusterData/{year}/scaling_params.json'
+    profiles_path =f'/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/ClusterData/{year}/kclu_profiles.csv'
+
     # 1) load scaling params
     with open(scaling_path, 'r') as f:
         params = json.load(f)
@@ -23,7 +13,7 @@ def match_team_to_cluster(team_stats,
     scales  = np.array(params['scale'])
 
     # 2) load cluster centroids
-    profiles = pd.read_csv(profiles_path, index_col=0)
+    profiles = pd.read_csv(profiles_path, index_col=False)
     # X1..X7 must correspond to the same feature order as your scaling params
     featureX_names = []
     for i in range(1,len(centers) + 1):

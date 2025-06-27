@@ -1,5 +1,29 @@
 import pandas as pd
 
+def load_players_from_cluster(stat_query,conn, year, cluster_num, pos : str):
+    query = f"""
+    SELECT
+        p.player_name,
+        ps.player_id,
+        ps.team_name,
+        ps.season_year,
+        {stat_query}
+    FROM Player_Seasons ps            
+    JOIN Players p
+        ON ps.player_id = p.player_id
+    WHERE ps.season_year < ? AND ps.position = ?
+    """
+    
+    rate_stats_df = pd.read_sql(
+        query, conn, params= (year, pos)
+    )
+
+    team_cluster_df = pd.read_csv(f'Analysis/Clustering/ClusterData/{year}/teamSeasonClusterLabel.csv')
+
+    final_df = pd.merge(left=rate_stats_df, right=team_cluster_df, on=['team_name', 'season_year'])
+    
+    return final_df.drop(['cluster_num', 'team_name'], axis=1)
+
 def get_incoming_team_roster(conn, team_name, incoming_season_year):
     returners_query = """
     SELECT
@@ -56,44 +80,20 @@ def remove_player_from_team(team_df, player_id):
     player_rmv = team_df[team_df['player_id'] == player_id]
     return player_rmv
 
-def get_transfers(conn, incoming_season_year, pos):
-    query = """ 
+
+def get_transfers(conn, incoming_season_year, pos, ps_feature_snippet):
+    query = f""" 
     SELECT 
-        p1.player_id,
         p.player_name,
-        p1.season_year,               
-        p1.efg_percent,
-        p1.ast_percent,
-        p1.oreb_percent,
-        p1.dreb_percent,
-        p1.tov_percent,
-        p1.ft_percent,        
-        p1.stl_percent,
-        p1.blk_percent,
-        (p1.threeA / p1.FGA) AS threeRate,
-        p1.position,    
-        p1.FGA,
-        p1.FGM,
-        p1.FTA,
-        p1.threeM AS P3M,
-        p1.threeA AS P3A,                                
-        p1.adjoe,
-        p1.adrtg AS adjde,
-        p1.TOV,
-        p1.STL,                                
-        p1.OREB,
-        p1.DREB,
-        (p1.PTS / p1.POSS) * 100 AS pts100,
-        (p1.AST / p1.POSS) * 100 AS ast100,
-        (p1.OREB / p1.POSS) * 100 AS oreb100,
-        (p1.DREB / p1.POSS) * 100 AS dreb100,
-        (p1.STL / p1.POSS) * 100 AS stl100 
-    FROM Player_Seasons AS p1
+        ps.player_id,
+        ps.season_year,
+        {ps_feature_snippet}        
+    FROM Player_Seasons AS ps
     JOIN Player_Seasons AS p2
-    ON p1.player_id = p2.player_id
+    ON ps.player_id = p2.player_id
     JOIN Players p
-    ON p1.player_id = p.player_id
-    WHERE p1.season_year = ? AND p2.season_year = ? AND p1.team_name != p2.team_name AND p1.position = ?"""
+    ON ps.player_id = p.player_id
+    WHERE ps.season_year = ? AND p2.season_year = ? AND ps.team_name != p2.team_name AND ps.position = ?"""    
 
     return pd.read_sql(query, conn, params=(incoming_season_year - 1, 
                                                 incoming_season_year,
