@@ -1,4 +1,7 @@
+import sqlite3
 import pandas as pd
+from calcFitScore import calculate_fs_teamYear
+from calcVOCRP import calculate_VOCRP_teamYear
 
 def composite_ranking_percentiles(fs_df, vocrp_df):
     # Merge on player_name (or player_id if that’s more reliable)
@@ -17,12 +20,10 @@ def composite_ranking_percentiles(fs_df, vocrp_df):
 
     return df_sorted
 
-def testing():
-    fs_df    = pd.read_csv('gonzagaFS.csv', index_col=0)
-    vocrp_df = pd.read_csv('gonzagaVOCRP.csv', index_col=0)
-    df = composite_ranking_percentiles(fs_df, vocrp_df)
-    print(df.head(10))
-    print(df[df['player_name'] == "Aaron Cook"])
 
-
-testing()
+def composite_score(conn, team_name, season_year, player_id_to_replace):
+    fs_df = calculate_fs_teamYear(conn, team_name, season_year, player_id_to_replace)
+    vocrp_df = calculate_VOCRP_teamYear(conn, team_name, season_year, player_id_to_replace)
+    cs_df = composite_ranking_percentiles(fs_df, vocrp_df)
+    
+    return cs_df

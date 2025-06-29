@@ -1,7 +1,6 @@
 import sqlite3
 import numpy as np
 import pandas as pd
-from xgboost import XGBClassifier
 from standardization import *
 from Clustering.matchTeamToCluster import match_team_to_cluster
 from SyntheticRosters.aggregateRosterStats import aggregate_team_stats_from_players_df
@@ -10,6 +9,8 @@ from dataLoader import *
 def calculate_fs_teamYear(conn, team_name, season_year, player_id_to_replace):
     synthetic_team_df, player_rmvd = get_incoming_synthetic_roster(conn, team_name, season_year, player_id_to_replace)    
     player_rmvd_pos = player_rmvd['position'].values[0]
+    player_rmvd_name = player_rmvd['player_name'].values[0]
+    # print(player_rmvd_name, player_id_to_replace, player_rmvd_pos, team_name, season_year)
 
     # Get team stats and match them to a cluster
     synthethic_team_stats = aggregate_team_stats_from_players_df(synthetic_team_df)                      
@@ -49,8 +50,9 @@ def calculate_fs_teamYear(conn, team_name, season_year, player_id_to_replace):
     return transfers_sim_scores 
 
 # run
-conn = sqlite3.connect('rosteriq.db')
-df = calculate_fs_teamYear(conn, "Gonzaga", 2021, 49449)
-df_sorted = df.sort_values(by = 'sim_score', ascending=False)
-# df_sorted.to_csv('gonzagaFS.csv')
-print(df_sorted)
+def test():
+    conn = sqlite3.connect('rosteriq.db')
+    df = calculate_fs_teamYear(conn, "Gonzaga", 2021, 49449)
+    df_sorted = df.sort_values(by = 'sim_score', ascending=False)
+    # df_sorted.to_csv('gonzagaFS.csv')
+    print(df_sorted)

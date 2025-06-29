@@ -6,16 +6,15 @@ SELECT
     p.player_name,
     p1.position,
     p.player_id,
-    p1.team_name
+    p1.team_name,
+    p2.team_name AS new_team
 FROM Player_Seasons AS p1
 JOIN Player_Seasons AS p2
 ON p1.player_id = p2.player_id
 JOIN Players p
 ON p1.player_id = p.player_id
 WHERE
-p1.season_year = ?
-AND p2.season_year = ?
-AND p1.team_name != p2.team_name;"""
+p1.season_year = ? AND p2.season_year = ? AND p1.team_name != p2.team_name;"""
 
 az_query = """ 
 SELECT

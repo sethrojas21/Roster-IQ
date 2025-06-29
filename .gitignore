@@ -8,3 +8,4 @@ TeamPlayerInformation/
 *.pkl
 *.json
 *.sql
+*.DS_Store

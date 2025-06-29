@@ -69,7 +69,7 @@ def get_incoming_team_roster(conn, team_name, incoming_season_year):
 
     hs_df = pd.read_sql(hs_query, conn, params=(incoming_season_year - 1, team_name))    
 
-    return pd.concat([returners_df, hs_df])
+    return pd.concat([returners_df, hs_df]) if not hs_df.empty else returners_df
 
 def get_incoming_synthetic_roster(conn, team_name, incoming_season_year, player_id_to_replace):
     df = get_incoming_team_roster(conn, team_name, incoming_season_year)
@@ -81,7 +81,7 @@ def remove_player_from_team(team_df, player_id):
     return player_rmv
 
 
-def get_transfers(conn, incoming_season_year, pos, ps_feature_snippet):
+def get_transfers(conn, incoming_season_year, pos, ps_feature_snippet, min_cutoff = 250):
     query = f""" 
     SELECT 
         p.player_name,
@@ -93,9 +93,15 @@ def get_transfers(conn, incoming_season_year, pos, ps_feature_snippet):
     ON ps.player_id = p2.player_id
     JOIN Players p
     ON ps.player_id = p.player_id
-    WHERE ps.season_year = ? AND p2.season_year = ? AND ps.team_name != p2.team_name AND ps.position = ?"""    
+    WHERE 
+        ps.season_year = ? 
+        AND p2.season_year = ? 
+        AND ps.team_name != p2.team_name 
+        AND ps.position = ?
+        AND ps.MIN > ?"""    
 
-    return pd.read_sql(query, conn, params=(incoming_season_year - 1, 
+    df = pd.read_sql(query, conn, params=(incoming_season_year - 1, 
                                                 incoming_season_year,
-                                                pos))
- 
+                                                pos,
+                                                min_cutoff))
+    return df

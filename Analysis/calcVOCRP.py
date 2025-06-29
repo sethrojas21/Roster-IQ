@@ -15,7 +15,7 @@ def player_difference(player_stats_df,
     difference = np.subtract(player_vec, nPercentile_vals)
     return difference
 
-def calc_vocrp(diff_vec):    
+def avg_zScore_deviation(diff_vec):    
     return diff_vec.iloc[0].sum() / len(diff_vec.iloc[0])
 
 
@@ -26,7 +26,7 @@ def calculate_VOCRP_teamYear(conn, team_name, incoming_season_year, player_id_to
     # Get team stats and match them to a cluster
     synthethic_team_stats = aggregate_team_stats_from_players_df(synthetic_team_df)                      
     cluster_num, df = match_team_to_cluster(synthethic_team_stats, incoming_season_year)   
-
+    print("Cluster Number: ", cluster_num)
     query_snippet = """(ps.PTS / ps.POSS) * 100 AS pts100,
         (ps.AST / ps.POSS) * 100 AS ast100,
         (ps.OREB / ps.POSS) * 100 AS oreb100,
@@ -54,14 +54,7 @@ def calculate_VOCRP_teamYear(conn, team_name, incoming_season_year, player_id_to
                                                 scaler, 
                                                 nPercentile_vals_df.columns,
                                                 nPercentile_vals_df)
-        vocrp = calc_vocrp(diff_vec)             
+        vocrp = avg_zScore_deviation(diff_vec)             
         vocrp_scores.loc[len(vocrp_scores)] = [transfer['player_name'], vocrp]
     
     return vocrp_scores
-
-conn = sqlite3.connect('rosteriq.db')
-df = calculate_VOCRP_teamYear(conn, "Gonzaga", 2021, 49449)
-
-sorted_df = df.sort_values(by='vocrp', ascending=False)
-
-print(sorted_df)
