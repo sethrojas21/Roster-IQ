@@ -5,7 +5,8 @@ import numpy as np
 def get_top_k_nearest_teams_in_clusters(cluster_nums, year, conn, k_nearest_teams = 25):
     team_cluster_df = pd.read_csv(f'Analysis/Clustering/20ClusterData/{year}/teamSeasonClusterLabel.csv')       
 
-    teams_data_features_df = pd.read_sql("""SELECT team_name,
+    teams_data_features_df = pd.read_sql("""SELECT 
+                                        team_name,
                                         season_year,
                                         adjoe AS team_adjoe,
                                         adjde AS team_adjde,
