@@ -2,23 +2,22 @@ import json
 import pandas as pd
 import numpy as np
 
-def match_team_to_cluster(team_stats, year):
-    scaling_path = f'/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/20ClusterData/{year}/scaling_params.json'
-    profiles_path =f'/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/20ClusterData/{year}/kclu_profiles.csv'
+scaling_path = lambda year: f'/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/20ClusterData/{year}/scaling_params.json'
+profiles_path = lambda year: f'/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/20ClusterData/{year}/kclu_profiles.csv'
 
-    # 1) load scaling params
-    with open(scaling_path, 'r') as f:
+def scale_center_vector_data(team_stats, year, profiles = None):
+    if profiles is None:
+        profiles = pd.read_csv(profiles_path(year), index_col=False)
+
+    with open(scaling_path(year), 'r') as f:
         params = json.load(f)
     centers = np.array(params['center'])
     scales  = np.array(params['scale'])
 
-    # 2) load cluster centroids
-    profiles = pd.read_csv(profiles_path, index_col=False)
-    # X1..X7 must correspond to the same feature order as your scaling params
     featureX_names = []
     for i in range(1,len(centers) + 1):
         featureX_names.append("X" + str(i))
-    centroids = profiles[featureX_names].values
+    centroids = profiles[featureX_names].values    
 
     # 3) build raw vector in matching order
     feature_order = ['team_adjoe','team_adjde','team_stltov_ratio',
@@ -27,6 +26,13 @@ def match_team_to_cluster(team_stats, year):
 
     # 4) scale
     scaled_vec = (raw_vec - centers) / scales
+
+    return scaled_vec, centroids
+
+def match_team_to_cluster(team_stats, year):
+    profiles = pd.read_csv(profiles_path(year), index_col=False)
+
+    scaled_vec, centroids = scale_center_vector_data(team_stats, year, profiles)    
 
     # 5) compute distances
     dists = np.linalg.norm(centroids - scaled_vec, axis=1)

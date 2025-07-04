@@ -107,17 +107,22 @@ def get_nPercentile_scalar_and_vals(query, conn, year, cluster_weights, pos : st
 
 def get_nPercentile_scalar_and_vals_roles(query, conn, year, cluster_weights, pos : str, percentile = 0.5, normalized = True):
     df, scaler = standardized_player_rate_stats(query, conn, year, list(cluster_weights.keys()), pos, normalized)
-    filtered_df = filter_cluster_players(df, pos)
+    filtered_df = filter_cluster_players(df)    
+
+    roles = ['bench', 'rotation', 'starter']
+    for k, v in cluster_weights.items():
+        print(f"Cluster number: {k}", len(filtered_df[filtered_df['cluster_num'] == k]))
+    
     bench_df = filtered_df[filtered_df['min_pg'] < 10]
     rotation_df = filtered_df[(filtered_df['min_pg'] >= 10) & (filtered_df['min_pg'] < 25)]
     starter_df = filtered_df[(filtered_df['min_pg'] >= 25)]
-    roles = ['bench', 'rotation', 'starter']
     roles_df_list = [bench_df, rotation_df, starter_df]
+    
     role_dict = {}
-    for i in range(len(roles)):        
+    for i in range(len(roles)):   
+        print(f"{roles[i]}: {len(roles_df_list[i])}")     
         med_vals = get_nPercentile_benchmark_stats(roles_df_list[i], cluster_weights, percentile)
         role_dict[roles[i]] = med_vals    
-    
     return (scaler, role_dict)
 
 
@@ -170,16 +175,17 @@ def get_similar_players(nPercentile_vals: pd.DataFrame, players_median_stats: pd
     topk = players.sort_values('similarity', ascending=False).head(k)
     return topk[['player_id', 'season_year'] + features + ['similarity']]
 
-def filter_cluster_players(df, winningTeams = True, bpm = True): 
-    copy_df = None
+def filter_cluster_players(df, winningTeams=False, bpm=True): 
+    copy_df = df.copy()
+    
     if winningTeams:       
-        threshold = df['barthag_rank'].quantile(0.5)
-        copy_df = df[df['barthag_rank'] <= threshold]  
+        threshold = copy_df['barthag_rank'].quantile(0.5)
+        copy_df = copy_df[copy_df['barthag_rank'] <= threshold]  
 
     if bpm:
         copy_df = copy_df[copy_df['bpm'] > 0]
     
-    return copy_df if not None else df
+    return copy_df
     
 def testing():
     conn = sqlite3.connect('rosteriq.db')

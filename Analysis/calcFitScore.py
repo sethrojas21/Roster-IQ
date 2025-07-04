@@ -6,7 +6,7 @@ from Clustering.matchTeamToCluster import match_team_to_cluster, match_team_to_c
 from SyntheticRosters.aggregateRosterStats import aggregate_team_stats_from_players_df
 from dataLoader import *
 
-def calculate_fs_teamYear(conn, team_name, season_year, player_id_to_replace):
+def calculate_fs_teamYear(conn, team_name, season_year, player_id_to_replace, sum_sim_score = True, sortByRole = None):
     synthetic_team_df, player_rmvd = get_incoming_synthetic_roster(conn, team_name, season_year, player_id_to_replace)    
     player_rmvd_pos = player_rmvd['position'].values[0]
     player_rmvd_name = player_rmvd['player_name'].values[0]
@@ -76,6 +76,14 @@ def calculate_fs_teamYear(conn, team_name, season_year, player_id_to_replace):
             pass        
     
     # return transfers_sim_scores
+    if sum_sim_score:
+        transfers_roles_sim_scores['sum_sim_score'] = transfers_roles_sim_scores['bench_sim_score'] + \
+            transfers_roles_sim_scores['rotation_sim_score'] + transfers_roles_sim_scores['starter_sim_score']
+        
+    if sortByRole:                
+        transfers_roles_sim_scores = transfers_roles_sim_scores.sort_values(by=(sortByRole + "_sim_score"), ascending=False)
+        transfers_roles_sim_scores = transfers_roles_sim_scores.reset_index(drop = True)
+
     return transfers_roles_sim_scores 
 
 # run
@@ -89,4 +97,4 @@ def test():
     # df_sorted.to_csv('gonzagaFS.csv')
     # print(df_sorted)
 
-test()
+# test()

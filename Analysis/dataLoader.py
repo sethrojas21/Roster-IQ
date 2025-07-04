@@ -1,4 +1,54 @@
 import pandas as pd
+from Clustering.matchTeamToCluster import scale_center_vector_data
+import numpy as np
+
+def get_top_k_nearest_teams_in_clusters(cluster_nums, year, conn, k_nearest_teams = 25):
+    team_cluster_df = pd.read_csv(f'Analysis/Clustering/20ClusterData/{year}/teamSeasonClusterLabel.csv')       
+
+    teams_data_features_df = pd.read_sql("""SELECT team_name,
+                                        season_year,
+                                        adjoe AS team_adjoe,
+                                        adjde AS team_adjde,
+                                        (ast_pg * games_played) / (stl_pg * games_played) AS team_stltov_ratio,
+                                        (oreb_pg * games_played * 100) / POSS AS team_oreb_per100,
+                                        (dreb_pg * games_played * 100) / POSS AS team_dreb_per100,
+                                        three_rate / 100 AS team_threeRate,
+                                        ftr / 100 AS team_ftr,
+                                        eFG / 100 AS team_eFG
+                                        FROM Team_Seasons  
+                                        WHERE season_year < ? AND season_year >= ?                                        
+                                        """, con=conn, params=(year, year - 3))    
+    
+    merged_df = pd.merge(team_cluster_df, teams_data_features_df, on=['team_name', 'season_year'])
+    
+    indiv_cluster_teams = {}
+    
+    for cluster_num in cluster_nums:
+        indiv_cluster_teams[cluster_num] = merged_df[merged_df['cluster_num'] == cluster_num]
+
+    final_df = pd.DataFrame(columns=['team_name', 'season_year', 'cluster_num', 'dist'])   
+
+    for k, v in indiv_cluster_teams.items():
+        # For each cluster find top 10 teams
+        cluster_df = pd.DataFrame(columns=['team_name', 'season_year', 'cluster_num', 'dist'])
+
+        for idx, team in v.iterrows():                        
+            scaled_vec, centroids = scale_center_vector_data(team, year)
+            centroid = centroids[k - 1]                       
+            dist = np.linalg.norm(centroid - scaled_vec, axis=0)                
+            cluster_df.loc[len(cluster_df)] = [team['team_name'], team['season_year'], team['cluster_num'], dist]
+        
+        cluster_df = cluster_df.sort_values(by="dist", ascending=True)
+
+        top_k_df = cluster_df.head(min(len(cluster_df), k_nearest_teams))
+        if not top_k_df.empty and not top_k_df.isna().all(axis=None):
+            if final_df.empty:
+                final_df = top_k_df.copy()
+            else:
+                final_df = pd.concat([final_df, top_k_df], ignore_index=True)
+                  
+    return final_df
+    
 
 def load_players(stat_query, conn, year, pos):
     query = f"""
@@ -36,7 +86,7 @@ def load_players_from_cluster(stat_query, conn, year, cluster_num, pos : str):
     
     return final_df.drop(['cluster_num', 'team_name'], axis=1)
 
-def load_players_from_multiple_clusters(stat_query, conn, year, cluster_nums, pos: str, keep_meta: bool = False):
+def load_players_from_multiple_clusters(stat_query, conn, year, cluster_nums, pos: str, keep_meta: bool = False, top_k_teams = True):
     """
     Return a DataFrame of player rows that belong to ANY of the cluster
     numbers provided in `cluster_nums`.
@@ -57,12 +107,17 @@ def load_players_from_multiple_clusters(stat_query, conn, year, cluster_nums, po
         If True, keep 'team_name' and 'cluster_num' columns.
     """
     if not cluster_nums:
-        raise ValueError("cluster_nums must contain at least one cluster id.")
+        raise ValueError("cluster_nums must contain at least one cluster id.") 
+
 
     final_df = load_players(stat_query, conn, year, pos)
 
     # Keep only rows whose cluster_num is in cluster_nums
-    final_df = final_df[final_df["cluster_num"].isin(cluster_nums)]
+    final_df = final_df[final_df["cluster_num"].isin(cluster_nums)]  
+
+    if top_k_teams:  
+        top_k_teams = get_top_k_nearest_teams_in_clusters(cluster_nums, year, conn)             
+        final_df = pd.merge(final_df, top_k_teams, how="right", on=["team_name", "season_year", "cluster_num"]).drop(['dist', 'season_year'], axis='columns')    
 
     if not keep_meta:
         final_df = final_df.drop(columns=["team_name"], errors="ignore")
@@ -117,7 +172,7 @@ def get_incoming_team_roster(conn, team_name, incoming_season_year):
     return pd.concat([returners_df, hs_df]) if not hs_df.empty else returners_df
 
 def get_incoming_synthetic_roster(conn, team_name, incoming_season_year, player_id_to_replace):
-    df = get_incoming_team_roster(conn, team_name, incoming_season_year)
+    df = get_incoming_team_roster(conn, team_name, incoming_season_year)    
     player_rmvd = df[df['player_id'] == player_id_to_replace]
     return (df[df['player_id'] != player_id_to_replace], player_rmvd)
 

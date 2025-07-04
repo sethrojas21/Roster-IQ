@@ -132,7 +132,8 @@ for (year in 2021:2024) {
 
   team_stats_df <- aggregate_team_stats_from_players_df(players_df)
   team_labels <- paste(team_stats_df$team_name, team_stats_df$season_year, sep = " - ")
-
+  View(team_stats_df)
+  quit()
   df <- scale(subset(team_stats_df, select = -c(team_name, season_year)))
   
   kclu <- kclustering(
@@ -226,14 +227,15 @@ for (year in 2021:2024) {
     CHI        = chi_vec
   )
 
+  View(kclu)
   View(cluster_summary_df)
   print(sum(cluster_summary_df$size))
 
   
-
+  quit()
   # FUNCTIONS TO RUN
   # plot_clusters()
-  save_cluster_info()
+  # save_cluster_info()
 }
 
 dbDisconnect(conn)
