@@ -15,7 +15,9 @@ def calculate_fs_teamYear(conn, team_name, season_year, player_id_to_replace):
     # Get team stats and match them to a cluster
     synthethic_team_stats = aggregate_team_stats_from_players_df(synthetic_team_df)                      
     # cluster_num, df = match_team_to_cluster(synthethic_team_stats, season_year)  
-    closest_cluster_weights = match_team_to_cluster_weights(synthethic_team_stats, season_year)        
+    closest_cluster_weights = match_team_to_cluster_weights(synthethic_team_stats, season_year)   
+    for k, v in closest_cluster_weights.items():
+        print(k, v)       
 
     query_snippet = """ps.efg_percent,
         ps.ast_percent,
@@ -50,7 +52,7 @@ def calculate_fs_teamYear(conn, team_name, season_year, player_id_to_replace):
     transfers_sim_scores = pd.DataFrame(columns=['player_name', 'sim_score'])
 
     roles = ['bench', 'rotation', 'starter']        
-    transfers_roles_sim_scores = pd.DataFrame(columns=['player_name', 'bench_sim_score', 'rotation_sim_score', 'starter_sim_score'])
+    transfers_roles_sim_scores = pd.DataFrame(columns=['player_name', 'bench_sim_score', 'rotation_sim_score', 'starter_sim_score'])    
     for index, transfer in transfer_data.iterrows():                                                
         # generate similiarity score
         try:
@@ -81,7 +83,9 @@ def test():
     conn = sqlite3.connect('rosteriq.db')
     df = calculate_fs_teamYear(conn, "Gonzaga", 2021, 49449)
     df_sorted = df.sort_values(by = 'rotation_sim_score', ascending=False)
+    df_sorted = df_sorted.reset_index(drop=True)
     print(df_sorted)
+    print(df_sorted[df_sorted['player_name'] == "Aaron Cook"])
     # df_sorted.to_csv('gonzagaFS.csv')
     # print(df_sorted)
 

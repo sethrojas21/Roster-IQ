@@ -134,20 +134,6 @@ for (year in 2021:2024) {
   team_labels <- paste(team_stats_df$team_name, team_stats_df$season_year, sep = " - ")
 
   df <- scale(subset(team_stats_df, select = -c(team_name, season_year)))
-
-  # library(factoextra)
-  # # Set maximum number of clusters to test
-  # max_k <- 50
-  # # Run kmeans for each k and compute total within-cluster sum of squares
-  # wss <- sapply(1:max_k, function(k) {
-  #   kmeans(df, centers = k, nstart = 10)$tot.withinss
-  # })
-  # # Plot the elbow plot 
-  
-  # plot(1:max_k, wss, type = "b", pch = 19,
-  #     xlab = "Number of Clusters K",
-  #     ylab = "Total Within-Cluster Sum of Squares",
-  #     main = sprintf("Elbow Method for Year: %.0f", year))
   
   kclu <- kclustering(
     data = df,
@@ -213,17 +199,17 @@ for (year in 2021:2024) {
 
   save_cluster_info <- function() {
       profiles_df <- as.data.frame(kclu$Profiles)
-      csv_filepath <- sprintf("Analysis/Clustering/ClusterData/%.0f/kclu_profiles.csv", year)
+      csv_filepath <- sprintf("Analysis/Clustering/20ClusterData/%.0f/kclu_profiles.csv", year)
       write.csv(profiles_df, csv_filepath, row.names = FALSE)
 
       scale_center <- attr(df, "scaled:center")
       scale_scale <- attr(df, "scaled:scale")
       scale_info <- list(center = scale_center, scale = scale_scale)
-      json_filepath <- sprintf("Analysis/Clustering/ClusterData/%.0f/scaling_params.json", year)
+      json_filepath <- sprintf("Analysis/Clustering/20ClusterData/%.0f/scaling_params.json", year)
       jsonlite::write_json(scale_info, json_filepath, pretty = TRUE, auto_unbox = TRUE)
 
       df <- save_cluster_to_df()
-      df_csv_filepath <- sprintf("Analysis/Clustering/ClusterData/%.0f/teamSeasonClusterLabel.csv", year)
+      df_csv_filepath <- sprintf("Analysis/Clustering/20ClusterData/%.0f/teamSeasonClusterLabel.csv", year)
       write.csv(df, df_csv_filepath, row.names = FALSE)
   }
 
@@ -241,12 +227,13 @@ for (year in 2021:2024) {
   )
 
   View(cluster_summary_df)
+  print(sum(cluster_summary_df$size))
 
   
 
   # FUNCTIONS TO RUN
   # plot_clusters()
-  # save_cluster_info()
+  save_cluster_info()
 }
 
 dbDisconnect(conn)

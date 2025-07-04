@@ -3,8 +3,8 @@ import pandas as pd
 import numpy as np
 
 def match_team_to_cluster(team_stats, year):
-    scaling_path = f'/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/ClusterData/{year}/scaling_params.json'
-    profiles_path =f'/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/ClusterData/{year}/kclu_profiles.csv'
+    scaling_path = f'/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/20ClusterData/{year}/scaling_params.json'
+    profiles_path =f'/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/20ClusterData/{year}/kclu_profiles.csv'
 
     # 1) load scaling params
     with open(scaling_path, 'r') as f:
@@ -22,7 +22,7 @@ def match_team_to_cluster(team_stats, year):
 
     # 3) build raw vector in matching order
     feature_order = ['team_adjoe','team_adjde','team_stltov_ratio',
-                     'team_oreb_per100','team_dreb_per100','team_eFG']
+                     'team_oreb_per100','team_dreb_per100', 'team_threeRate', 'team_ftr', 'team_eFG']
     raw_vec = np.array([ team_stats[f] for f in feature_order ])
 
     # 4) scale
@@ -51,7 +51,9 @@ def match_team_to_cluster_weights(team_stats, year, k = 3):
 
     # ---- similarity transform ---------------------------------------------
     epsilon = 1e-6
+    alpha = 1.5
     if 'alpha' not in locals() or alpha is None:
+        print("Calculating alpha")
         # Heuristic: inverse of median distance to keep weights well‑behaved
         alpha = 1.0 / max(topK_df['distance'].median(), epsilon)
 

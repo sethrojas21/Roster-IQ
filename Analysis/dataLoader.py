@@ -16,14 +16,14 @@ def load_players(stat_query, conn, year, pos):
         ON ps.player_id = p.player_id
     JOIN Team_Seasons ts
         ON ts.team_name = ps.team_name AND ts.season_year = ps.season_year
-    WHERE ps.season_year < ? AND ps.position = ?
+    WHERE ps.season_year < ? AND ps.season_year >= ? AND ps.position = ?
     """
     
     rate_stats_df = pd.read_sql(
-        query, conn, params= (year, pos)
+        query, conn, params= (year, year - 3, pos)
     )
 
-    team_cluster_df = pd.read_csv(f'Analysis/Clustering/ClusterData/{year}/teamSeasonClusterLabel.csv')
+    team_cluster_df = pd.read_csv(f'Analysis/Clustering/20ClusterData/{year}/teamSeasonClusterLabel.csv')
 
     final_df = pd.merge(left=rate_stats_df, right=team_cluster_df, on=['team_name', 'season_year'])
 
@@ -126,7 +126,7 @@ def remove_player_from_team(team_df, player_id):
     return player_rmv
 
 
-def get_transfers(conn, incoming_season_year, pos, ps_feature_snippet, min_cutoff = 250):
+def get_transfers(conn, incoming_season_year, pos, ps_feature_snippet, min_cutoff = 175):
     query = f""" 
     SELECT 
         p.player_name,

@@ -35,6 +35,10 @@ def aggregate_team_stats_from_players_df(df, roleModifier = False):
     team_eFG = (df['FGM'].sum() + 0.5 * df['P3M'].sum()) / df['FGA'].sum() if df['FGA'].sum() else np.nan
     # combined 3pt‐FGA metric from R code
     team_3pt_fga = 3 * (df['P3M'].sum() / df['FGA'].sum()) * (df['P3A'].sum() / df['FGA'].sum())    
+
+    # New tendency stats
+    team_three_rate = df['P3A'].sum() / df['FGA'].sum()
+    team_ftr = df['FTA'].sum() / df['FGA'].sum()
     
     return {
         'team_adjoe': team_adjoe,
@@ -42,5 +46,7 @@ def aggregate_team_stats_from_players_df(df, roleModifier = False):
         'team_stltov_ratio': team_stltov_ratio,
         'team_oreb_per100': team_oreb_per100,
         'team_dreb_per100': team_dreb_per100,
+        'team_threeRate' : team_three_rate,
+        'team_ftr' : team_ftr,
         'team_eFG': team_eFG,           
     }
