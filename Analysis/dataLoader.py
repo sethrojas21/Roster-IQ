@@ -1,16 +1,21 @@
 import pandas as pd
 
-def load_players_from_cluster(stat_query,conn, year, cluster_num, pos : str):
+def load_players(stat_query, conn, year, pos):
     query = f"""
     SELECT
         p.player_name,
         ps.player_id,
         ps.team_name,
         ps.season_year,
+        ts.barthag_rank,
+        ps.min_pg,        
+        ps.bpm,
         {stat_query}
     FROM Player_Seasons ps            
     JOIN Players p
         ON ps.player_id = p.player_id
+    JOIN Team_Seasons ts
+        ON ts.team_name = ps.team_name AND ts.season_year = ps.season_year
     WHERE ps.season_year < ? AND ps.position = ?
     """
     
@@ -21,8 +26,48 @@ def load_players_from_cluster(stat_query,conn, year, cluster_num, pos : str):
     team_cluster_df = pd.read_csv(f'Analysis/Clustering/ClusterData/{year}/teamSeasonClusterLabel.csv')
 
     final_df = pd.merge(left=rate_stats_df, right=team_cluster_df, on=['team_name', 'season_year'])
+
+    return final_df
+
+def load_players_from_cluster(stat_query, conn, year, cluster_num, pos : str):
+    final_df = load_players(stat_query, conn, year, pos)
+    
+    final_df = final_df[final_df['cluster_num'] == cluster_num]
     
     return final_df.drop(['cluster_num', 'team_name'], axis=1)
+
+def load_players_from_multiple_clusters(stat_query, conn, year, cluster_nums, pos: str, keep_meta: bool = False):
+    """
+    Return a DataFrame of player rows that belong to ANY of the cluster
+    numbers provided in `cluster_nums`.
+
+    Parameters
+    ----------
+    stat_query : str
+        Comma-separated list of Player_Seasons columns to pull.
+    conn : sqlite3.Connection
+        Active connection to rosteriq.db (or whichever database).
+    year : int
+        "Current" season year; we pull historical rows < year.
+    cluster_nums : Iterable[int]
+        One or more cluster IDs to keep.
+    pos : str
+        Position filter ("G", "F", or "C").
+    keep_meta : bool, default False
+        If True, keep 'team_name' and 'cluster_num' columns.
+    """
+    if not cluster_nums:
+        raise ValueError("cluster_nums must contain at least one cluster id.")
+
+    final_df = load_players(stat_query, conn, year, pos)
+
+    # Keep only rows whose cluster_num is in cluster_nums
+    final_df = final_df[final_df["cluster_num"].isin(cluster_nums)]
+
+    if not keep_meta:
+        final_df = final_df.drop(columns=["team_name"], errors="ignore")
+
+    return final_df.reset_index(drop=True)
 
 def get_incoming_team_roster(conn, team_name, incoming_season_year):
     returners_query = """

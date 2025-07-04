@@ -42,3 +42,24 @@ def match_team_to_cluster(team_stats, year):
     }).sort_values('distance').reset_index(drop=True)
 
     return nearest, df
+
+def match_team_to_cluster_weights(team_stats, year, k = 3):
+    _, df = match_team_to_cluster(team_stats, year)
+
+    # Grab the k nearest clusters
+    topK_df = df.head(k).copy()
+
+    # ---- similarity transform ---------------------------------------------
+    epsilon = 1e-6
+    if 'alpha' not in locals() or alpha is None:
+        # Heuristic: inverse of median distance to keep weights well‑behaved
+        alpha = 1.0 / max(topK_df['distance'].median(), epsilon)
+
+    # RBF kernel similarity
+    sim = np.exp(-alpha * topK_df['distance'].values)
+
+    # Normalise so that the weights sum to 1
+    weights = sim / sim.sum()
+
+    # Build and return dictionary
+    return dict(zip(topK_df['cluster_id'].astype(int), weights))

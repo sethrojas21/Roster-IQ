@@ -5,6 +5,7 @@ library(jsonlite)
 
 conn <- dbConnect(RSQLite::SQLite(), dbname = "rosteriq.db")
 
+num_clusters <- 20
 for (year in 2021:2024) {
   team_features_query <- "
   SELECT
@@ -26,7 +27,7 @@ for (year in 2021:2024) {
       blk_pg,
       games_played AS total_gp
   FROM Team_Seasons
-  WHERE season_year < ?
+  WHERE season_year < ? AND season_year >= ?
   GROUP BY team_name, season_year;
   "
 
@@ -60,7 +61,7 @@ for (year in 2021:2024) {
   FROM Player_Seasons ps
   JOIN Players p
       ON p.player_id = ps.player_id
-  WHERE ps.season_year < ?;
+  WHERE ps.season_year < ? AND season_year >= ?;
   "
 
   features_for_cluster <- "
@@ -95,9 +96,9 @@ for (year in 2021:2024) {
   - rim rate
   "
 
-  players_df <- dbGetQuery(conn, player_features_for_team_query, params = list(year))
+  players_df <- dbGetQuery(conn, player_features_for_team_query, params = list(year, year - 3))
 
-  teams_df <- dbGetQuery(conn, team_features_query, params = list(year))
+  teams_df <- dbGetQuery(conn, team_features_query, params = list(year, year - 3))
 
   team_name <- teams_df$team_name
   season_year <- teams_df$season_year
@@ -108,6 +109,7 @@ for (year in 2021:2024) {
   players_df$STL <- round(players_df$stl_pg * players_df$gp)
   players_df$BLK <- round(players_df$blk_pg * players_df$gp)
   players_df$MIN <- round(players_df$min_pg * players_df$gp)
+  players_df$PTS <- round(players_df$pts_pg * players_df$gp)
 
   # This is for teams that I know the end of year totals to make my cluster
   aggregate_team_stats_from_players_df <- function(players_df) {
@@ -117,10 +119,13 @@ for (year in 2021:2024) {
     summarise(
       adjoe = weighted.mean(adjoe, poss, na.rm = TRUE),
       adjde = weighted.mean(adrtg, poss, na.rm = TRUE),
-      stltov = sum(TOV) / sum(STL),    
+      stltov = sum(TOV) / sum(STL),
       oreb100 = sum(OREB) / sum(poss) * 100,
-      dreb100 = sum(DREB) / sum(poss) * 100,    
-      eFG = ( sum(FGM) + (0.5 * sum(P3M))) / sum(FGA),        
+      dreb100 = sum(DREB) / sum(poss) * 100,
+      threeRate = sum(P3A) / sum(FGA),
+      ftr = sum(FTA) / sum(FGA),
+      eFG = ( sum(FGM) + (0.5 * sum(P3M))) / sum(FGA),
+      # ts = sum(PTS) / (2 * sum(FGA) + 0.44 * sum(FTA)),
       .groups = "drop"
     )
   }
@@ -130,20 +135,33 @@ for (year in 2021:2024) {
 
   df <- scale(subset(team_stats_df, select = -c(team_name, season_year)))
 
-  set.seed(29)
+  # library(factoextra)
+  # # Set maximum number of clusters to test
+  # max_k <- 50
+  # # Run kmeans for each k and compute total within-cluster sum of squares
+  # wss <- sapply(1:max_k, function(k) {
+  #   kmeans(df, centers = k, nstart = 10)$tot.withinss
+  # })
+  # # Plot the elbow plot 
+  
+  # plot(1:max_k, wss, type = "b", pch = 19,
+  #     xlab = "Number of Clusters K",
+  #     ylab = "Total Within-Cluster Sum of Squares",
+  #     main = sprintf("Elbow Method for Year: %.0f", year))
+  
   kclu <- kclustering(
     data = df,
-    k = 10,
+    k = num_clusters,
     labels = team_labels,
     nruns = 50,           # more random starts = better chance to converge
     iter.max = 100,       # much higher iteration cap
     algorithm = "Hartigan-Wong"  # default, can change to "Lloyd" if needed
-  )
+  )  
 
   plot_clusters <- function() {
-    quartz()
+    quartz(title = sprintf("Year: %.0f", year))
     plot(kclu)
-  }  
+  }
 
   # Add Clusters To DB
   save_cluster_to_db <- function() {
@@ -160,7 +178,7 @@ for (year in 2021:2024) {
           SET cluster = ?
           WHERE team_name = ? AND season_year = ?;
         ", params = list(cluster, team, season))
-      })      
+      })
       dbCommit(conn)
   }
 
@@ -209,8 +227,26 @@ for (year in 2021:2024) {
       write.csv(df, df_csv_filepath, row.names = FALSE)
   }
 
-  save_cluster_info()
+  # compute cluster sizes
+  size_vec <- unlist(lapply(kclu$ClusterList, length))
 
+  # extract CHI scores
+  chi_vec  <- kclu$Profiles$CHI
+
+  # build a summary data frame
+  cluster_summary_df <- data.frame(
+    cluster_id = seq_along(size_vec),
+    size       = size_vec,
+    CHI        = chi_vec
+  )
+
+  View(cluster_summary_df)
+
+  
+
+  # FUNCTIONS TO RUN
+  # plot_clusters()
+  # save_cluster_info()
 }
 
 dbDisconnect(conn)

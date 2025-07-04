@@ -3,19 +3,39 @@ import sqlite3
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import StandardScaler
-from dataLoader import load_players_from_cluster
+from dataLoader import load_players_from_cluster, load_players_from_multiple_clusters
 
 class Position(Enum):
     GUARD = "G"
     FOWARD = "F"
     CENTER = "C"
 
-column_shift = 4
+column_shift = 7
 
-def get_standardized_player_rate_stats(stat_query,conn, year, cluster_num, pos : str, normalized = True):
-    rate_stats_df = load_players_from_cluster(stat_query, conn, year, cluster_num, pos)
+def get_standardized_player_rate_stats(stat_query,conn, year, cluster_num, pos : str, normalized = True):        
+    rate_stats_df = load_players_from_cluster(stat_query, conn, year, cluster_num, pos)        
     
     columns = rate_stats_df.columns[column_shift:]    
+
+    df = rate_stats_df.copy()        
+
+    # scale only the rate-stat columns if requested
+    scaler = None
+    if normalized:
+        scaler = StandardScaler().fit(df[columns])
+        scaled_vals = scaler.transform(df[columns])                
+        # overwrite only the rate columns with their scaled versions                   
+        df[columns] = pd.DataFrame(scaled_vals, columns=columns, index=df.index)
+    
+    return (df, scaler)
+
+def standardized_player_rate_stats(stat_query,conn, year, cluster_nums, pos : str, normalized = True):
+    """
+    New function that deals with weights of multiple clusters
+    """
+    rate_stats_df = load_players_from_multiple_clusters(stat_query, conn, year, cluster_nums, pos)    
+    
+    columns = rate_stats_df.columns[column_shift:-1]   # Exclude meta data and cluster_num
 
     df = rate_stats_df.copy()
 
@@ -29,10 +49,6 @@ def get_standardized_player_rate_stats(stat_query,conn, year, cluster_num, pos :
     
     return (df, scaler)
 
-def get_nPercentile_info(query, conn, year, cluster_num, pos : str, percentile = 0.5, normalized = True):
-    df, scaler = get_standardized_player_rate_stats(query, conn, year, cluster_num, pos, normalized)
-    return (scaler, get_nPercentile_rate_stats_df(df, percentile))
-
 def get_nPercentile_rate_stats_df(nPercentile_players_df, percentile=0.5):
     columns = nPercentile_players_df.columns[column_shift:]
     nPercentile_df = pd.DataFrame(columns=columns)
@@ -43,6 +59,67 @@ def get_nPercentile_rate_stats_df(nPercentile_players_df, percentile=0.5):
     
     nPercentile_df.loc[len(nPercentile_df)] = nPercentile_data
     return nPercentile_df
+
+#TODO: move into get benchmark player file
+def get_nPercentile_benchmark_stats(
+        nPercentile_players_cluster_df: pd.DataFrame,
+        cluster_weights: dict[int, float],
+        percentile: float = 0.5
+) -> pd.DataFrame:
+    if "cluster_num" not in nPercentile_players_cluster_df.columns:
+        raise ValueError("Input df must include a 'cluster_num' column.")
+
+    # Rate‑stat feature columns start after the first 4 metadata columns
+    stat_cols = nPercentile_players_cluster_df.columns[column_shift:-1]
+
+    # 1. Per‑cluster percentile rows (keep cluster_num as index)
+    per_cluster = (
+        nPercentile_players_cluster_df
+        .groupby("cluster_num")[stat_cols]
+        .quantile(percentile)
+    )
+
+    # 2. Attach weights using the index
+    per_cluster["w"] = per_cluster.index.map(cluster_weights).fillna(0)
+
+    # 3. Weighted blend
+    blended_vec = (
+        per_cluster[stat_cols]
+        .multiply(per_cluster["w"], axis=0)
+        .sum()
+        .to_frame()
+        .T
+    )
+
+    # Ensure the result has the same column order
+    blended_vec = blended_vec[stat_cols]
+
+    return blended_vec
+
+def get_nPercentile_info(query, conn, year, cluster_num, pos : str, percentile = 0.5, normalized = True):
+    df, scaler = get_standardized_player_rate_stats(query, conn, year, cluster_num, pos, normalized)
+    return (scaler, get_nPercentile_rate_stats_df(df, percentile))
+
+def get_nPercentile_scalar_and_vals(query, conn, year, cluster_weights, pos : str, percentile = 0.5, normalized = True):
+    df, scaler = standardized_player_rate_stats(query, conn, year, list(cluster_weights.keys()), pos, normalized)
+    filtered_df = filter_cluster_players(df, pos)    
+    return (scaler, get_nPercentile_benchmark_stats(df, cluster_weights, percentile))
+
+def get_nPercentile_scalar_and_vals_roles(query, conn, year, cluster_weights, pos : str, percentile = 0.5, normalized = True):
+    df, scaler = standardized_player_rate_stats(query, conn, year, list(cluster_weights.keys()), pos, normalized)
+    filtered_df = filter_cluster_players(df, pos)
+    bench_df = filtered_df[filtered_df['min_pg'] < 10]
+    rotation_df = filtered_df[(filtered_df['min_pg'] >= 10) & (filtered_df['min_pg'] < 25)]
+    starter_df = filtered_df[(filtered_df['min_pg'] >= 25)]
+    roles = ['bench', 'rotation', 'starter']
+    roles_df_list = [bench_df, rotation_df, starter_df]
+    role_dict = {}
+    for i in range(len(roles)):        
+        med_vals = get_nPercentile_benchmark_stats(roles_df_list[i], cluster_weights, percentile)
+        role_dict[roles[i]] = med_vals    
+    
+    return (scaler, role_dict)
+
 
 def scale_player_stats(
         player_stats_df: pd.DataFrame,
@@ -58,6 +135,7 @@ def scale_player_stats(
     player_vec = df[columns].values.reshape(1, -1)
     return player_vec
 
+#TODO: move into a similarity score file
 def get_player_similarity_score(
         player_stats_df: pd.DataFrame,
         scaler: StandardScaler,
@@ -73,6 +151,7 @@ def get_player_similarity_score(
     score = float(cosine_similarity(scaled_player_vec, nPercentile_vec)[0, 0])
     return score
 
+#TODO: move into a get simlary playres file
 def get_similar_players(nPercentile_vals: pd.DataFrame, players_median_stats: pd.DataFrame, k=5):
     # extract stat columns
     features = nPercentile_vals.columns.tolist()
@@ -91,6 +170,17 @@ def get_similar_players(nPercentile_vals: pd.DataFrame, players_median_stats: pd
     topk = players.sort_values('similarity', ascending=False).head(k)
     return topk[['player_id', 'season_year'] + features + ['similarity']]
 
+def filter_cluster_players(df, winningTeams = True, bpm = True): 
+    copy_df = None
+    if winningTeams:       
+        threshold = df['barthag_rank'].quantile(0.5)
+        copy_df = df[df['barthag_rank'] <= threshold]  
+
+    if bpm:
+        copy_df = copy_df[copy_df['bpm'] > 0]
+    
+    return copy_df if not None else df
+    
 def testing():
     conn = sqlite3.connect('rosteriq.db')
     year, cluster_num, pos = 2021, 1, "G"
