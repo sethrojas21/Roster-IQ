@@ -5,11 +5,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import StandardScaler
 from dataLoader import load_players_from_cluster, load_players_from_multiple_clusters
 
-class Position(Enum):
-    GUARD = "G"
-    FOWARD = "F"
-    CENTER = "C"
-
 column_shift = 7
 
 def get_standardized_player_rate_stats(stat_query,conn, year, cluster_num, pos : str, normalized = True):        
