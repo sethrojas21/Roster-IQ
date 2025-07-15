@@ -38,7 +38,7 @@ def calculate_fs_teamYear(conn, team_name, season_year, player_id_to_replace, su
         transfers_roles_sim_scores['sum_sim_score'] = transfers_roles_sim_scores['bench_sim_score'] + \
             transfers_roles_sim_scores['rotation_sim_score'] + transfers_roles_sim_scores['starter_sim_score']
         
-    if sortByRole:                
+    if sortByRole:  
         transfers_roles_sim_scores = transfers_roles_sim_scores.sort_values(by=(sortByRole + "_sim_score"), ascending=False)
         transfers_roles_sim_scores = transfers_roles_sim_scores.reset_index(drop = True)
 

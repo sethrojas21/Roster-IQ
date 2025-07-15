@@ -131,9 +131,7 @@ for (year in 2021:2024) {
   }
 
   team_stats_df <- aggregate_team_stats_from_players_df(players_df)
-  team_labels <- paste(team_stats_df$team_name, team_stats_df$season_year, sep = " - ")
-  View(team_stats_df)
-  quit()
+  team_labels <- paste(team_stats_df$team_name, team_stats_df$season_year, sep = " - ")  
   df <- scale(subset(team_stats_df, select = -c(team_name, season_year)))
   
   kclu <- kclustering(

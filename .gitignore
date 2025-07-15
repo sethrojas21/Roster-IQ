@@ -9,3 +9,5 @@ TeamPlayerInformation/
 *.json
 *.sql
 *.DS_Store
+*.feather
+*.rds
