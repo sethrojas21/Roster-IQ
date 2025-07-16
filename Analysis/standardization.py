@@ -59,7 +59,8 @@ def get_nPercentile_rate_stats_df(nPercentile_players_df, percentile=0.5):
 def get_nPercentile_benchmark_stats(
         nPercentile_players_cluster_df: pd.DataFrame,
         cluster_weights: dict[int, float],
-        percentile: float = 0.5
+        percentile: float = 0.5,
+        player_cluster_weights: dict[int, float] = None
 ) -> pd.DataFrame:
     if "cluster_num" not in nPercentile_players_cluster_df.columns:
         raise ValueError("Input df must include a 'cluster_num' column.")

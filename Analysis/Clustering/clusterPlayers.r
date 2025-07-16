@@ -10,7 +10,10 @@
 library(arrow)   # read_feather()
 library(dplyr)   # nice printing / summaries
 library(cluster) # for silhouette and other clustering diagnostics
+library(mclust)  # for Gaussian Mixture Modeling
 library(FNN)      # fast k‑nearest‑neighbour search
+library(BasketballAnalyzeR)
+library(factoextra)
 
 for (year in 2021:2024) {
   # ---- 1. Choose the target season ------------------------------------------
@@ -24,22 +27,34 @@ for (year in 2021:2024) {
 
   set.seed(29)
 
-  library(BasketballAnalyzeR)
+  
   cluster_env <- new.env(hash = TRUE, parent = emptyenv())
 
-  k_roles <- c(G = 69, F = 36, C = 14)
+  k_roles <- c(G = 15, F = 15, C = 15)
 
   for (role in roles) {
 
     k <- k_roles[[role]]
     cluster_env[[role]] <- kclustering(
       data   = pca_data[[role]],
-      k      = k,
+      k      = k,      
       labels = paste(pca_labels[[role]]$player_name, pca_labels[[role]]$season_year, sep = " - ")
     )
     chi <- cluster_env[[role]]$Profiles$CHI
+    print(chi)
 
-    threshold <- 0.8
+    # ---- Silhouette scoring for this role ----------------------------------
+    # Compute dissimilarity matrix on PCA-transformed data
+    dist_mat <- dist(pca_data[[role]])
+    # Extract the cluster assignments
+    clusters <- cluster_env[[role]]$Subjects$Cluster
+    # Compute silhouette widths
+    sil <- silhouette(clusters, dist_mat)
+    # Calculate average silhouette width
+    avg_sil <- mean(sil[, "sil_width"])
+    cat(sprintf("Role %s: K Means Average silhouette width = %.3f\n", role, avg_sil))
+  
+    threshold <- 0.6
     clusters_over_threshold <- (cluster_env[[role]]$Profiles %>% filter(CHI > threshold))$ID  
     players_to_reassign <- subset(cluster_env[[role]]$Subjects,
                                   Cluster %in% clusters_over_threshold)
@@ -56,17 +71,18 @@ for (year in 2021:2024) {
     # feature columns were already defined in `feats`
     
     # centroids that remain under the CHI threshold
+    print(clusters_over_threshold)
     centroid_df  <- cluster_env[[role]]$Profiles %>% 
                       filter(!ID %in% clusters_over_threshold)  
-
-
-    feats <- paste0("PC", 1: (ncol(centroid_df) - 2))    
     
-    centroid_mat <- as.matrix(centroid_df[ , feats])
+    # Capture the valid centroid IDs in order
     centroid_ids <- centroid_df$ID
+
+    feats <- grep("^PC", colnames(centroid_df), value = TRUE)    
     
-    # player feature matrix
-    player_mat <- as.matrix(players_reassign_merged[ , feats])
+    # Coerce to numeric matrix
+    centroid_mat <- data.matrix(centroid_df[ , feats])
+    player_mat   <- data.matrix(players_reassign_merged[ , feats])
     
     # find the single nearest centroid for every player (Euclidean distance)
     nn <- FNN::get.knnx(data  = centroid_mat,
@@ -87,10 +103,13 @@ for (year in 2021:2024) {
 
     # Save profiles, scaling parameters, and labels
 
+    print(role)
+    print(head(players_reassign_merged))
+
     profiles_df <- as.data.frame(cluster_env[[role]]$Profiles)
-    print(profiles_df)
+    # print(profiles_df)
     csv_filepath <- sprintf("Analysis/Clustering/Players/%.0f/KClustering/cluster_profiles_%s.csv", year, role)
-    write.csv(profiles_df, csv_filepath, row.names = FALSE)
+    # write.csv(profiles_df, csv_filepath, row.names = FALSE)
 
     label_df <- data.frame(
       player_name = pca_labels[[role]]$player_name,
@@ -98,11 +117,12 @@ for (year in 2021:2024) {
       season_year = pca_labels[[role]]$season_year,
       stringsAsFactors = FALSE
     )
-    print(head(label_df))
+    # print(head(label_df))
     df_csv_filepath <- sprintf("Analysis/Clustering/Players/%.0f/KClustering/player_labels_%s.csv", year, role)
-    write.csv(label_df, df_csv_filepath, row.names = FALSE)
+    # write.csv(label_df, df_csv_filepath, row.names = FALSE)
     
   }
+  
   print(paste("Finished year ", target_year))
   
   

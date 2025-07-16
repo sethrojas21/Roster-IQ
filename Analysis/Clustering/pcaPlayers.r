@@ -3,6 +3,7 @@ library(BasketballAnalyzeR)
 library(DBI)
 library(dplyr)
 library(cluster)
+library(jsonlite)
 
 
 # Utility: Project new data into an existing PCA space
@@ -66,13 +67,24 @@ build_role_pca_models <- function(target_year, lookback_years = 3) {
     df_raw <- subset(role_df, select = -c(player_name, position, season_year))
     df_scaled <- scale(df_raw)
     # Apply PCA
-    pca_model <- prcomp(df_scaled, center = TRUE, scale. = TRUE)
+    pca_model <- prcomp(df_raw, center = TRUE, scale. = TRUE)
+    # Save PCA parameters as JSON for Python consumption
     var_prop <- summary(pca_model)$importance[2, ]      # per‑PC variance
     cum_var  <- cumsum(var_prop)
-    num_comp <- which(cum_var >= 0.90)[1]
+    # num_comp <- which(cum_var >= 0.90)[1]
+    num_comp <- 4
     # Store PCA-transformed data (only top num_comp)
     pca_data_env[[role]] <- as.data.frame(pca_model$x[, 1:num_comp, drop = FALSE])
     model_env[[role]] <- pca_model
+    params_list <- list(center = pca_model$center, scale = pca_model$scale)
+    param_path <- sprintf("Analysis/Clustering/Players/%s/PCA/pca_params_%s.json",
+                          target_year, role)
+    
+    # Save the rotation matrix (loadings) as JSON
+    rot_df <- as.data.frame(pca_model$rotation[, 1:num_comp, drop = FALSE])
+    rot_path <- sprintf("Analysis/Clustering/Players/%s/PCA/pca_rotation_%s.json",
+                        target_year, role)
+    
     # Print diagnostics
     cat("\n=== PCA Summary for Role:", role, "===\n")
     print(summary(pca_model))
@@ -83,8 +95,11 @@ build_role_pca_models <- function(target_year, lookback_years = 3) {
     feather_path <- sprintf("Analysis/Clustering/Players/%s/PCA/pca_%s.feather", target_year, role)
     # Add player_name, position, season_year as columns for Python consumption
     feather_df <- cbind(labels_env[[role]], pca_data_env[[role]])
+
+    write_json(rot_df, path = rot_path, rownames = "feature", pretty = TRUE)
+    write_json(params_list, path = param_path, auto_unbox = TRUE, pretty = TRUE)
     write_feather(feather_df, feather_path)
-  }
+  }  
 
   # Save RDS snapshots of all three environments
   saveRDS(model_env, file = sprintf("Analysis/Clustering/Players/%s/PCA/pca_models.rds", target_year))
