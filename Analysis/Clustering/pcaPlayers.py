@@ -30,7 +30,7 @@ def project_to_pca(df_raw, role, year):
     rotation = rotation_df[pc_cols].values
     
     # Prepare data
-    df = df_raw.copy()
+    df = df_raw.to_frame().T.copy()
     # center and scale
     df = df - center
     df = df.div(scale, axis=1)

@@ -2,8 +2,9 @@ import json
 import pandas as pd
 import numpy as np
 
-scaling_path = lambda year: f'/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/20ClusterData/{year}/scaling_params.json'
-profiles_path = lambda year: f'/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/20ClusterData/{year}/kclu_profiles.csv'
+scaling_path = lambda year: f'/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/15ClusterData/{year}/PCA/params.json'
+profiles_path = lambda year: f'/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/15ClusterData/{year}/KClustering/profiles.csv'
+rot_path = lambda year: f'Analysis/Clustering/15ClusterData/{year}/PCA/rotation.json'
 
 def scale_center_vector_data(team_stats, year, profiles = None):
     if profiles is None:
@@ -29,13 +30,63 @@ def scale_center_vector_data(team_stats, year, profiles = None):
 
     return scaled_vec, centroids
 
+def project_to_pca(df_raw, year):
+    """
+    Project new data into an existing PCA space defined by an R prcomp object.
+    Assumes df_raw is a pandas DataFrame of raw stats matching columns used to fit pca_model.
+    pca_model should have attributes 'center', 'scale', and 'rotation' from prcomp.
+    """
+    # Load PCA parameters (center & scale) from JSON
+    param_path = scaling_path(year)
+    with open(param_path, 'r') as f:
+        params = json.load(f)
+    center = pd.Series(params['center'])
+    scale  = pd.Series(params['scale'])
+
+    # Load rotation matrix from JSON
+    with open(rot_path(year), 'r') as f:
+        rot_dict = json.load(f)
+    # rot_dict is a mapping from feature name to PC loadings
+    # Convert list of dicts into DataFrame, drop feature names
+    rotation_df = pd.DataFrame(rot_dict)
+    if 'feature' in rotation_df.columns:
+        rotation_df = rotation_df.drop(columns=['feature'])
+    # Ensure PC columns are in numeric order
+    pc_cols = sorted([c for c in rotation_df.columns if c.startswith('PC')],
+                     key=lambda x: int(x.replace('PC', '')))
+    rotation = rotation_df[pc_cols].values
+    
+    # Reorder columns to match PCA feature order
+    df = df_raw
+
+    # Center and scale
+    center.index = df.index
+    scale.index = df.index
+    df = df - center    
+    df = df.div(scale)
+
+    # Project into PCA space
+    projected = np.dot(df.values, rotation)
+    pc_names = [f'PC{i+1}' for i in range(rotation.shape[1])]
+    ret = pd.Series(projected, index=pc_names)
+    return ret
+
+def get_centroid(year):
+    profiles = pd.read_csv(profiles_path(year), index_col=False)    
+    pc_columns = [col for col in profiles.columns if col.startswith('PC')]
+    centroids = profiles[pc_columns]
+
+    return centroids
+
 def match_team_to_cluster(team_stats, year):
     profiles = pd.read_csv(profiles_path(year), index_col=False)
-
-    scaled_vec, centroids = scale_center_vector_data(team_stats, year, profiles)    
+    
+    proj_vec = project_to_pca(team_stats, year)
+    pc_columns = [col for col in profiles.columns if col.startswith('PC')]
+    centroids = profiles[pc_columns]
 
     # 5) compute distances
-    dists = np.linalg.norm(centroids - scaled_vec, axis=1)
+    dists = np.linalg.norm(centroids - proj_vec, axis=1)
     # find the index (position) of the closest centroid
     min_idx = int(np.argmin(dists))
     # use iloc on the 'ID' column to get the correct cluster_id
@@ -49,9 +100,10 @@ def match_team_to_cluster(team_stats, year):
 
     return nearest, df
 
-def match_team_to_cluster_weights(team_stats, year, k = 3):
-    _, df = match_team_to_cluster(team_stats, year)
-
+def match_team_to_cluster_weights(team_stats, year, k = 2):
+    team_stats_srs = pd.Series(team_stats)    
+    _, df = match_team_to_cluster(team_stats_srs, year)
+    
     # Grab the k nearest clusters
     topK_df = df.head(k).copy()
 
@@ -68,6 +120,7 @@ def match_team_to_cluster_weights(team_stats, year, k = 3):
 
     # Normalise so that the weights sum to 1
     weights = sim / sim.sum()
-
+    
+    print("Team Weights: ", weights)
     # Build and return dictionary
     return dict(zip(topK_df['cluster_id'].astype(int), weights))

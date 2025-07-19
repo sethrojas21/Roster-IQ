@@ -2,10 +2,12 @@ library(DBI)
 library(BasketballAnalyzeR)
 library(dplyr)
 library(jsonlite)
+library(cluster)   # for silhouette score calculation
+library(arrow)
 
 conn <- dbConnect(RSQLite::SQLite(), dbname = "rosteriq.db")
 
-num_clusters <- 20
+num_clusters <- 15
 for (year in 2021:2024) {
   team_features_query <- "
   SELECT
@@ -131,17 +133,87 @@ for (year in 2021:2024) {
   }
 
   team_stats_df <- aggregate_team_stats_from_players_df(players_df)
+  print(nrow(team_stats_df))
+  quit()
   team_labels <- paste(team_stats_df$team_name, team_stats_df$season_year, sep = " - ")  
-  df <- scale(subset(team_stats_df, select = -c(team_name, season_year)))
+  stats_df <- subset(team_stats_df, select = -c(team_name, season_year))
+  # df <- scale(stats_df)
   
+  # --- PCA dimensionality reduction -----------------------------------------
+  # 1. Run PCA on the already‑scaled features
+  pca_res <- prcomp(stats_df, center = TRUE, scale. = TRUE)  # df is pre‑scaled
+  
+
+  # 2. Choose the minimum number of PCs that explain ≥ 85 % of variance
+  var_exp <- cumsum(pca_res$sdev^2) / sum(pca_res$sdev^2)
+  keep    <- which(var_exp >= 0.6)[1]   # first PC count that passes threshold
+
+  # 3. Build the data matrix to be clustered
+  pca_df        <- pca_res$x[ , 1:keep, drop = FALSE]
+  cluster_input <- scale(pca_df)          # re‑scale so each PC has unit variance
+
+  message(sprintf(
+    "Year %d — keeping %d PCs (%.1f%% cumulative variance explained)",
+    year, keep, var_exp[keep] * 100
+  ))
+  # print(pca_res$rotation[, 1:3 ])
+
+  # Save pca
+  params_list <- list(center = pca_res$center, scale = pca_res$scale)
+  param_path <- sprintf("Analysis/Clustering/15ClusterData/%s/PCA/params.json",
+                        year)
+
+  rot_df <- as.data.frame(pca_res$rotation[, 1:keep, drop = FALSE])
+  rot_path <- sprintf("Analysis/Clustering/15ClusterData/%s/PCA/rotation.json",
+                      year)
+  
+  feather_df <- data.frame(
+    team_name   = team_stats_df$team_name,          # stays character
+    season_year = as.integer(team_stats_df$season_year),  # now numeric
+    pca_df,                                         # already numeric
+    stringsAsFactors = FALSE
+  )
+  feather_path <- sprintf("Analysis/Clustering/15ClusterData/%s/PCA/data.feather", year)  
+  write_json(rot_df, path = rot_path, rownames = "feature", pretty = TRUE)
+  write_json(params_list, path = param_path, auto_unbox = TRUE, pretty = TRUE)
+  write_feather(feather_df, feather_path)
+  # ---------------------------------------------------------------------------
+
+  set.seed(29)
   kclu <- kclustering(
-    data = df,
-    k = num_clusters,
+    data = pca_df,
+    k = 19,
     labels = team_labels,
-    nruns = 50,           # more random starts = better chance to converge
+    nruns = 100,           # more random starts = better chance to converge
     iter.max = 100,       # much higher iteration cap
     algorithm = "Hartigan-Wong"  # default, can change to "Lloyd" if needed
   )  
+
+  # Save Clustering
+  profiles_df <- as.data.frame(kclu$Profiles)
+  profiles_csv_filepath <- sprintf("Analysis/Clustering/15ClusterData/%.0f/KClustering/profiles.csv", year)
+
+  labels_df <- data.frame(
+    team_name = team_stats_df$team_name,
+    season_year = team_stats_df$season_year,
+    team_cluster = kclu$Subjects$Cluster,
+    stringsAsFactors = FALSE
+  )
+  labels_csv_filepath <- sprintf("Analysis/Clustering/15ClusterData/%.0f/KClustering/labels.csv", year)
+
+  write.csv(profiles_df, profiles_csv_filepath, row.names = FALSE)
+  write.csv(labels_df, labels_csv_filepath, row.names = FALSE)
+
+  
+
+
+  # --- Silhouette score -----------------------------------------------------
+  # Compute silhouette widths for each team‑season and report the average
+  sil <- cluster::silhouette(as.numeric(kclu$Subjects[ , "Cluster"]),
+                             dist(pca_df))
+  avg_sil <- mean(sil[, 3])         # column 3 holds the silhouette width
+  message(sprintf("Year %d — average silhouette width: %.3f", year, avg_sil))
+  # -------------------------------------------------------------------------
 
   plot_clusters <- function() {
     quartz(title = sprintf("Year: %.0f", year))
@@ -225,12 +297,10 @@ for (year in 2021:2024) {
     CHI        = chi_vec
   )
 
-  View(kclu)
-  View(cluster_summary_df)
-  print(sum(cluster_summary_df$size))
+  print(cluster_summary_df)
 
   
-  quit()
+  
   # FUNCTIONS TO RUN
   # plot_clusters()
   # save_cluster_info()

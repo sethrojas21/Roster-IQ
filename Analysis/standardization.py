@@ -5,35 +5,23 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import StandardScaler
 from dataLoader import load_players_from_cluster, load_players_from_multiple_clusters
 
-column_shift = 7
+column_shift = 5
 
-def get_standardized_player_rate_stats(stat_query,conn, year, cluster_num, pos : str, normalized = True):        
-    rate_stats_df = load_players_from_cluster(stat_query, conn, year, cluster_num, pos)        
-    
-    columns = rate_stats_df.columns[column_shift:]    
-
-    df = rate_stats_df.copy()        
-
-    # scale only the rate-stat columns if requested
-    scaler = None
-    if normalized:
-        scaler = StandardScaler().fit(df[columns])
-        scaled_vals = scaler.transform(df[columns])                
-        # overwrite only the rate columns with their scaled versions                   
-        df[columns] = pd.DataFrame(scaled_vals, columns=columns, index=df.index)
-    
-    return (df, scaler)
-
-def standardized_player_rate_stats(stat_query,conn, year, cluster_nums, pos : str, normalized = True):
+def standardized_player_rate_stats(stat_query, conn, year, team_cluster_nums, player_cluster_nums, pos : str, normalized = True):
     """
     New function that deals with weights of multiple clusters
     """
-    rate_stats_df = load_players_from_multiple_clusters(stat_query, conn, year, cluster_nums, pos)    
+    rate_stats_df = load_players_from_multiple_clusters(stat_query, 
+                                                        conn, 
+                                                        year, 
+                                                        team_cluster_nums, 
+                                                        player_cluster_nums,
+                                                        pos)    
     
-    columns = rate_stats_df.columns[column_shift:-1]   # Exclude meta data and cluster_num
+    columns = rate_stats_df.columns[column_shift:-2]   # Exclude meta data and team and player cluster_num (-2)
 
     df = rate_stats_df.copy()
-
+    
     # scale only the rate-stat columns if requested
     scaler = None
     if normalized:
@@ -41,6 +29,7 @@ def standardized_player_rate_stats(stat_query,conn, year, cluster_nums, pos : st
         scaled_vals = scaler.transform(df[columns])                
         # overwrite only the rate columns with their scaled versions                   
         df[columns] = pd.DataFrame(scaled_vals, columns=columns, index=df.index)
+    
     
     return (df, scaler)
 
@@ -62,26 +51,41 @@ def get_nPercentile_benchmark_stats(
         percentile: float = 0.5,
         player_cluster_weights: dict[int, float] = None
 ) -> pd.DataFrame:
-    if "cluster_num" not in nPercentile_players_cluster_df.columns:
+    if "team_cluster" not in nPercentile_players_cluster_df.columns:
         raise ValueError("Input df must include a 'cluster_num' column.")
 
+    
     # Rate‑stat feature columns start after the first 4 metadata columns
-    stat_cols = nPercentile_players_cluster_df.columns[column_shift:-1]
+    stat_cols = nPercentile_players_cluster_df.columns[column_shift:-2]
+    
 
     # 1. Per‑cluster percentile rows (keep cluster_num as index)
     per_cluster = (
         nPercentile_players_cluster_df
-        .groupby("cluster_num")[stat_cols]
+        .groupby("team_cluster")[stat_cols]
         .quantile(percentile)
     )
 
-    # 2. Attach weights using the index
-    per_cluster["w"] = per_cluster.index.map(cluster_weights).fillna(0)
+    # 2. Attach team cluster weights
+    per_cluster["w_team"] = per_cluster.index.map(cluster_weights).fillna(0)
 
-    # 3. Weighted blend
+    # 2b. Attach player cluster weights (if provided)
+    if player_cluster_weights is not None:
+        per_cluster["w_player"] = per_cluster.index.map(player_cluster_weights).fillna(1)
+    else:
+        per_cluster["w_player"] = 1
+
+    # 3. Combine weights multiplicatively then normalize
+    per_cluster["w_combined"] = per_cluster["w_team"] * per_cluster["w_player"]
+    # Avoid all-zero
+    if per_cluster["w_combined"].sum() == 0:
+        per_cluster["w_combined"] = per_cluster["w_team"]
+    per_cluster["w_norm"] = per_cluster["w_combined"] / per_cluster["w_combined"].sum()
+
+    # 4. Weighted blend using normalized weights
     blended_vec = (
         per_cluster[stat_cols]
-        .multiply(per_cluster["w"], axis=0)
+        .multiply(per_cluster["w_norm"], axis=0)
         .sum()
         .to_frame()
         .T
@@ -92,14 +96,14 @@ def get_nPercentile_benchmark_stats(
 
     return blended_vec
 
-def get_nPercentile_info(query, conn, year, cluster_num, pos : str, percentile = 0.5, normalized = True):
-    df, scaler = get_standardized_player_rate_stats(query, conn, year, cluster_num, pos, normalized)
-    return (scaler, get_nPercentile_rate_stats_df(df, percentile))
-
-def get_nPercentile_scalar_and_vals(query, conn, year, cluster_weights, pos : str, percentile = 0.5, normalized = True):
-    df, scaler = standardized_player_rate_stats(query, conn, year, list(cluster_weights.keys()), pos, normalized)
-    filtered_df = filter_cluster_players(df, pos)    
-    return (scaler, get_nPercentile_benchmark_stats(df, cluster_weights, percentile))
+def get_nPercentile_scalar_and_vals(query, conn, year, cluster_weights, player_weights, pos : str, percentile = 0.5, normalized = True):
+    df, scaler = standardized_player_rate_stats(query, conn, year, 
+                                                list(cluster_weights.keys()), 
+                                                list(player_weights.keys()),
+                                                pos, normalized)
+    filtered_df = filter_cluster_players(df)
+    print(len(filtered_df))
+    return (scaler, get_nPercentile_benchmark_stats(filtered_df, cluster_weights, percentile))
 
 def get_nPercentile_scalar_and_vals_roles(query, conn, year, cluster_weights, pos : str, percentile = 0.5, normalized = True):
     df, scaler = standardized_player_rate_stats(query, conn, year, list(cluster_weights.keys()), pos, normalized)
@@ -179,7 +183,7 @@ def filter_cluster_players(df, winningTeams=False, bpm=True):
         copy_df = copy_df[copy_df['barthag_rank'] <= threshold]  
 
     if bpm:
-        copy_df = copy_df[copy_df['bpm'] > 0]
+        copy_df = copy_df[copy_df['bpm'] > -2]
     
     return copy_df
     

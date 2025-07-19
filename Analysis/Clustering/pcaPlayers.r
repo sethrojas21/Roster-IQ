@@ -76,6 +76,7 @@ build_role_pca_models <- function(target_year, lookback_years = 3) {
     # Store PCA-transformed data (only top num_comp)
     pca_data_env[[role]] <- as.data.frame(pca_model$x[, 1:num_comp, drop = FALSE])
     model_env[[role]] <- pca_model
+    
     params_list <- list(center = pca_model$center, scale = pca_model$scale)
     param_path <- sprintf("Analysis/Clustering/Players/%s/PCA/pca_params_%s.json",
                           target_year, role)
