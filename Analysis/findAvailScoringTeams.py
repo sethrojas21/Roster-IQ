@@ -9,7 +9,7 @@ team_names = pd.read_sql("SELECT team_name FROM Teams", conn)['team_name'].tolis
 avail_teams_df = pd.DataFrame(columns=['team_name', 'season_year', 'player_id'])
 
 transfer_dfs_dict = {}
-start_year, end_year = 2021, 2024
+start_year, end_year = 2021, 2025
 
 
 for year in range(start_year, end_year):
@@ -26,7 +26,7 @@ for team in team_names:
         
         num_players = len(team_roster)
 
-        if num_players >= 10 and not team_transfer_df.empty:            
+        if num_players >= 6 and not team_transfer_df.empty:            
             transfers_ids = team_transfer_df['player_id'].tolist()
             for transfer_id in transfers_ids:
                 avail_teams_df.loc[len(avail_teams_df)] = [team, year, transfer_id]

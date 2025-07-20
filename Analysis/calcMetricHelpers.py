@@ -29,25 +29,33 @@ def calc_score_data_helper(query_snippet, conn, team_name, incoming_season_year,
     return scalar, med_vals, transfer_data
 
 vocbp_query_snippet = """
-        (ps.AST / ps.POSS) * 100 AS ast100,
-        (ps.OREB / ps.POSS) * 100 AS oreb100,
-        (ps.DREB / ps.POSS) * 100 AS dreb100,
-        (CAST(ps.STL AS REAL) * 100 / ps.POSS) AS stl100,
-        (CAST(ps.BLK AS REAL) * 100 / ps.POSS) AS blk100,        
-        ps.ts_percent,        
-        ps.ast_tov_r
-    """
-
-fs_query_snippet = """
-        ps.efg_percent,
+        -- (ps.AST / ps.POSS) * 100 AS ast100,
+        -- (ps.OREB / ps.POSS) * 100 AS oreb100,
+        -- (ps.DREB / ps.POSS) * 100 AS dreb100,
+        -- (CAST(ps.STL AS REAL) * 100 / ps.POSS) AS stl100,
+        --(CAST(ps.BLK AS REAL) * 100 / ps.POSS) AS blk100,        
         ps.ast_percent,
         ps.oreb_percent,
         ps.dreb_percent,
-        ps.tov_percent,
+        -- ps.tov_percent,
         ps.ft_percent,        
         ps.stl_percent,
         ps.blk_percent,
+        ps.ts_percent
+    """
+
+fs_query_snippet = """
+        -- ps.efg_percent,
+        -- ps.ast_percent,
+        -- ps.oreb_percent,
+        -- ps.dreb_percent,
+        -- ps.tov_percent,
+        -- ps.ft_percent,        
+        -- ps.stl_percent,
+        --ps.blk_percent,
+        ps.usg_percent,
         (ps.threeA / ps.FGA) AS threeRate,
+        ps.FGA / ps.adj_gp AS fg_pg,
         ps.ftr,
         (ps.rimA / ps.FGA) AS rimRate,
         (ps.midA / ps.FGA) AS midRate

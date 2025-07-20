@@ -4,7 +4,7 @@ from calcFitScore import calculate_fs_teamYear
 from calcVOCRP import calculate_VOCRP_teamYear
 from calcMetricHelpers import *
 
-def composite_ranking_percentiles(fs_df, vocrp_df):
+def composite_ranking_percentiles(fs_df, vocrp_df, fs_w = 0.6, v_w = 0.4, sortBy = 'composite_score'):
     # Merge on player_name (or player_id if that’s more reliable)
     try:
         df = fs_df.merge(vocrp_df, on='player_name')
@@ -14,10 +14,10 @@ def composite_ranking_percentiles(fs_df, vocrp_df):
         df['value_pct'] = df['vocbp'].rank(pct=True)
 
         # Build a composite score (sum of percentiles)
-        df['composite_score'] = df['fit_pct'] + df['value_pct']
+        df['composite_score'] = df['fit_pct'] * fs_w + df['value_pct'] * v_w
 
         # Sort by composite descending
-        df_sorted = df.sort_values('composite_score', ascending=False)
+        df_sorted = df.sort_values(sortBy, ascending=False)
         df_sorted = df_sorted.reset_index(drop=True)
     except Exception as e:
         print(e)
@@ -27,7 +27,10 @@ def composite_ranking_percentiles(fs_df, vocrp_df):
 
 def composite_score(conn, team_name, season_year, player_id_to_replace):
     try:       
-        fs_df = calculate_fs_teamYear(conn, team_name, season_year, player_id_to_replace)
+        fs_df = calculate_fs_teamYear(conn, 
+                                      team_name, 
+                                      season_year, 
+                                      player_id_to_replace)
         vocrp_df = calculate_VOCRP_teamYear(conn, 
                                             team_name, 
                                             season_year, 
@@ -40,13 +43,16 @@ def composite_score(conn, team_name, season_year, player_id_to_replace):
 
 def testing():
     conn = sqlite3.connect('rosteriq.db')
+    names = ["Caleb Love", "Aaron Cook", "Johni Broome"]
+
     team = "Arizona"
+
     player_name = "Caleb Love"
     year = 2024
     id = 72413
     cs_df = composite_score(conn, team, year, id)
     print(cs_df.head(25))
     print(cs_df[cs_df['player_name'] == player_name])
-    print(cs_df[cs_df['player_name'] == "Steven Ashworth"])
+    # print(cs_df[cs_df['player_name'] == "Steven Ashworth"])
 
 # testing()

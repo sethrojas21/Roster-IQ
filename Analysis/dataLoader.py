@@ -41,7 +41,7 @@ def get_top_k_nearest_teams_in_clusters(cluster_nums, year, conn, k_nearest_team
         
         cluster_df = cluster_df.sort_values(by="dist", ascending=True)
 
-        top_k_df = cluster_df.head(min(len(cluster_df), k_nearest_teams))
+        top_k_df = cluster_df.head(len(cluster_df))
         if not top_k_df.empty and not top_k_df.isna().all(axis=None):
             if final_df.empty:
                 final_df = top_k_df.copy()

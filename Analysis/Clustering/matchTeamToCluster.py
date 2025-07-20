@@ -100,7 +100,7 @@ def match_team_to_cluster(team_stats, year):
 
     return nearest, df
 
-def match_team_to_cluster_weights(team_stats, year, k = 2):
+def match_team_to_cluster_weights(team_stats, year, k = 1):
     team_stats_srs = pd.Series(team_stats)    
     _, df = match_team_to_cluster(team_stats_srs, year)
     

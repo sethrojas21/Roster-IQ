@@ -7,7 +7,6 @@ library(arrow)
 
 conn <- dbConnect(RSQLite::SQLite(), dbname = "rosteriq.db")
 
-num_clusters <- 15
 for (year in 2021:2024) {
   team_features_query <- "
   SELECT
@@ -132,9 +131,7 @@ for (year in 2021:2024) {
     )
   }
 
-  team_stats_df <- aggregate_team_stats_from_players_df(players_df)
-  print(nrow(team_stats_df))
-  quit()
+  team_stats_df <- aggregate_team_stats_from_players_df(players_df)  
   team_labels <- paste(team_stats_df$team_name, team_stats_df$season_year, sep = " - ")  
   stats_df <- subset(team_stats_df, select = -c(team_name, season_year))
   # df <- scale(stats_df)
@@ -174,20 +171,67 @@ for (year in 2021:2024) {
     stringsAsFactors = FALSE
   )
   feather_path <- sprintf("Analysis/Clustering/15ClusterData/%s/PCA/data.feather", year)  
-  write_json(rot_df, path = rot_path, rownames = "feature", pretty = TRUE)
-  write_json(params_list, path = param_path, auto_unbox = TRUE, pretty = TRUE)
-  write_feather(feather_df, feather_path)
+  # write_json(rot_df, path = rot_path, rownames = "feature", pretty = TRUE)
+  # write_json(params_list, path = param_path, auto_unbox = TRUE, pretty = TRUE)
+  # write_feather(feather_df, feather_path)
   # ---------------------------------------------------------------------------
 
   set.seed(29)
   kclu <- kclustering(
     data = pca_df,
-    k = 19,
+    k = 10,
     labels = team_labels,
     nruns = 100,           # more random starts = better chance to converge
     iter.max = 100,       # much higher iteration cap
     algorithm = "Hartigan-Wong"  # default, can change to "Lloyd" if needed
   )  
+
+    threshold <- 0.4
+    clusters_over_threshold <- (kclu$Profiles %>% filter(CHI > threshold))$ID  
+    teams_to_reassign <- subset(kclu$Subjects,
+                                  Cluster %in% clusters_over_threshold)
+
+    
+    
+    scores_df <- as.data.frame(pca_df)
+
+    scores_df$team_name_label <- team_labels
+    teams_reassign_merged <- merge(teams_to_reassign,
+                                    scores_df,
+                                    by.x = "Label",
+                                    by.y = "team_name_label")
+    
+    centroid_df  <- kclu$Profiles %>% 
+                      filter(!ID %in% clusters_over_threshold)  
+    
+    # Capture the valid centroid IDs in order
+    centroid_ids <- centroid_df$ID
+    feats <- c("PC1", "PC2", "PC3")
+    # rename centroid_df columns to PC names so they match the merged dataframe
+    names(centroid_df)[names(centroid_df) %in% c("X1", "X2", "X3")] <- c("PC1", "PC2", "PC3")
+
+    
+    # Coerce to numeric matrix
+    centroid_mat <- data.matrix(centroid_df[ , feats])
+    team_mat   <- data.matrix(teams_reassign_merged[ , feats])
+    
+
+    # find the single nearest centroid for every player (Euclidean distance)
+    nn <- FNN::get.knnx(data  = centroid_mat,
+                        query = team_mat,
+                        k     = 1)
+    
+    teams_reassign_merged$nearest_cluster <- centroid_ids[nn$nn.index[ , 1]]
+    teams_reassign_merged$nearest_dist    <- nn$nn.dist[ , 1]
+
+    # ---- Update Subjects table with new cluster assignments -----------------
+    subj_idx <- match(teams_reassign_merged$Label,
+                      kclu$Subjects$Label)
+    kclu$Subjects$Cluster[subj_idx] <-
+      teams_reassign_merged$nearest_cluster
+    
+    # Delete the bad clusters from the profile list so I don't even look at them
+    kclu$Profiles <- kclu$Profiles %>% filter(!ID %in% clusters_over_threshold)
 
   # Save Clustering
   profiles_df <- as.data.frame(kclu$Profiles)
@@ -200,12 +244,10 @@ for (year in 2021:2024) {
     stringsAsFactors = FALSE
   )
   labels_csv_filepath <- sprintf("Analysis/Clustering/15ClusterData/%.0f/KClustering/labels.csv", year)
-
+  # Rename columns: ID, PC1…PC<keep>, CHI
+  colnames(profiles_df) <- c("ID", paste0("PC", seq_len(keep)), "CHI")
   write.csv(profiles_df, profiles_csv_filepath, row.names = FALSE)
   write.csv(labels_df, labels_csv_filepath, row.names = FALSE)
-
-  
-
 
   # --- Silhouette score -----------------------------------------------------
   # Compute silhouette widths for each team‑season and report the average
@@ -285,9 +327,12 @@ for (year in 2021:2024) {
   }
 
   # compute cluster sizes
-  size_vec <- unlist(lapply(kclu$ClusterList, length))
-
+  
+  filtered_list <- kclu$ClusterList[ !names(kclu$ClusterList) %in% clusters_over_threshold]
+  size_vec <- unlist(lapply(filtered_list, length))
+  
   # extract CHI scores
+  # View(kclu$Profiles)
   chi_vec  <- kclu$Profiles$CHI
 
   # build a summary data frame
@@ -298,6 +343,8 @@ for (year in 2021:2024) {
   )
 
   print(cluster_summary_df)
+  print(length(chi_vec))
+  print(nrow(team_stats_df))
 
   
   

@@ -61,15 +61,14 @@ def match_player_to_cluster(player_stats, year, pos):
     return nearest, df
 
 
-def match_player_to_cluster_weights(player_stats, year, pos, k=1, alpha=None, method='inverse_pow', power=2.5):
+def match_player_to_cluster_weights(player_stats, year, pos, k=1, alpha=None, method='inverse_pow', power=3):
     _, df = match_player_to_cluster(player_stats, year, pos)
         
 
     # Grab the k nearest clusters
-    if pos == "C":
-         k = 4
-    elif pos == "F":
-        k = 3
+    if k == 1 and pos == "C":
+        k = 2
+
     topK_df = df.head(k).copy()  
     print(pos)  
     # print(topK_df)

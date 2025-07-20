@@ -30,7 +30,7 @@ for (year in 2021:2024) {
   
   cluster_env <- new.env(hash = TRUE, parent = emptyenv())
 
-  k_roles <- c(G = 15, F = 15, C = 15)
+  k_roles <- c(G = 14, F = 14, C = 10)
 
   for (role in roles) {
 
@@ -41,7 +41,7 @@ for (year in 2021:2024) {
       labels = paste(pca_labels[[role]]$player_name, pca_labels[[role]]$season_year, sep = " - ")
     )
     chi <- cluster_env[[role]]$Profiles$CHI
-    print(chi)
+    
 
     # ---- Silhouette scoring for this role ----------------------------------
     # Compute dissimilarity matrix on PCA-transformed data
@@ -54,7 +54,7 @@ for (year in 2021:2024) {
     avg_sil <- mean(sil[, "sil_width"])
     cat(sprintf("Role %s: K Means Average silhouette width = %.3f\n", role, avg_sil))
   
-    threshold <- 0.6
+    threshold <- 0.55
     clusters_over_threshold <- (cluster_env[[role]]$Profiles %>% filter(CHI > threshold))$ID  
     players_to_reassign <- subset(cluster_env[[role]]$Subjects,
                                   Cluster %in% clusters_over_threshold)
@@ -104,12 +104,13 @@ for (year in 2021:2024) {
     # Save profiles, scaling parameters, and labels
 
     print(role)
-    print(head(players_reassign_merged))
+    print(cluster_env[[role]]$Profiles$CHI)
+    # print(head(players_reassign_merged))
 
     profiles_df <- as.data.frame(cluster_env[[role]]$Profiles)
     # print(profiles_df)
     csv_filepath <- sprintf("Analysis/Clustering/Players/%.0f/KClustering/cluster_profiles_%s.csv", year, role)
-    # write.csv(profiles_df, csv_filepath, row.names = FALSE)
+    write.csv(profiles_df, csv_filepath, row.names = FALSE)
 
     label_df <- data.frame(
       player_name = pca_labels[[role]]$player_name,
@@ -119,7 +120,7 @@ for (year in 2021:2024) {
     )
     # print(head(label_df))
     df_csv_filepath <- sprintf("Analysis/Clustering/Players/%.0f/KClustering/player_labels_%s.csv", year, role)
-    # write.csv(label_df, df_csv_filepath, row.names = FALSE)
+    write.csv(label_df, df_csv_filepath, row.names = FALSE)
     
   }
   

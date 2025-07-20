@@ -38,8 +38,8 @@ def calculate_VOCRP_teamYear(conn, team_name, incoming_season_year, player_id_to
 
             vocbp = avg_zScore_deviation(player_role_vocbp)
             vocbp_scores.loc[len(vocbp_scores)] = [player_name, vocbp]            
-        except:
-            pass  
+        except Exception as e:
+            print(e)
 
     if sort:
         vocbp_scores = vocbp_scores.sort_values(by='vocbp', ascending=False)
