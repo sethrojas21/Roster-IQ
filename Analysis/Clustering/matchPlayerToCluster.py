@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from Clustering.pcaPlayers import project_to_pca
+import json
 
 profiles_path = lambda year, pos : f"Analysis/Clustering/Players/{year}/KClustering/cluster_profiles_{pos}.csv"
 
@@ -60,6 +61,25 @@ def match_player_to_cluster(player_stats, year, pos):
 
     return nearest, df
 
+def match_player_cluster_to_label(year, pos, id, rationale = False):
+    positions_dict = {
+        "G" : "Guards",
+        "F" : "Forwards",
+        "C": "Centers"
+    }
+
+    with open('Analysis/Clustering/Players/archetypeLables.json', 'r') as file:
+        data = json.load(file)
+    
+    year = str(year)
+    pos = positions_dict[pos]
+    id = str(id)
+    clu = data[year][pos][id]
+    if rationale:
+        return (clu['label'], clu['rationale'])
+    else:
+        return clu['label']
+
 
 def match_player_to_cluster_weights(player_stats, year, pos, k=1, alpha=None, method='inverse_pow', power=3):
     _, df = match_player_to_cluster(player_stats, year, pos)
@@ -69,7 +89,11 @@ def match_player_to_cluster_weights(player_stats, year, pos, k=1, alpha=None, me
     if k == 1 and pos == "C":
         k = 2
 
-    topK_df = df.head(k).copy()  
+    topK_df = df.head(k).copy()
+    for _, player in topK_df.iterrows():
+        id = int(player['cluster_id'])
+        print("Label:", match_player_cluster_to_label(year, pos, id))
+
     print(pos)  
     # print(topK_df)
     # print(topK_df.iloc[0]['distance'] / topK_df.iloc[1]['distance'])

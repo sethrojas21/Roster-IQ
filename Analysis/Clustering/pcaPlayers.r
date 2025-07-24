@@ -4,6 +4,7 @@ library(DBI)
 library(dplyr)
 library(cluster)
 library(jsonlite)
+library(readr)
 
 
 # Utility: Project new data into an existing PCA space
@@ -91,15 +92,33 @@ build_role_pca_models <- function(target_year, lookback_years = 3) {
     print(summary(pca_model))
     cat("Keeping", num_comp, "PCs (", round(cum_var[num_comp], 3)*100, "% cumulative variance)\n")
     cat("\nLoadings (Rotation Matrix):\n")
-    # print(pca_model$rotation[, 1:num_comp, drop = FALSE])
+    print(pca_model$rotation[, 1:num_comp, drop = FALSE])
     # Write Feather file for this role
     feather_path <- sprintf("Analysis/Clustering/Players/%s/PCA/pca_%s.feather", target_year, role)
     # Add player_name, position, season_year as columns for Python consumption
     feather_df <- cbind(labels_env[[role]], pca_data_env[[role]])
 
     loadings_df <- as.data.frame(pca_model$rotation[, 1:num_comp, drop = FALSE])
-    loadings_path <- sprintf("Analysis/Clustering/Players/%s/PCA/pca_loadings_%s.csv", target_year, role)
-    write_csv(loadings_df, path = loadings_path, rownames = "feature", pretty = TRUE)
+    features <- rownames(loadings_df)
+
+    loadings_list <- lapply(features, function(f) {
+      # extract the numeric vector of PC loadings for feature f
+      as.numeric(loadings_df[f, ])
+    })
+
+    # give each element the proper name
+    names(loadings_list) <- features
+    print(loadings_list)
+    loadings_path <- sprintf("Analysis/Clustering/Players/%s/PCA/pca_loadings_%s.json", target_year, role)
+
+    # write pretty JSON
+    write_json(
+      loadings_list,
+      path       = loadings_path,
+      pretty     = TRUE,
+      auto_unbox = TRUE
+    )
+    # write_csv(loadings_df, loadings_path)
     # write_json(rot_df, path = rot_path, rownames = "feature", pretty = TRUE)
     # write_json(params_list, path = param_path, auto_unbox = TRUE, pretty = TRUE)
     # write_feather(feather_df, feather_path)

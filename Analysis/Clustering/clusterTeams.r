@@ -153,7 +153,7 @@ for (year in 2021:2024) {
     "Year %d — keeping %d PCs (%.1f%% cumulative variance explained)",
     year, keep, var_exp[keep] * 100
   ))
-  # print(pca_res$rotation[, 1:3 ])
+  print(pca_res$rotation[, 1:keep ])
 
   # Save pca
   params_list <- list(center = pca_res$center, scale = pca_res$scale)
@@ -174,8 +174,26 @@ for (year in 2021:2024) {
   # write_json(rot_df, path = rot_path, rownames = "feature", pretty = TRUE)
   # write_json(params_list, path = param_path, auto_unbox = TRUE, pretty = TRUE)
   # write_feather(feather_df, feather_path)
-  # ---------------------------------------------------------------------------
 
+  loadings_df <- rot_df
+  features <- rownames(loadings_df)
+
+  loadings_list <- lapply(features, function(f) {
+    # extract the numeric vector of PC loadings for feature f
+    as.numeric(loadings_df[f, ])
+  })
+
+  # give each element the proper name
+  names(loadings_list) <- features
+  loadings_path <- sprintf("Analysis/Clustering/15ClusterData/%s/PCA/loadings.json", year)
+  # write_json(
+  #   loadings_list,
+  #   path       = loadings_path,
+  #   pretty     = TRUE,
+  #   auto_unbox = TRUE
+  # )
+  # ---------------------------------------------------------------------------
+  print(summary(pca_res))
   set.seed(29)
   kclu <- kclustering(
     data = pca_df,

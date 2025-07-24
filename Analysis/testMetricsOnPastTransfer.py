@@ -34,7 +34,7 @@ sampled_teams = avail_team_df.sample(n=see, random_state=random.randint(1,100))
 
 for idx, avail_team in avail_team_df.iterrows():
     team_name = avail_team['team_name']        
-    if team_name not in ["Arizona"]:
+    if team_name not in ["Connecticut"]:
         continue
 
     season_year = avail_team['season_year']
@@ -55,15 +55,16 @@ for idx, avail_team in avail_team_df.iterrows():
 
     cs_df = composite_score(conn, team_name, season_year, player_id_to_replace)                
     cs_df = cs_df.reset_index(drop=True)
-    try:
-        rank = cs_df[cs_df['player_name'] == player_name].index[0]
-    except:
-        rank = 0
 
     print(cs_df.head(15))
         
     # print(success_row_df)    
     print(cs_df[cs_df['player_name'] == player_name])           
+    try:
+        rank = cs_df[cs_df['player_name'] == player_name].index[0]
+    except:
+        print("Skipping because was not here last season")
+        continue
 
     length = len(cs_df)
     successPercentile = (rank <= length * topPercent)
@@ -71,6 +72,7 @@ for idx, avail_team in avail_team_df.iterrows():
     successCond = successPercentile and is_success
     unsuccessCond = unsuccessPercentile and not is_success        
     
+
     print(f"""
 Pos: {position}, 
 Role: {role}, 
