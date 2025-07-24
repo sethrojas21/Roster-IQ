@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
-from Clustering.pcaPlayers import project_to_pca
 import json
+from Analysis.Clustering.pcaPlayers import project_to_pca
+from collections.abc import Iterable
 
 profiles_path = lambda year, pos : f"Analysis/Clustering/Players/{year}/KClustering/cluster_profiles_{pos}.csv"
 
@@ -20,9 +21,10 @@ def get_player_stats(player_id, season_year, conn):
         ps.ft_percent,        
         ps.stl_percent,
         ps.blk_percent,
-        ps.usg_percent AS usg_rate,
+        ps.usg_percent,
         ps.ftr / 100 AS ftr,
         CASE WHEN ps.FGA != 0 THEN (ps.threeA / ps.FGA) ELSE 0.00001 END AS threeRate,
+        -- CASE WHEN ps.FGA != 0 THEN (ps.ast_pg * ps.adj_gp) / ps.FGA ELSE 0.00001 END AS ast_fga,
         CASE WHEN ps.FGA != 0 THEN (ps.rimA / ps.FGA) ELSE 0.00001 END AS rimRate,
         CASE WHEN ps.FGA != 0 THEN (ps.midA / ps.FGA) ELSE 0.00001 END AS midRate
     FROM Player_Seasons ps
@@ -35,7 +37,6 @@ def get_player_stats(player_id, season_year, conn):
 def match_player_to_cluster(player_stats, year, pos):
     """Leave player stats raw. Standardizes and pcas them here"""
     profiles = pd.read_csv(profiles_path(year, pos), index_col=False)
-
     pca_df = project_to_pca(player_stats, pos, year)
     
     # 5) compute distances
@@ -61,42 +62,51 @@ def match_player_to_cluster(player_stats, year, pos):
 
     return nearest, df
 
-def match_player_cluster_to_label(year, pos, id, rationale = False):
+def match_player_cluster_to_label(year, pos, ids_or_id, rationale=False):
+    """
+    If ids_or_id is a list/tuple, returns a list of labels (or (label, rationale) tuples).
+    Otherwise returns a single label (or tuple).
+    """
     positions_dict = {
-        "G" : "Guards",
-        "F" : "Forwards",
+        "G": "Guards",
+        "F": "Forwards",
         "C": "Centers"
     }
+    year_s = str(year)
+    pos_s  = positions_dict[pos]
 
-    with open('Analysis/Clustering/Players/archetypeLables.json', 'r') as file:
-        data = json.load(file)
-    
-    year = str(year)
-    pos = positions_dict[pos]
-    id = str(id)
-    clu = data[year][pos][id]
-    if rationale:
-        return (clu['label'], clu['rationale'])
-    else:
+    # load once
+    with open('Analysis/Clustering/Players/archetypeLables.json', 'r') as f:
+        data = json.load(f)
+
+    def _lookup(single_id):
+        clu = data[year_s][pos_s][str(single_id)]
+        if rationale:
+            return clu['label'], clu['rationale']
         return clu['label']
 
+    # dispatch on iterable vs. scalar
+    if isinstance(ids_or_id, Iterable) and not isinstance(ids_or_id, (str, bytes)):
+        return [_lookup(i) for i in ids_or_id]
+    else:
+        return _lookup(ids_or_id)
 
-def match_player_to_cluster_weights(player_stats, year, pos, k=1, alpha=None, method='inverse_pow', power=3):
-    _, df = match_player_to_cluster(player_stats, year, pos)
+
+def get_only_plyr_features(player_stats : pd.Series):
+        META = {'player_name','position','season_year'}
+        nmeta_player_stats = player_stats.copy()
+        nmeta_player_stats = nmeta_player_stats.drop(index = META).astype(float)
+        return nmeta_player_stats
+
+def match_player_to_cluster_weights(player_stats, year, pos, k=1, alpha=None, method='inverse_pow', power=4.5):
+    nmeta_player_stats = get_only_plyr_features(player_stats)
+    _, df = match_player_to_cluster(nmeta_player_stats, year, pos)
         
-
     # Grab the k nearest clusters
     if k == 1 and pos == "C":
         k = 2
 
-    topK_df = df.head(k).copy()
-    for _, player in topK_df.iterrows():
-        id = int(player['cluster_id'])
-        print("Label:", match_player_cluster_to_label(year, pos, id))
-
-    print(pos)  
-    # print(topK_df)
-    # print(topK_df.iloc[0]['distance'] / topK_df.iloc[1]['distance'])
+    topK_df = df.head(k).copy() 
 
     # ---- similarity transform ---------------------------------------------
     epsilon = 1e-6
@@ -116,6 +126,5 @@ def match_player_to_cluster_weights(player_stats, year, pos, k=1, alpha=None, me
         raise ValueError(f"Unknown method: {method}")
     # Normalize so that the weights sum to 1
     weights = sim / sim.sum()
-    print("Player Weights", weights)
     # Build and return dictionary
     return dict(zip(topK_df['cluster_id'].astype(int), weights))

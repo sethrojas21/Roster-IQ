@@ -1,5 +1,5 @@
 import pandas as pd
-from Clustering.matchTeamToCluster import project_to_pca, get_centroid
+from Analysis.Clustering.matchTeamToCluster import project_to_pca, get_centroid
 import numpy as np
 
 def get_top_k_nearest_teams_in_clusters(cluster_nums, year, conn, k_nearest_teams = 25):

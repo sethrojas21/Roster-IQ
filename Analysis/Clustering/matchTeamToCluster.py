@@ -100,12 +100,37 @@ def match_team_to_cluster(team_stats, year):
 
     return nearest, df
 
+def match_team_cluster_to_label(year, ids_or_id, rationale=False):
+    """
+    If ids_or_id is a list/tuple, returns a list of labels (or (label, rationale) tuples).
+    Otherwise returns a single label (or tuple).
+    """
+    # load lookup once
+    with open('Analysis/Clustering/15ClusterData/archetypeLabels.json') as f:
+        data = json.load(f)
+
+    def _lookup(single_id):
+        single_id = int(single_id)
+        year_s, id_s = str(year), str(single_id)
+        clu = data[year_s]["Teams"][id_s]
+        return (clu['label'], clu['rationale']) if rationale else clu['label']
+
+    if isinstance(ids_or_id, (list, tuple)):
+        return [_lookup(i) for i in ids_or_id]
+    else:
+        return _lookup(ids_or_id)
+
 def match_team_to_cluster_weights(team_stats, year, k = 1):
     team_stats_srs = pd.Series(team_stats)    
     _, df = match_team_to_cluster(team_stats_srs, year)
     
     # Grab the k nearest clusters
+    labels = []    
     topK_df = df.head(k).copy()
+    for _, team in topK_df.iterrows():
+        id = team['cluster_id']
+        label = match_team_cluster_to_label(year, id)
+        labels.append(label)
 
     # ---- similarity transform ---------------------------------------------
     epsilon = 1e-6
@@ -121,6 +146,5 @@ def match_team_to_cluster_weights(team_stats, year, k = 1):
     # Normalise so that the weights sum to 1
     weights = sim / sim.sum()
     
-    print("Team Weights: ", weights)
     # Build and return dictionary
     return dict(zip(topK_df['cluster_id'].astype(int), weights))

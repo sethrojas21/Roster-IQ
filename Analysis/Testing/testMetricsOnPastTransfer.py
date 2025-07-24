@@ -1,14 +1,12 @@
 import sqlite3
 import pandas as pd
-from calcCompositeScore import composite_score
-from calcFitScore import calculate_fs_teamYear
-from calcVOCRP import calculate_VOCRP_teamYear
-from EvaluateMetrics.successful_transfer import is_successful_transfer
+from Analysis.CalculateScores.calcCompositeScore import composite_score
+from Analysis.EvaluateMetrics.successful_transfer import is_successful_transfer
 import random
 
 conn = sqlite3.connect('rosteriq.db')
 
-avail_team_df = pd.read_csv('Analysis/availTransferTeams.csv')
+avail_team_df = pd.read_csv('/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Helpers/availTransferTeams.csv')
 
 skip = 0
 see = 40
@@ -34,8 +32,8 @@ sampled_teams = avail_team_df.sample(n=see, random_state=random.randint(1,100))
 
 for idx, avail_team in avail_team_df.iterrows():
     team_name = avail_team['team_name']        
-    if team_name not in ["Connecticut"]:
-        continue
+    # if team_name not in ["North Carolina", "Kentucky", "Michigan", "UCLA"]:
+    #     continue
 
     season_year = avail_team['season_year']
     player_id_to_replace = avail_team['player_id']  
@@ -53,11 +51,10 @@ for idx, avail_team in avail_team_df.iterrows():
     position = success_row['position']        
     role = success_row['new_role']
 
-    cs_df = composite_score(conn, team_name, season_year, player_id_to_replace)                
-    cs_df = cs_df.reset_index(drop=True)
-
-    print(cs_df.head(15))
-        
+    bmakr_plyr, cs_df = composite_score(conn, team_name, season_year, player_id_to_replace)                
+    if bmakr_plyr.length < 30:
+        print("Skipping because not enough sample size")
+        continue        
     # print(success_row_df)    
     print(cs_df[cs_df['player_name'] == player_name])           
     try:
@@ -65,6 +62,8 @@ for idx, avail_team in avail_team_df.iterrows():
     except:
         print("Skipping because was not here last season")
         continue
+
+    print(cs_df.head(15))
 
     length = len(cs_df)
     successPercentile = (rank <= length * topPercent)
@@ -77,6 +76,11 @@ for idx, avail_team in avail_team_df.iterrows():
 Pos: {position}, 
 Role: {role}, 
 Rank: {rank}, 
+Length of B-Mark Sample: {bmakr_plyr.length},
+Player Archetype(s): {bmakr_plyr.plyr_labels},
+Player Weight(s) : {bmakr_plyr.plyr_weights}
+Team Archetype(s): {bmakr_plyr.team_labels},
+Team Weight(s) : {bmakr_plyr.team_weights}
 Num Players at Position: {length},
 Percentile Rank: { 1 - (rank / length)},
 Projected Top%: {successPercentile}, 

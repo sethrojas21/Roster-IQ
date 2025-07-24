@@ -1,7 +1,7 @@
 import sqlite3
 import pandas as pd
-from dataLoader import get_incoming_team_roster
-from queries import transfer_query
+from Analysis.Helpers.dataLoader import get_incoming_team_roster
+from Analysis.Helpers.queries import transfer_query
 
 conn = sqlite3.connect('rosteriq.db')
 team_names = pd.read_sql("SELECT team_name FROM Teams", conn)['team_name'].tolist()
