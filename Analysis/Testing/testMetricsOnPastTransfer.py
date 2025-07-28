@@ -32,8 +32,8 @@ sampled_teams = avail_team_df.sample(n=see, random_state=random.randint(1,100))
 
 for idx, avail_team in avail_team_df.iterrows():
     team_name = avail_team['team_name']        
-    # if team_name not in ["North Carolina", "Kentucky", "Michigan", "UCLA"]:
-    #     continue
+    if team_name not in ["Arizona"]:
+        continue
 
     season_year = avail_team['season_year']
     player_id_to_replace = avail_team['player_id']  
@@ -54,6 +54,7 @@ for idx, avail_team in avail_team_df.iterrows():
     bmakr_plyr, cs_df = composite_score(conn, team_name, season_year, player_id_to_replace)                
     if bmakr_plyr.length < 30:
         print("Skipping because not enough sample size")
+        print("-" * 10)
         continue        
     # print(success_row_df)    
     print(cs_df[cs_df['player_name'] == player_name])           
@@ -61,6 +62,7 @@ for idx, avail_team in avail_team_df.iterrows():
         rank = cs_df[cs_df['player_name'] == player_name].index[0]
     except:
         print("Skipping because was not here last season")
+        print("-" * 10)
         continue
 
     print(cs_df.head(15))

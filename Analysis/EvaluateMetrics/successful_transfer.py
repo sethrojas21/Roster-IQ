@@ -1,8 +1,11 @@
+from typing import List
 import pandas as pd
 
-def get_prev_new_season_data(prev_year, new_year, conn):
+def get_prev_new_season_data(prev_year, new_year, conn, transfer = True):
+    
+    transfer_query = "AND ps1.team_name != ps2.team_name"
 
-    df = pd.read_sql("""SELECT
+    query = f"""SELECT
                        p.player_name,
                        ps1.position,                       
                        CASE
@@ -27,8 +30,10 @@ def get_prev_new_season_data(prev_year, new_year, conn):
                    FROM Player_Seasons ps1
                    JOIN Player_Seasons ps2 ON ps1.player_id = ps2.player_id
                    JOIN Players p ON p.player_id = ps1.player_id  
-                   WHERE ps1.season_year = ? AND ps2.season_year = ? AND ps1.team_name != ps2.team_name                 
-                 """, conn, params=(prev_year, new_year))
+                   WHERE ps1.season_year = ? AND ps2.season_year = ? {transfer_query if transfer else ""}              
+                 """
+
+    df = pd.read_sql(query, conn, params=(prev_year, new_year))
     
     return df
 
@@ -99,6 +104,58 @@ def is_successful_transfer(prev_year, new_year, conn):
 
     return ps
 
+def successful_transfer(plyr_cluster: int, team_cluster : int, plyr_stats : pd.Series, all_plyr_stats):
+    """
+    plyr_stats -> should have players name and the players stats from the current year (the year after playing)
+    all_plyr_stats -> data frame of all players stats from the previous season of current plyr_stats 
+        and the team and player clusters they were mapped to
+    """
+
+    META = ["player_name", "team_name", "season_year", "player_id", "position"]
+    filtered_df : pd.DataFrame = all_plyr_stats[(all_plyr_stats['team_cluster'] == team_cluster) & (all_plyr_stats['Cluster'] == plyr_cluster)]
+    columns = [col for col in filtered_df.columns if col not in META]
+    stats_columns = [col for col in columns if col not in ["team_cluster", "Cluster"]]
+
+    # Compute medians and standard deviations for each stat
+    median_vals = filtered_df[stats_columns].median()
+    std_vals = filtered_df[stats_columns].std().replace(0, 1)
+
+    # Extract player stats for these columns
+    plyr_vals = plyr_stats[stats_columns]
+
+    # Define impact weights for key stats
+    impact_weights = {
+        'dporpag': 1.3,
+        'porpag': 1.3,
+        'ts_percent' : 1.15
+    }
+
+    # Compute weighted z-score sum
+    score_sum = 0.0
+    weight_sum = 0.0
+    for col in stats_columns:
+        # raw z-score relative to median
+        z = (plyr_vals[col] - median_vals[col]) / std_vals[col]
+        # invert for metrics where lower is better
+        if col in ['tov_percent', 'adjde', 'dporpag']:
+            z = -z
+        weight = impact_weights.get(col, 1.0)
+        score_sum += z * weight
+        weight_sum += weight
+
+    # Normalize to final score
+    print(score_sum, weight_sum)
+    score = score_sum / weight_sum
+
+    # Debug: log large deviations
+    for col in stats_columns:
+        dev = (plyr_vals[col] - median_vals[col]) / std_vals[col]
+        if abs(dev) >= 0:
+            print(f"{col} deviation: {dev:.2f} SDs from median")
+
+    return score_sum
+
+
 
 def testing():
     import sqlite3
@@ -120,4 +177,3 @@ def testing():
     plt.show()
 
 # testing()
-    

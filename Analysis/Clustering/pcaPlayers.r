@@ -30,6 +30,8 @@ build_role_pca_models <- function(target_year, lookback_years = 3) {
   player_features_query <- "
     SELECT
         p.player_name,
+        ps.player_id,
+        ps.team_name,
         ps.position,
         ps.season_year,
         ps.ts_percent,
@@ -63,9 +65,9 @@ build_role_pca_models <- function(target_year, lookback_years = 3) {
 
   for (role in roles) {
     role_df <- players_df %>% filter(position == role)
-    labels_env[[role]] <- role_df %>% select(player_name, position, season_year)
+    labels_env[[role]] <- role_df %>% select(player_name, player_id, team_name, position, season_year)
     # Subset and scale feature matrix
-    df_raw <- subset(role_df, select = -c(player_name, position, season_year))
+    df_raw <- subset(role_df, select = -c(player_name, player_id, team_name, position, season_year))
     df_scaled <- scale(df_raw)
     # Apply PCA
     pca_model <- prcomp(df_raw, center = TRUE, scale. = TRUE)
@@ -108,7 +110,7 @@ build_role_pca_models <- function(target_year, lookback_years = 3) {
 
     # give each element the proper name
     names(loadings_list) <- features
-    print(loadings_list)
+    # print(loadings_list)
     loadings_path <- sprintf("Analysis/Clustering/Players/%s/PCA/pca_loadings_%s.json", target_year, role)
 
     # write pretty JSON
@@ -118,16 +120,16 @@ build_role_pca_models <- function(target_year, lookback_years = 3) {
       pretty     = TRUE,
       auto_unbox = TRUE
     )
-    # write_csv(loadings_df, loadings_path)
-    # write_json(rot_df, path = rot_path, rownames = "feature", pretty = TRUE)
-    # write_json(params_list, path = param_path, auto_unbox = TRUE, pretty = TRUE)
-    # write_feather(feather_df, feather_path)
+    write_csv(loadings_df, loadings_path)
+    write_json(rot_df, path = rot_path, rownames = "feature", pretty = TRUE)
+    write_json(params_list, path = param_path, auto_unbox = TRUE, pretty = TRUE)
+    write_feather(feather_df, feather_path)
   }  
 
   # Save RDS snapshots of all three environments
-  # saveRDS(model_env, file = sprintf("Analysis/Clustering/Players/%s/PCA/pca_models.rds", target_year))
-  # saveRDS(pca_data_env, file = sprintf("Analysis/Clustering/Players/%s/PCA/pca_data.rds", target_year))
-  # saveRDS(labels_env, file = sprintf("Analysis/Clustering/Players/%s/PCA/pca_labels.rds", target_year))
+  saveRDS(model_env, file = sprintf("Analysis/Clustering/Players/%s/PCA/pca_models.rds", target_year))
+  saveRDS(pca_data_env, file = sprintf("Analysis/Clustering/Players/%s/PCA/pca_data.rds", target_year))
+  saveRDS(labels_env, file = sprintf("Analysis/Clustering/Players/%s/PCA/pca_labels.rds", target_year))
   dbDisconnect(conn)
   invisible(list(model_env = model_env, pca_data_env = pca_data_env, labels_env = labels_env))
 }
