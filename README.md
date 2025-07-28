@@ -1,2 +1,7 @@
 # Roster-IQ
-Identifying top college basketball transfer portal talent at any given player and team archetype. Currenting generating finals tests on historical data. Will release full README when finished. Stay tuned.
+
+Identifying top college basketball transfer portal talent at any given player and team archetype.
+
+This project is currently in progress — running final tests and validating metrics on historical NCAA data. A full README and write-up will be added soon.
+
+Stay tuned.
