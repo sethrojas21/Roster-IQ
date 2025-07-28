@@ -12,3 +12,4 @@ TeamPlayerInformation/
 *.feather
 *.rds
 *.txt
+OldPlayerInformationExtraction/apikeys.json
