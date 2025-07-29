@@ -1,5 +1,6 @@
 from typing import List
 import pandas as pd
+import numpy as np
 
 def get_prev_new_season_data(prev_year, new_year, conn, transfer = True):
     
@@ -104,7 +105,7 @@ def is_successful_transfer(prev_year, new_year, conn):
 
     return ps
 
-def successful_transfer(plyr_cluster: int, team_cluster : int, plyr_stats : pd.Series, all_plyr_stats):
+def successful_transfer(plyr_clusters: list, team_clusters: list, plyr_stats: pd.Series, all_plyr_stats, plyr_weights: list, cluster_weights: list, debug : bool = False):
     """
     plyr_stats -> should have players name and the players stats from the current year (the year after playing)
     all_plyr_stats -> data frame of all players stats from the previous season of current plyr_stats 
@@ -112,48 +113,84 @@ def successful_transfer(plyr_cluster: int, team_cluster : int, plyr_stats : pd.S
     """
 
     META = ["player_name", "team_name", "season_year", "player_id", "position"]
-    filtered_df : pd.DataFrame = all_plyr_stats[(all_plyr_stats['team_cluster'] == team_cluster) & (all_plyr_stats['Cluster'] == plyr_cluster)]
-    columns = [col for col in filtered_df.columns if col not in META]
-    stats_columns = [col for col in columns if col not in ["team_cluster", "Cluster"]]
+    combined_df = pd.DataFrame()
+    for p_cluster, t_cluster, p_weight, t_weight in zip(plyr_clusters, team_clusters, plyr_weights, cluster_weights):
+        subset = all_plyr_stats[(all_plyr_stats['team_cluster'] == t_cluster) & (all_plyr_stats['Cluster'] == p_cluster)]
+        if not subset.empty:
+            weighted_subset = subset.copy()
+            weighted_subset['weight'] = p_weight * t_weight
+            combined_df = pd.concat([combined_df, weighted_subset], ignore_index=True)
+    if combined_df.empty:
+        return (0.0, False)
 
-    # Compute medians and standard deviations for each stat
-    median_vals = filtered_df[stats_columns].median()
-    std_vals = filtered_df[stats_columns].std().replace(0, 1)
+    columns = [col for col in combined_df.columns if col not in META + ["team_cluster", "Cluster", "weight"]]
+    stats_columns = columns
 
-    # Extract player stats for these columns
+    mean_vals = pd.Series(index=stats_columns, dtype=float)
+    std_vals = pd.Series(index=stats_columns, dtype=float)
+    for col in stats_columns:
+        vals = combined_df[col].dropna()
+        wts = combined_df.loc[vals.index, 'weight']
+        if vals.empty:
+            mean_vals[col] = 0
+            std_vals[col] = 1
+        else:
+            mean_val = np.average(vals, weights=wts)
+            mean_vals[col] = mean_val
+            std_vals[col] = np.sqrt(np.average((vals - mean_val)**2, weights=wts))
+            if std_vals[col] == 0:
+                std_vals[col] = 1
+
     plyr_vals = plyr_stats[stats_columns]
+
+    # --- Effective Sample Size (ESS) check ---
+    def effective_sample_size(weights):
+        weights = np.array(weights)
+        if weights.sum() == 0:
+            return 0
+        return (weights.sum()**2) / (weights**2).sum()
+
+    ess = effective_sample_size(combined_df['weight'])
+    
+    print(f"Effective Sample Size: {ess:.1f}")
 
     # Define impact weights for key stats
     impact_weights = {
-        'dporpag': 1.3,
-        'porpag': 1.3,
-        'ts_percent' : 1.15
+        'dporpag': 1.2,
+        'porpag': 1.2,
+        'ts_percent': 1.1
     }
 
     # Compute weighted z-score sum
+    flipped_stats_lst = ['tov_percent', 'adjde', 'dporpag']
     score_sum = 0.0
     weight_sum = 0.0
     for col in stats_columns:
-        # raw z-score relative to median
-        z = (plyr_vals[col] - median_vals[col]) / std_vals[col]
+        # raw z-score relative to mean
+        z = (plyr_vals[col] - mean_vals[col]) / std_vals[col]
         # invert for metrics where lower is better
-        if col in ['tov_percent', 'adjde', 'dporpag']:
+        if col in flipped_stats_lst:
             z = -z
         weight = impact_weights.get(col, 1.0)
         score_sum += z * weight
         weight_sum += weight
 
     # Normalize to final score
-    print(score_sum, weight_sum)
     score = score_sum / weight_sum
 
     # Debug: log large deviations
-    for col in stats_columns:
-        dev = (plyr_vals[col] - median_vals[col]) / std_vals[col]
-        if abs(dev) >= 0:
-            print(f"{col} deviation: {dev:.2f} SDs from median")
+    if debug:
+        for col in stats_columns:
+            dev = (plyr_vals[col] - mean_vals[col]) / std_vals[col]
+            if col in flipped_stats_lst:
+                dev *= -1
+            if abs(dev) >= 0:
+                print(f"{col} deviation: {dev:.2f} SDs from mean")
 
-    return score_sum
+    THRESHOLD = -0.05
+    is_successful = score > THRESHOLD
+    return (score, is_successful)
+    
 
 
 

@@ -1,5 +1,7 @@
+bs4
 pandas
 numpy
 scikit-learn
 xgboost
 rapidfuzz
+requests

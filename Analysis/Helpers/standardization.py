@@ -52,7 +52,7 @@ def get_nPercentile_benchmark_stats(
     per_cluster = (
         nPercentile_players_cluster_df
         .groupby("team_cluster")[stat_cols]
-        .quantile(percentile)
+        .mean()
     )
 
     # 2. Attach team cluster weights
