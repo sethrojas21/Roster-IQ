@@ -16,12 +16,16 @@ class InitBenchmarkPlayer:
         self.team_name = team_name
         self.season_year = incoming_season_year
         self.replaced_plyr_id = player_id_to_replace
+        self.team_k = 1
+        self.player_k = 2
+        max_k = 2
 
         # Team Stuff
         player_stats_df, _ = get_incoming_synthetic_roster(conn, team_name, incoming_season_year, player_id_to_replace)
         aggregated_team_stats = aggregate_team_stats_from_players_df(player_stats_df)
         self.team_clusterID_weights_dict = match_team_to_cluster_weights(aggregated_team_stats,
-                                                                   incoming_season_year)
+                                                                   incoming_season_year,
+                                                                   k=self.team_k)
         self.team_ids = list(self.team_clusterID_weights_dict.keys())
         self.team_weights = list(self.team_clusterID_weights_dict.values())
         self.team_labels = match_team_cluster_to_label(incoming_season_year,
@@ -32,7 +36,8 @@ class InitBenchmarkPlayer:
         self.replaced_plyr_pos = self.replaced_plyr_stats['position']
         self.plyr_clusterID_weights_dict = match_player_to_cluster_weights(self.replaced_plyr_stats,
                                                                       incoming_season_year,
-                                                                      self.replaced_plyr_pos)
+                                                                      self.replaced_plyr_pos,
+                                                                      k=self.player_k)
         self.plyr_ids = list(self.plyr_clusterID_weights_dict.keys())
         self.plyr_weights = list(self.plyr_clusterID_weights_dict.values())
         self.plyr_labels = match_player_cluster_to_label(incoming_season_year,
@@ -81,7 +86,7 @@ class InitBenchmarkPlayer:
     """
         
 
-    def fs_benchmark(self):
+    def fs_benchmark(self, adaptive_k = True):
         if self.fs_benchmark_dict_saved:
             return self.fs_benchmark_dict_saved
         

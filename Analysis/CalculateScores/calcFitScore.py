@@ -51,4 +51,4 @@ def test():
     print(df.head(20))
     print(df[df['player_name'] == "Aaron Cook"])
 
-# test()
+test()

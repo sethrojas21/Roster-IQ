@@ -98,16 +98,16 @@ def get_only_plyr_features(player_stats : pd.Series):
         nmeta_player_stats = nmeta_player_stats.drop(index = META).astype(float)
         return nmeta_player_stats
 
+
+
 def match_player_to_cluster_weights(player_stats, year, pos, k=2, alpha=None, method='inverse', power=1.5):
     nmeta_player_stats = get_only_plyr_features(player_stats)
     _, df = match_player_to_cluster(nmeta_player_stats, year, pos)
         
     # Grab the k nearest clusters
-    if k == 1 and pos in ["C"]:
+    if pos == ["C"]:
         k = 2
 
-    # if k == 2 and ((df.iloc[1]['distance'] - df.iloc[0]['distance']) / df.iloc[1]['distance'] > 0.8):
-    #     k = 1
     topK_df = df.head(k).copy() 
 
     # ---- similarity transform ---------------------------------------------
@@ -128,14 +128,5 @@ def match_player_to_cluster_weights(player_stats, year, pos, k=2, alpha=None, me
         raise ValueError(f"Unknown method: {method}")
     # Normalize so that the weights sum to 1
     weights = sim / sim.sum()
-    # k = 1
-    # print(weights)
-    # for weight in weights:
-    #     if weight < 0.75:
-    #         break
-    #     else:
-    #         k += 1
-    # topK_df = df.head(k).copy()
-    # weights = weights[:k]
-    # Build and return dictionary
+
     return dict(zip(topK_df['cluster_id'].astype(int), weights))

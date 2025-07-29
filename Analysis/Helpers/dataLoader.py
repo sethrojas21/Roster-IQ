@@ -95,25 +95,6 @@ def load_players_from_cluster(stat_query, conn, year, cluster_num, pos : str):
     return final_df.drop(['team_cluster', 'team_name'], axis=1)
 
 def load_players_from_multiple_clusters(stat_query, conn, year, team_cluster_nums, player_cluster_nums, pos: str, keep_meta: bool = False, top_k_teams = True):
-    """
-    Return a DataFrame of player rows that belong to ANY of the cluster
-    numbers provided in `cluster_nums`.
-
-    Parameters
-    ----------
-    stat_query : str
-        Comma-separated list of Player_Seasons columns to pull.
-    conn : sqlite3.Connection
-        Active connection to rosteriq.db (or whichever database).
-    year : int
-        "Current" season year; we pull historical rows < year.
-    cluster_nums : Iterable[int]
-        One or more cluster IDs to keep.
-    pos : str
-        Position filter ("G", "F", or "C").
-    keep_meta : bool, default False
-        If True, keep 'team_name' and 'cluster_num' columns.
-    """
     if not team_cluster_nums:
         raise ValueError("cluster_nums must contain at least one cluster id.") 
 
@@ -133,6 +114,7 @@ def load_players_from_multiple_clusters(stat_query, conn, year, team_cluster_num
         final_df = final_df.drop(columns=["team_name"], errors="ignore")
 
     return final_df.reset_index(drop=True)
+
 
 def get_incoming_team_roster(conn, team_name, incoming_season_year):
     returners_query = """
