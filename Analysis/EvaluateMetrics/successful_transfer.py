@@ -184,7 +184,7 @@ def successful_transfer(plyr_clusters: list, team_clusters: list, plyr_stats: pd
             dev = (plyr_vals[col] - mean_vals[col]) / std_vals[col]
             if col in flipped_stats_lst:
                 dev *= -1
-            if abs(dev) >= 0:
+            if abs(dev) >= 0.75:
                 print(f"{col} deviation: {dev:.2f} SDs from mean")
 
     THRESHOLD = -0.05

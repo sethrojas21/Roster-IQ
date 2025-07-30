@@ -49,9 +49,9 @@ build_role_pca_models <- function(target_year, lookback_years = 3) {
         CASE WHEN ps.FGA != 0 THEN (ps.midA / ps.FGA) ELSE 0.00001 END AS midRate
     FROM Player_Seasons ps
     JOIN Players p ON ps.player_id = p.player_id
-    WHERE ps.season_year < ? AND ps.season_year >= ? AND ((ps.min_pg * ps.adj_gp) > 150)
+    WHERE ps.season_year < ? AND ps.season_year >= ? AND ((ps.min_pg * ps.adj_gp) > 100)
   "
-  players_df <- dbGetQuery(conn, player_features_query, params = list(target_year + 1, min_year))
+  players_df <- dbGetQuery(conn, player_features_query, params = list(target_year, min_year))
   players_df <- na.omit(players_df)
   print(nrow(players_df[players_df$position == "G", ]))
   print(nrow(players_df[players_df$position == "F", ]))
@@ -113,6 +113,7 @@ build_role_pca_models <- function(target_year, lookback_years = 3) {
     # print(loadings_list)
     loadings_path <- sprintf("Analysis/Clustering/Players/%s/PCA/pca_loadings_%s.json", target_year, role)
 
+    print(nrow(feather_df))
     # write pretty JSON
     write_json(
       loadings_list,

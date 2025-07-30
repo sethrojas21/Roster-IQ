@@ -28,8 +28,9 @@ class InitBenchmarkPlayer:
                                                                    k=self.team_k)
         self.team_ids = list(self.team_clusterID_weights_dict.keys())
         self.team_weights = list(self.team_clusterID_weights_dict.values())
-        self.team_labels = match_team_cluster_to_label(incoming_season_year,
-                                                  self.team_ids)
+        # self.team_labels = match_team_cluster_to_label(incoming_season_year,
+        #                                           self.team_ids)
+        self.team_labels = []
         
         # Player stuff
         self.replaced_plyr_stats = get_player_stats(player_id_to_replace, incoming_season_year, conn)    
@@ -40,9 +41,10 @@ class InitBenchmarkPlayer:
                                                                       k=self.player_k)
         self.plyr_ids = list(self.plyr_clusterID_weights_dict.keys())
         self.plyr_weights = list(self.plyr_clusterID_weights_dict.values())
-        self.plyr_labels = match_player_cluster_to_label(incoming_season_year,
-                                                         self.replaced_plyr_pos,
-                                                         self.plyr_ids)
+        # self.plyr_labels = match_player_cluster_to_label(incoming_season_year,
+        #                                                  self.replaced_plyr_pos,
+        #                                                  self.plyr_ids)
+        self.plyr_labels = []
 
         self.fs_benchmark_dict_saved = None   
         self.vocbp_benchmark_dict_saved = None

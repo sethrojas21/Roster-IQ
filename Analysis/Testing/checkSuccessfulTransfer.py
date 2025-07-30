@@ -2,6 +2,7 @@ import sqlite3
 import pandas as pd
 from Analysis.CalculateScores.calcCompositeScore import composite_score
 from Analysis.EvaluateMetrics.successful_transfer import successful_transfer
+import random
 
 conn = sqlite3.connect('rosteriq.db')
 
@@ -82,8 +83,17 @@ for year in years_range:
 
 avail_team_df = pd.read_csv('/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Helpers/availTransferTeams.csv')
 
+all_teams_barthag = pd.read_sql("SELECT team_name, season_year, barthag_rank FROM Team_Seasons GROUP BY team_name, season_year", conn)
+top_teams_barthag = all_teams_barthag[all_teams_barthag['barthag_rank'] <= 90]
+top_teams_df = pd.merge(avail_team_df, top_teams_barthag, on=['team_name', 'season_year'], how='left').dropna()
+sampled_teams = avail_team_df.sample(n=1000, random_state=random.randint(1,100))
+
 print("Starting to iterate over transfers")
-for idx, avail_team in avail_team_df.iterrows():
+correct = 0
+succ_count = 0
+unsucc_count = 0
+total = 0
+for idx, avail_team in sampled_teams.iterrows():
     team_name = avail_team['team_name']        
 
     season_year = avail_team['season_year']
@@ -91,8 +101,8 @@ for idx, avail_team in avail_team_df.iterrows():
     player_name = conn.execute("SELECT player_name FROM Players WHERE player_id = ?", (int(player_id_to_replace),)).fetchone()[0]
     position = conn.execute("SELECT position FROM Player_Seasons WHERE player_id = ? AND season_year = ?",
                             (player_id_to_replace, season_year)).fetchone()[0] 
-    if team_name not in ["Gonzaga"]:
-        continue
+    # if team_name not in ["Arizona"]:
+    #     continue
     print(player_name, position, team_name, season_year, player_id_to_replace)
     bmakr_plyr, cs_df = composite_score(conn, team_name, season_year, player_id_to_replace)
     if bmakr_plyr.length < SAMPLE_SIZE_THRESHOLD:
@@ -110,12 +120,16 @@ for idx, avail_team in avail_team_df.iterrows():
                              params = (season_year, player_id_to_replace)).iloc[0]
     
     plyr_pos_stats = plyr_df_dict[season_year][position]
-    score, is_succ = successful_transfer(plyr_cluster_id,
+    try:
+        score, is_succ = successful_transfer(plyr_cluster_id,
                                              team_cluster_id,
                                              plyr_stats,
                                              plyr_pos_stats,
                                              bmakr_plyr.plyr_weights,
-                                             bmakr_plyr.team_weights)
+                                             bmakr_plyr.team_weights,
+                                             debug=True)
+    except Exception as e:
+        print(e)
     
     try:
         rank = cs_df[cs_df['player_name'] == player_name].index[0]
@@ -148,19 +162,37 @@ Projected Bottom%: {unsuccessPercentile},
 Considered Sucesss: {is_succ}, 
 Success Score: {score}""")
     
-    if successCond or unsuccessCond:
-        print("*" * 5,"Correct", "*" * 5)
+    if successCond:
+        total += 1 
+        correct += 1
+        print("Correct - Successful and Ranked High")
+        succ_count += 1
+    elif unsuccessCond:
+        total += 1
+        correct += 1
+        print("Correct - Unsuccessful and Ranked Low")
+        unsucc_count += 1
+    elif not successPercentile and not is_succ:
+        print("No worries")
+    else:
+        total += 1
+        print("Incorrect")
+    try:
+        print(correct, total, correct / total)
+    except ZeroDivisionError as e:
+        print(e)
     print("-" * 20)
 
+print(f"{correct} correct, {total} total, with a {correct / total}% rate")
+print("Succ count", succ_count)
+print("Unsucc count", unsucc_count)
+total_succs = succ_count + unsucc_count
+pSucc = succ_count / total_succs
+pUnscc = unsucc_count / total_succs
+print("% Succ", pSucc)
+print("% Unsucc", pUnscc) 
+print("Chance percentage", pSucc * TOP_PERCENT + pUnscc * BOTTOM_PERCENT)
 
-
-
-# is_success = successful_transfer(plyr_cluster_id,
-#                                  team_cluster_id,
-#                                  aaron_cook_stats,
-#                                  merged_df)
-
-# print("Percentage: ", is_success)
 
 
 

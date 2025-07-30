@@ -114,12 +114,12 @@ for (year in 2021:2024) {
 
     label_df <- data.frame(
       player_name = pca_labels[[role]]$player_name,
-      Cluster     = cluster_env[[role]]$Subjects$Cluster,
       season_year = pca_labels[[role]]$season_year,
+      Cluster     = cluster_env[[role]]$Subjects$Cluster,
       # id = pca_labels[[role]]$player_id,
       stringsAsFactors = FALSE
     )
-    # print(head(label_df))
+    print(head(label_df))
     df_csv_filepath <- sprintf("Analysis/Clustering/Players/%.0f/KClustering/player_labels_%s.csv", year, role)
     write.csv(label_df, df_csv_filepath, row.names = FALSE)
     

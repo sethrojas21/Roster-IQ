@@ -100,7 +100,7 @@ def get_only_plyr_features(player_stats : pd.Series):
 
 
 
-def match_player_to_cluster_weights(player_stats, year, pos, k=2, alpha=None, method='inverse', power=1.5):
+def match_player_to_cluster_weights(player_stats, year, pos, k=2, alpha=None, method='inverse_pow', power=1.5):
     nmeta_player_stats = get_only_plyr_features(player_stats)
     _, df = match_player_to_cluster(nmeta_player_stats, year, pos)
         
