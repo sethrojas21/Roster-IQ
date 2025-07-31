@@ -86,14 +86,14 @@ avail_team_df = pd.read_csv('/Users/sethrojas/Documents/CodeProjects/BAResearch/
 all_teams_barthag = pd.read_sql("SELECT team_name, season_year, barthag_rank FROM Team_Seasons GROUP BY team_name, season_year", conn)
 top_teams_barthag = all_teams_barthag[all_teams_barthag['barthag_rank'] <= 90]
 top_teams_df = pd.merge(avail_team_df, top_teams_barthag, on=['team_name', 'season_year'], how='left').dropna()
-sampled_teams = avail_team_df.sample(n=1000, random_state=random.randint(1,100))
+sampled_teams = avail_team_df.sample(n=500, random_state=random.randint(1,100))
 
 print("Starting to iterate over transfers")
 correct = 0
 succ_count = 0
 unsucc_count = 0
 total = 0
-for idx, avail_team in avail_team_df.iterrows():
+for idx, avail_team in sampled_teams.iterrows():
     team_name = avail_team['team_name']        
 
     season_year = avail_team['season_year']
@@ -101,8 +101,8 @@ for idx, avail_team in avail_team_df.iterrows():
     player_name = conn.execute("SELECT player_name FROM Players WHERE player_id = ?", (int(player_id_to_replace),)).fetchone()[0]
     position = conn.execute("SELECT position FROM Player_Seasons WHERE player_id = ? AND season_year = ?",
                             (player_id_to_replace, season_year)).fetchone()[0] 
-    if team_name not in ["Arizona"]:
-        continue
+    # if team_name not in ["Arizona"]:
+    #     continue
     print(player_name, position, team_name, season_year, player_id_to_replace)
     bmakr_plyr, cs_df = composite_score(conn, team_name, season_year, player_id_to_replace)
     if bmakr_plyr.length < SAMPLE_SIZE_THRESHOLD:

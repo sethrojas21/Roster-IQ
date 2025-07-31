@@ -78,7 +78,6 @@ def load_players(stat_query, conn, year, pos):
 
     player_cluster_df = pd.read_csv(f'Analysis/Clustering/Players/{year}/KClustering/player_labels_{pos}.csv')
     player_cluster_df = player_cluster_df.drop(['player_id', 'team_name'], axis=1)
-    
 
     merge_team_cluster_df = pd.merge(left=rate_stats_df, right=team_cluster_df, on=['team_name', 'season_year'])
 
