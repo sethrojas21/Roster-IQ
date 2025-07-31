@@ -151,11 +151,6 @@ def successful_transfer(plyr_clusters: list, team_clusters: list, plyr_stats: pd
         return (weights.sum()**2) / (weights**2).sum()
 
     ess = effective_sample_size(combined_df['weight'])
-    
-    print(f"Effective Sample Size: {ess:.1f}")
-    
-    if ess < 30:
-        return (None, None)
 
     # Define impact weights for key stats
     impact_weights = {
@@ -192,7 +187,7 @@ def successful_transfer(plyr_clusters: list, team_clusters: list, plyr_stats: pd
 
     THRESHOLD = -0.05
     is_successful = score > THRESHOLD
-    return (score, is_successful)
+    return (score, is_successful, ess)
     
 
 

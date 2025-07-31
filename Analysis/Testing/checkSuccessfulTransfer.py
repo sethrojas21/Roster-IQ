@@ -68,7 +68,7 @@ for year in years_range:
 
 TOP_PERCENT = Config.TOP_PERCENT
 BOTTOM_PERCENT = Config.BOTTOM_PERCENT
-SAMPLE_SIZE_THRESHOLD = Config.SAMPLE_SIZE_THRESHOLD
+ESS_THRESHOLD = Config.ESS_THRESHOLD
 for year in years_range:
     team_df = pd.read_csv(f'Analysis/Clustering/15ClusterData/{year}/KClustering/labels.csv')
     print("Downloading", year)
@@ -94,7 +94,7 @@ correct = 0
 succ_count = 0
 unsucc_count = 0
 total = 0
-for idx, avail_team in sampled_teams.iterrows():
+for idx, avail_team in avail_team_df.iterrows():
     team_name = avail_team['team_name']        
 
     season_year = avail_team['season_year']
@@ -102,8 +102,8 @@ for idx, avail_team in sampled_teams.iterrows():
     player_name = conn.execute("SELECT player_name FROM Players WHERE player_id = ?", (int(player_id_to_replace),)).fetchone()[0]
     position = conn.execute("SELECT position FROM Player_Seasons WHERE player_id = ? AND season_year = ?",
                             (player_id_to_replace, season_year)).fetchone()[0] 
-    # if team_name not in ["Arizona"]:
-    #     continue
+    if team_name not in ["Arizona"]:
+        continue
     print(player_name, position, team_name, season_year, player_id_to_replace)
     bmakr_plyr, cs_df = composite_score(conn, team_name, season_year, player_id_to_replace)
 
@@ -118,19 +118,19 @@ for idx, avail_team in sampled_teams.iterrows():
     
     plyr_pos_stats = plyr_df_dict[season_year][position]
     try:
-        score, is_succ = successful_transfer(plyr_cluster_id,
+        score, is_succ, ess = successful_transfer(plyr_cluster_id,
                                              team_cluster_id,
                                              plyr_stats,
                                              plyr_pos_stats,
                                              bmakr_plyr.plyr_weights,
                                              bmakr_plyr.team_weights,
                                              debug=True)
-        
-        if not score:
-            print("ESS Not Large Enough")
-            continue
     except Exception as e:
         print(e)
+
+    # ESS Cut-off
+    if True and ess <= 20:
+        print("ESS Sample Not MOve")
     
     try:
         rank = cs_df[cs_df['player_name'] == player_name].index[0]
@@ -149,6 +149,7 @@ for idx, avail_team in sampled_teams.iterrows():
     print(cs_df.iloc[rank - 2 : rank + 2])
     
     print(f"""
+ESS : {ess}
 Pos: {position},  
 Rank: {rank}, 
 Num Players at Position: {length},

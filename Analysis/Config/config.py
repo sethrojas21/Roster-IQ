@@ -5,3 +5,5 @@ class Config:
     TOP_PERCENT = 0.3
     BOTTOM_PERCENT = 0.4
     SAMPLE_SIZE_THRESHOLD = 30
+
+    ESS_THRESHOLD = 30
