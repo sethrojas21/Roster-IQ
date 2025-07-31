@@ -8,11 +8,11 @@ import numpy as np
 conn = sqlite3.connect('rosteriq.db')
  
 cluster_df = pd.DataFrame(columns=['season_year', 'pos', 'team_clu_id', 'player_clu_id', 'length', 'median', 'std'])
-for year in range(2022, 2023):
+for year in range(2021, 2025):
 
-    team_df = pd.read_csv('Analysis/Clustering/15ClusterData/2021/KClustering/labels.csv')
+    team_df = pd.read_csv(f'Analysis/Clustering/15ClusterData/{year}/KClustering/labels.csv')
     for pos in Config.POSITIONS:
-        pos_df = pd.read_csv(f'Analysis/Clustering/Players/2021/KClustering/player_labels_{pos}.csv')
+        pos_df = pd.read_csv(f'Analysis/Clustering/Players/{year}/KClustering/player_labels_{pos}.csv')
 
         plyr_pos_stats_df = pd.read_sql("""SELECT
                                         player_id,
@@ -45,10 +45,12 @@ for year in range(2022, 2023):
 
                 cluster_df.loc[len(cluster_df)] = [year, pos, team_id, player_id, length, median, std]
         
-        print(pos)
-        for player_id in player_cluster_ids:
-            plyr_clu = cluster_df[(cluster_df['pos'] == pos) & (cluster_df['team_clu_id'] == 2) & (cluster_df['player_clu_id'] == player_id)].iloc[0]
-            print(f"Cluster {player_id}", "Lenght", plyr_clu['length'], "Median", plyr_clu['median'],"STD", plyr_clu['std'])
+        # print(pos)
+        # for player_id in player_cluster_ids:
+        #     plyr_clu = cluster_df[(cluster_df['pos'] == pos) & (cluster_df['team_clu_id'] == 2) & (cluster_df['player_clu_id'] == player_id)].iloc[0]
+        #     print(f"Cluster {player_id}", "Lenght", plyr_clu['length'], "Median", plyr_clu['median'],"STD", plyr_clu['std'])
+
+cluster_df.to_csv('Analysis/Testing/CSVs/cluster_info.csv', index=False)
 
     
 

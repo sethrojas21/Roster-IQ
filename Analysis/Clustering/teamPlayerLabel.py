@@ -24,4 +24,4 @@ for year in range(2021, 2025):
     
 
 all_year_df = all_year_df.rename(columns={'Cluster' : 'player_cluster'})
-all_year_df.to_csv('Analysis/Clustering/teamPlayerLabel.csv')
+all_year_df.to_csv('Analysis/Clustering/teamPlayerLabel.csv', index=False)

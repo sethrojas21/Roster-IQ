@@ -3,6 +3,7 @@ import pandas as pd
 from Analysis.CalculateScores.calcCompositeScore import composite_score
 from Analysis.EvaluateMetrics.successful_transfer import successful_transfer
 import random
+from Analysis.Config.config import Config
 
 conn = sqlite3.connect('rosteriq.db')
 
@@ -65,9 +66,9 @@ for year in years_range:
     plyr_df_dict[year] = {}
 
 
-TOP_PERCENT = 0.3
-BOTTOM_PERCENT = 0.4
-SAMPLE_SIZE_THRESHOLD = 30
+TOP_PERCENT = Config.TOP_PERCENT
+BOTTOM_PERCENT = Config.BOTTOM_PERCENT
+SAMPLE_SIZE_THRESHOLD = Config.SAMPLE_SIZE_THRESHOLD
 for year in years_range:
     team_df = pd.read_csv(f'Analysis/Clustering/15ClusterData/{year}/KClustering/labels.csv')
     print("Downloading", year)
@@ -86,7 +87,7 @@ avail_team_df = pd.read_csv('/Users/sethrojas/Documents/CodeProjects/BAResearch/
 all_teams_barthag = pd.read_sql("SELECT team_name, season_year, barthag_rank FROM Team_Seasons GROUP BY team_name, season_year", conn)
 top_teams_barthag = all_teams_barthag[all_teams_barthag['barthag_rank'] <= 90]
 top_teams_df = pd.merge(avail_team_df, top_teams_barthag, on=['team_name', 'season_year'], how='left').dropna()
-sampled_teams = avail_team_df.sample(n=500, random_state=random.randint(1,100))
+sampled_teams = avail_team_df.sample(n=1000, random_state=random.randint(1,100))
 
 print("Starting to iterate over transfers")
 correct = 0
@@ -105,10 +106,6 @@ for idx, avail_team in sampled_teams.iterrows():
     #     continue
     print(player_name, position, team_name, season_year, player_id_to_replace)
     bmakr_plyr, cs_df = composite_score(conn, team_name, season_year, player_id_to_replace)
-    if bmakr_plyr.length < SAMPLE_SIZE_THRESHOLD:
-        print("Skipping because not enough sample size")
-        print("-" * 10)
-        continue
 
     plyr_cluster_id = bmakr_plyr.plyr_ids
     team_cluster_id = bmakr_plyr.team_ids
@@ -128,6 +125,10 @@ for idx, avail_team in sampled_teams.iterrows():
                                              bmakr_plyr.plyr_weights,
                                              bmakr_plyr.team_weights,
                                              debug=True)
+        
+        if not score:
+            print("ESS Not Large Enough")
+            continue
     except Exception as e:
         print(e)
     

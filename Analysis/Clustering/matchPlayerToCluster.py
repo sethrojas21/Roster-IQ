@@ -3,6 +3,7 @@ import numpy as np
 import json
 from Analysis.Clustering.pcaPlayers import project_to_pca
 from collections.abc import Iterable
+from Analysis.Clustering.labelArchetypes import get_sample_length_plyr_team_archeytpe
 
 profiles_path = lambda year, pos : f"Analysis/Clustering/Players/{year}/KClustering/cluster_profiles_{pos}.csv"
 
@@ -100,9 +101,26 @@ def get_only_plyr_features(player_stats : pd.Series):
 
 
 
-def match_player_to_cluster_weights(player_stats, year, pos, k=2, alpha=None, method='inverse_pow', power=1.5):
+def match_player_to_cluster_weights(player_stats, 
+                                    year, 
+                                    pos,
+                                    team_id = None, 
+                                    k=2, 
+                                    alpha=None, 
+                                    method='inverse_pow', 
+                                    power=1.5):
     nmeta_player_stats = get_only_plyr_features(player_stats)
     _, df = match_player_to_cluster(nmeta_player_stats, year, pos)
+
+    top_plyr_cluster_id = df.iloc[0]['cluster_id']
+
+    if team_id:
+        length = get_sample_length_plyr_team_archeytpe(top_plyr_cluster_id,
+                                                       team_id,
+                                                       year,
+                                                       pos)
+        if length <= 30:
+            k = 2
         
     # Grab the k nearest clusters
     if pos == ["C"]:

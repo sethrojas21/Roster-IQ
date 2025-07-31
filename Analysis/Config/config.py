@@ -1,3 +1,7 @@
 class Config:
     LOOKBACK_YEAR = 3
     POSITIONS = ["G", "F", "C"]
+
+    TOP_PERCENT = 0.3
+    BOTTOM_PERCENT = 0.4
+    SAMPLE_SIZE_THRESHOLD = 30

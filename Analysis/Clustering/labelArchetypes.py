@@ -1,4 +1,5 @@
 import csv
+import pandas as pd
 
 
 def team_labels():
@@ -52,8 +53,24 @@ def player_labels():
                     for row in reader:
                         fout.write(",".join(row) + "\n")
 
-if __name__ == '__main__':
-    player_labels()
+def get_sample_length_plyr_team_archeytpe(plyr_cluster_id : int,
+                                          team_cluster_id : int,
+                                          year : int,
+                                          pos : str):
+    
+    info_df = pd.read_csv('Analysis/Testing/CSVs/cluster_info.csv')
 
+    line = info_df[
+        (info_df['season_year'] == year) &
+        (info_df['pos'] == pos) &
+        (info_df['team_clu_id'] == team_cluster_id) &
+        (info_df['player_clu_id'] == plyr_cluster_id)
+    ]
+
+    return line.iloc[0]['length']
+
+if __name__ == '__main__':
+    val = get_sample_length_plyr_team_archeytpe(1, 1, 2021, "G")
+    print(val)
         
         

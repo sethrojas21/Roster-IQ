@@ -153,6 +153,9 @@ def successful_transfer(plyr_clusters: list, team_clusters: list, plyr_stats: pd
     ess = effective_sample_size(combined_df['weight'])
     
     print(f"Effective Sample Size: {ess:.1f}")
+    
+    if ess < 30:
+        return (None, None)
 
     # Define impact weights for key stats
     impact_weights = {

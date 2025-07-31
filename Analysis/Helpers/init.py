@@ -3,6 +3,7 @@ from Analysis.SyntheticRosters.aggregateRosterStats import aggregate_team_stats_
 from Analysis.Clustering.matchTeamToCluster import match_team_to_cluster_weights, match_team_cluster_to_label
 from Analysis.Clustering.matchPlayerToCluster import get_player_stats, match_player_to_cluster_weights, match_player_cluster_to_label
 from Analysis.Helpers.standardization import get_nPercentile_scalar_and_vals
+import numpy as np
 
 
 class InitBenchmarkPlayer:
@@ -17,7 +18,7 @@ class InitBenchmarkPlayer:
         self.season_year = incoming_season_year
         self.replaced_plyr_id = player_id_to_replace
         self.team_k = 1
-        self.player_k = 2
+        self.player_k = 1
         max_k = 2
 
         # Team Stuff
@@ -38,7 +39,8 @@ class InitBenchmarkPlayer:
         self.plyr_clusterID_weights_dict = match_player_to_cluster_weights(self.replaced_plyr_stats,
                                                                       incoming_season_year,
                                                                       self.replaced_plyr_pos,
-                                                                      k=self.player_k)
+                                                                      k=self.player_k,
+                                                                      team_id=self.team_ids[0])
         self.plyr_ids = list(self.plyr_clusterID_weights_dict.keys())
         self.plyr_weights = list(self.plyr_clusterID_weights_dict.values())
         # self.plyr_labels = match_player_cluster_to_label(incoming_season_year,
@@ -48,7 +50,7 @@ class InitBenchmarkPlayer:
 
         self.fs_benchmark_dict_saved = None   
         self.vocbp_benchmark_dict_saved = None
-        self.length = 0 
+        self.length = 0
 
 
     def fs_query():
@@ -86,6 +88,19 @@ class InitBenchmarkPlayer:
         ps.blk_percent,
         ps.ts_percent
     """
+
+    def effective_sample_size(weights, lengths):
+        # Expand weights so each player in the cluster gets equal share of its cluster weight
+        expanded_weights = []
+        for w, l in zip(weights, lengths):
+            if l > 0:
+                expanded_weights.extend([w / l] * l)
+        expanded_weights = np.array(expanded_weights)
+        
+        if expanded_weights.sum() == 0:
+            return 0
+        
+        return (expanded_weights.sum() ** 2) / (expanded_weights ** 2).sum()
         
 
     def fs_benchmark(self, adaptive_k = True):
