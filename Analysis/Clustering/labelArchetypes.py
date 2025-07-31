@@ -51,7 +51,9 @@ def player_labels():
 
                     for row in reader:
                         fout.write(",".join(row) + "\n")
-player_labels()
+
+if __name__ == '__main__':
+    player_labels()
 
         
         

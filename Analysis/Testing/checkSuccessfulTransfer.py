@@ -77,7 +77,7 @@ for year in years_range:
                                    conn,
                                    params = (year - 3, year))
         plyr_df = pd.read_csv(f'Analysis/Clustering/Players/{year}/KClustering/player_labels_{pos}.csv')
-        merged_plyr_df = pd.merge(plyr_df, plyr_team_df, on=['player_name', 'season_year'])
+        merged_plyr_df = pd.merge(plyr_df, plyr_team_df, on=['player_name', 'season_year', 'team_name'])
         merged_df = pd.merge(merged_plyr_df, team_df, on=['team_name', 'season_year'])
         plyr_df_dict[year][pos] = merged_df
 
@@ -93,7 +93,7 @@ correct = 0
 succ_count = 0
 unsucc_count = 0
 total = 0
-for idx, avail_team in sampled_teams.iterrows():
+for idx, avail_team in avail_team_df.iterrows():
     team_name = avail_team['team_name']        
 
     season_year = avail_team['season_year']
@@ -101,8 +101,8 @@ for idx, avail_team in sampled_teams.iterrows():
     player_name = conn.execute("SELECT player_name FROM Players WHERE player_id = ?", (int(player_id_to_replace),)).fetchone()[0]
     position = conn.execute("SELECT position FROM Player_Seasons WHERE player_id = ? AND season_year = ?",
                             (player_id_to_replace, season_year)).fetchone()[0] 
-    # if team_name not in ["Arizona"]:
-    #     continue
+    if team_name not in ["Arizona"]:
+        continue
     print(player_name, position, team_name, season_year, player_id_to_replace)
     bmakr_plyr, cs_df = composite_score(conn, team_name, season_year, player_id_to_replace)
     if bmakr_plyr.length < SAMPLE_SIZE_THRESHOLD:

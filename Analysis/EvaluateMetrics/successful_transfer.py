@@ -112,7 +112,7 @@ def successful_transfer(plyr_clusters: list, team_clusters: list, plyr_stats: pd
         and the team and player clusters they were mapped to
     """
 
-    META = ["player_name", "team_name", "season_year", "player_id", "position"]
+    META = ["player_name", "team_name", "season_year", "player_id", "position", 'player_id']
     combined_df = pd.DataFrame()
     for p_cluster, t_cluster, p_weight, t_weight in zip(plyr_clusters, team_clusters, plyr_weights, cluster_weights):
         subset = all_plyr_stats[(all_plyr_stats['team_cluster'] == t_cluster) & (all_plyr_stats['Cluster'] == p_cluster)]

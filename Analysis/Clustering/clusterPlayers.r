@@ -116,7 +116,8 @@ for (year in 2021:2024) {
       player_name = pca_labels[[role]]$player_name,
       season_year = pca_labels[[role]]$season_year,
       Cluster     = cluster_env[[role]]$Subjects$Cluster,
-      # id = pca_labels[[role]]$player_id,
+      player_id = pca_labels[[role]]$player_id,
+      team_name = pca_labels[[role]]$team_name,
       stringsAsFactors = FALSE
     )
     print(head(label_df))
