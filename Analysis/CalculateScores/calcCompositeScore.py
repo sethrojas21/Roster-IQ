@@ -2,7 +2,7 @@ import sqlite3
 import pandas as pd
 from Analysis.CalculateScores.calcFitScore import calculate_fit_score_from_transfers
 from Analysis.CalculateScores.calcVOCRP import calculate_vocbp_from_transfers
-from Analysis.Helpers.init import InitBenchmarkPlayer
+from Analysis.Benchmark.init import InitBenchmarkPlayer
 
 def composite_ranking_percentiles(fs_df, vocrp_df, fs_w = 0.6, v_w = 0.4, sortBy = 'composite_score'):
     # Merge on player_name (or player_id if that’s more reliable)

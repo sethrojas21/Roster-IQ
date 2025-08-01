@@ -2,8 +2,8 @@ import sqlite3
 import numpy as np
 import pandas as pd
 from Analysis.Helpers.dataLoader import get_transfers
-from Analysis.Helpers.standardization import get_player_similarity_score
-from Analysis.Helpers.init import InitBenchmarkPlayer
+from Analysis.Helpers.similarity import get_player_similarity_score
+from Analysis.Benchmark.init import InitBenchmarkPlayer
 
 def _calculate_fit_scores(bmark_plyr, iter_players_df, sort: bool):
     df = pd.DataFrame(columns=['player_name', 'sim_score'])

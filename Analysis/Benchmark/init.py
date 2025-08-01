@@ -2,7 +2,7 @@ from Analysis.Helpers.dataLoader import get_incoming_synthetic_roster
 from Analysis.SyntheticRosters.aggregateRosterStats import aggregate_team_stats_from_players_df
 from Analysis.Clustering.matchTeamToCluster import match_team_to_cluster_weights, match_team_cluster_to_label
 from Analysis.Clustering.matchPlayerToCluster import get_player_stats, match_player_to_cluster_weights, match_player_cluster_to_label
-from Analysis.Helpers.standardization import get_nPercentile_scalar_and_vals
+from Analysis.Benchmark.benchmark import get_benchmark_info
 import numpy as np
 
 
@@ -107,7 +107,7 @@ class InitBenchmarkPlayer:
         if self.fs_benchmark_dict_saved:
             return self.fs_benchmark_dict_saved
         
-        scalar, bmark_vals, lth = get_nPercentile_scalar_and_vals(InitBenchmarkPlayer.fs_query(), 
+        scalar, bmark_vals, lth = get_benchmark_info(InitBenchmarkPlayer.fs_query(), 
                                                              self.conn, 
                                                              self.season_year,                                                              
                                                              self.team_clusterID_weights_dict,
@@ -138,7 +138,7 @@ class InitBenchmarkPlayer:
         if self.vocbp_benchmark_dict_saved:
             return self.vocbp_benchmark_dict_saved
 
-        scalar, bmark_vals, lth = get_nPercentile_scalar_and_vals(InitBenchmarkPlayer.vocbp_query(), 
+        scalar, bmark_vals, lth = get_benchmark_info(InitBenchmarkPlayer.vocbp_query(), 
                                                              self.conn, 
                                                              self.season_year,                                                              
                                                              self.team_clusterID_weights_dict,

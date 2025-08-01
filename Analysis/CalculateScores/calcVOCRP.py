@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from Analysis.Helpers.standardization import scale_player_stats
 from Analysis.Helpers.dataLoader import get_transfers
-from Analysis.Helpers.init import InitBenchmarkPlayer
+from Analysis.Benchmark.init import InitBenchmarkPlayer
 
 def player_difference(player_stats_df,
                       scaler,

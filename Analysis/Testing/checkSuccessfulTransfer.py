@@ -69,6 +69,7 @@ for year in years_range:
 TOP_PERCENT = Config.TOP_PERCENT
 BOTTOM_PERCENT = Config.BOTTOM_PERCENT
 ESS_THRESHOLD = Config.ESS_THRESHOLD
+
 for year in years_range:
     team_df = pd.read_csv(f'Analysis/Clustering/15ClusterData/{year}/KClustering/labels.csv')
     print("Downloading", year)
