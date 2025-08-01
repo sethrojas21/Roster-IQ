@@ -1,14 +1,13 @@
 import pandas as pd
-from Analysis.Config.config import Config
+from Analysis.config import Config
 import sqlite3
-import itertools
 import numpy as np
 
 
 conn = sqlite3.connect('rosteriq.db')
  
 cluster_df = pd.DataFrame(columns=['season_year', 'pos', 'team_clu_id', 'player_clu_id', 'length', 'median', 'std'])
-for year in range(2021, 2025):
+for year in range(Config.START_YEAR, Config.END_YEAR_EXCLUDE):
 
     team_df = pd.read_csv(f'Analysis/Clustering/15ClusterData/{year}/KClustering/labels.csv')
     for pos in Config.POSITIONS:

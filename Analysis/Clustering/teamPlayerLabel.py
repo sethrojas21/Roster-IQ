@@ -1,6 +1,6 @@
 import sqlite3
 import pandas as pd
-from Analysis.Config.config import Config
+from Analysis.config import Config
 
 
 columns = ['player_name', 'season_year', 'Cluster', 'player_id', 'team_name', 'team_cluster']
@@ -9,7 +9,7 @@ df = pd.DataFrame(columns=columns)
 
 conn = sqlite3.connect('rosteriq.db')
 all_year_df = pd.DataFrame(columns=columns)
-for year in range(2021, 2025):
+for year in range(Config.START_YEAR, Config.END_YEAR_EXCLUDE):
     year_df = pd.DataFrame(columns=columns)
 
     poses_df = pd.DataFrame(columns=columns[:-1]) # don't include team clsuter

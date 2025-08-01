@@ -1,12 +1,12 @@
 import csv
 import pandas as pd
-
+from Analysis.config import Config
 
 def team_labels():
     output_path = "Analysis/Clustering/15ClusterData/archetypeInputToGPT.txt"
     with open(output_path, "w", newline='') as fout:
         # Loop over each year’s folder
-        for year in range(2021, 2024 + 1):
+        for year in range(Config.START_YEAR, Config.END_YEAR_EXCLUDE):
             profiles_path = f"Analysis/Clustering/15ClusterData/{year}/KClustering/profiles.csv"
             # Open that year’s CSV
             fout.write(f"#####Team Year: {year}######\n")
@@ -32,7 +32,7 @@ def player_labels():
     role_dict = {"G" : "Guards", "F" : "Forwards", "C" : "Centers"}  
     with open(output_path, "w", newline='') as fout:
         # Loop over each year’s folder
-        for year in range(2021, 2024 + 1):
+        for year in range(Config.START_YEAR, Config.END_YEAR_EXCLUDE):
             fout.write(f"###Player Year: {year}\n")
             for role in roles:
                 fout.write(f"##{role_dict[role]}:\n")
@@ -70,7 +70,7 @@ def get_sample_length_plyr_team_archeytpe(plyr_cluster_id : int,
     return line.iloc[0]['length']
 
 if __name__ == '__main__':
-    val = get_sample_length_plyr_team_archeytpe(1, 1, 2021, "G")
+    val = get_sample_length_plyr_team_archeytpe(1, 1, Config.START_YEAR, "G")
     print(val)
         
         

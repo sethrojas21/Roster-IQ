@@ -1,70 +1,18 @@
 import sqlite3
 import pandas as pd
+import random
 from Analysis.CalculateScores.calcCompositeScore import composite_score
 from Analysis.EvaluateMetrics.successful_transfer import successful_transfer
-import random
-from Analysis.Config.config import Config
+from Analysis.config import Config
+from Analysis.Helpers.queries import all_players_query, single_player_query
 
 conn = sqlite3.connect('rosteriq.db')
+positions = Config.POSITIONS
 
-positions = ["G", "F", "C"]
-gen_player_stats_query = """
-ps.ts_percent,
-ps.porpag,
-ps.dporpag,
-"""
-
-g_query = """
-ps.ast_percent,
-ps.dreb_percent,
-ps.stl_percent
-"""
-
-f_query = """
-ps.ast_percent,
-ps.dreb_percent,
-ps.oreb_percent,
-ps.blk_percent
-"""
-
-c_query = """
-ps.dreb_percent,
-ps.oreb_percent,
-ps.blk_percent
-"""
-
-stat_queries_dict = {
-    "G" : g_query,
-    "F" : f_query,
-    "C" : c_query
-}
-
-stats_query = lambda pos_query : f"""
-SELECT 
-    p.player_name,
-    ps.position,
-    ps.season_year, 
-    ps.team_name,
-    {gen_player_stats_query}
-    {pos_query}
-FROM Player_Seasons ps
-JOIN Players p ON ps.player_id = p.player_id
-"""
-
-all_players_query = lambda pos_query: f"""
-{stats_query(pos_query)}
-WHERE ps.season_year >= ? AND ps.season_year < ?"""
-
-single_player_query = lambda pos_query : f"""
-{stats_query(pos_query)}
-WHERE ps.season_year = ? AND ps.player_id = ?
-"""
-
-years_range = range(2021, 2025)
+years_range = range(Config.START_YEAR, Config.END_YEAR_EXCLUDE)
 plyr_df_dict = {}
 for year in years_range:
     plyr_df_dict[year] = {}
-
 
 TOP_PERCENT = Config.TOP_PERCENT
 BOTTOM_PERCENT = Config.BOTTOM_PERCENT
@@ -74,8 +22,7 @@ for year in years_range:
     team_df = pd.read_csv(f'Analysis/Clustering/15ClusterData/{year}/KClustering/labels.csv')
     print("Downloading", year)
     for pos in positions:
-        pos_query = stat_queries_dict[pos]
-        plyr_team_df = pd.read_sql(all_players_query(pos_query), 
+        plyr_team_df = pd.read_sql(all_players_query(pos), 
                                    conn,
                                    params = (year - 3, year))
         plyr_df = pd.read_csv(f'Analysis/Clustering/Players/{year}/KClustering/player_labels_{pos}.csv')
@@ -110,8 +57,8 @@ for idx, avail_team in avail_team_df.iterrows():
 
     plyr_cluster_id = bmakr_plyr.plyr_ids
     team_cluster_id = bmakr_plyr.team_ids
-
-    plyr_query = single_player_query(stat_queries_dict[position])
+    
+    plyr_query = single_player_query(position)
 
     plyr_stats = pd.read_sql(plyr_query, 
                              conn, 
@@ -126,6 +73,7 @@ for idx, avail_team in avail_team_df.iterrows():
                                              bmakr_plyr.plyr_weights,
                                              bmakr_plyr.team_weights,
                                              debug=True)
+        print(ess)
     except Exception as e:
         print(e)
 
@@ -180,6 +128,7 @@ Success Score: {score}""")
     else:
         total += 1
         print("Incorrect")
+
     try:
         print(correct, total, correct / total)
     except ZeroDivisionError as e:

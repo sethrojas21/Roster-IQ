@@ -4,6 +4,7 @@ import pandas as pd
 from Analysis.Helpers.dataLoader import get_transfers
 from Analysis.Helpers.similarity import get_player_similarity_score
 from Analysis.Benchmark.init import InitBenchmarkPlayer
+from Analysis.config import Config
 
 def _calculate_fit_scores(bmark_plyr, iter_players_df, sort: bool):
     df = pd.DataFrame(columns=['player_name', 'sim_score'])
@@ -47,7 +48,7 @@ def calculate_fit_score_from_transfers(bmark_plyr: InitBenchmarkPlayer, sort=Tru
 # run
 def test():
     conn = sqlite3.connect('rosteriq.db')
-    df = calculate_fit_score(conn, "Gonzaga", 2021, 49449, sort=True)
+    df = calculate_fit_score(conn, "Gonzaga", Config.START_YEAR, 49449, sort=True)
     print(df.head(20))
     print(df[df['player_name'] == "Aaron Cook"])
 

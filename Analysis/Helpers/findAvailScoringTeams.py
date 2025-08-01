@@ -2,6 +2,7 @@ import sqlite3
 import pandas as pd
 from Analysis.Helpers.dataLoader import get_incoming_team_roster
 from Analysis.Helpers.queries import transfer_query
+from Analysis.config import Config
 
 conn = sqlite3.connect('rosteriq.db')
 team_names = pd.read_sql("SELECT team_name FROM Teams", conn)['team_name'].tolist()
@@ -9,7 +10,7 @@ team_names = pd.read_sql("SELECT team_name FROM Teams", conn)['team_name'].tolis
 avail_teams_df = pd.DataFrame(columns=['team_name', 'season_year', 'player_id'])
 
 transfer_dfs_dict = {}
-start_year, end_year = 2021, 2025
+start_year, end_year = Config.START_YEAR, Config.END_YEAR_EXCLUDE
 
 
 for year in range(start_year, end_year):

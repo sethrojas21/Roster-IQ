@@ -1,5 +1,4 @@
 import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import StandardScaler
 from Analysis.Helpers.dataLoader import load_players_from_multiple_clusters
 
