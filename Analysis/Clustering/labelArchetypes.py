@@ -3,11 +3,11 @@ import pandas as pd
 from Analysis.config import Config
 
 def team_labels():
-    output_path = "Analysis/Clustering/15ClusterData/archetypeInputToGPT.txt"
+    output_path = "Analysis/Clustering/Teams/archetypeInputToGPT.txt"
     with open(output_path, "w", newline='') as fout:
         # Loop over each year’s folder
         for year in range(Config.START_YEAR, Config.END_YEAR_EXCLUDE):
-            profiles_path = f"Analysis/Clustering/15ClusterData/{year}/KClustering/profiles.csv"
+            profiles_path = f"Analysis/Clustering/Teams/{year}/KClustering/profiles.csv"
             # Open that year’s CSV
             fout.write(f"#####Team Year: {year}######\n")
             fout.write("*Clustering Centers (some IDs might be delted after reassignment)*\n")
@@ -18,7 +18,7 @@ def team_labels():
                     fout.write(",".join(row) + "\n")
             
             fout.write("*Loading Matrices*\n")
-            loadings_path = f'Analysis/Clustering/15ClusterData/{year}/PCA/loadings.json'
+            loadings_path = f'Analysis/Clustering/Teams/{year}/PCA/loadings.json'
             with open(loadings_path, 'r', newline='') as fin:
                 reader = csv.reader(fin)
 

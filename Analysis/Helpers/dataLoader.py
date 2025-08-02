@@ -3,7 +3,7 @@ from Analysis.Clustering.matchTeamToCluster import project_to_pca, get_centroid
 import numpy as np
 
 def get_top_k_nearest_teams_in_clusters(cluster_nums, year, conn, k_nearest_teams = 25):
-    team_cluster_df = pd.read_csv(f'Analysis/Clustering/15ClusterData/{year}/KClustering/labels.csv')       
+    team_cluster_df = pd.read_csv(f'Analysis/Clustering/Teams/{year}/KClustering/labels.csv')       
 
     teams_data_features_df = pd.read_sql("""SELECT 
                                         team_name,
@@ -74,7 +74,7 @@ def load_players(stat_query, conn, year, pos):
         query, conn, params= (year, year - 3, pos)
     )
 
-    team_cluster_df = pd.read_csv(f'Analysis/Clustering/15ClusterData/{year}/KClustering/labels.csv')
+    team_cluster_df = pd.read_csv(f'Analysis/Clustering/Teams/{year}/KClustering/labels.csv')
 
     player_cluster_df = pd.read_csv(f'Analysis/Clustering/Players/{year}/KClustering/player_labels_{pos}.csv')
     player_cluster_df = player_cluster_df.drop(['player_id', 'team_name'], axis=1)

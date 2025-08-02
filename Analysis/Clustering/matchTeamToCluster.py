@@ -2,9 +2,9 @@ import json
 import pandas as pd
 import numpy as np
 
-scaling_path = lambda year: f'/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/15ClusterData/{year}/PCA/params.json'
-profiles_path = lambda year: f'/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/15ClusterData/{year}/KClustering/profiles.csv'
-rot_path = lambda year: f'Analysis/Clustering/15ClusterData/{year}/PCA/rotation.json'
+scaling_path = lambda year: f'/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/Teams/{year}/PCA/params.json'
+profiles_path = lambda year: f'/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/Teams/{year}/KClustering/profiles.csv'
+rot_path = lambda year: f'Analysis/Clustering/Teams/{year}/PCA/rotation.json'
 
 def scale_center_vector_data(team_stats, year, profiles = None):
     if profiles is None:
@@ -106,7 +106,7 @@ def match_team_cluster_to_label(year, ids_or_id, rationale=False):
     Otherwise returns a single label (or tuple).
     """
     # load lookup once
-    with open('Analysis/Clustering/15ClusterData/archetypeLabels.json') as f:
+    with open('Analysis/Clustering/Teams/archetypeLabels.json') as f:
         data = json.load(f)
 
     def _lookup(single_id):

@@ -157,11 +157,11 @@ for (year in 2021:2024) {
 
   # Save pca
   params_list <- list(center = pca_res$center, scale = pca_res$scale)
-  param_path <- sprintf("Analysis/Clustering/15ClusterData/%s/PCA/params.json",
+  param_path <- sprintf("Analysis/Clustering/Teams/%s/PCA/params.json",
                         year)
 
   rot_df <- as.data.frame(pca_res$rotation[, 1:keep, drop = FALSE])
-  rot_path <- sprintf("Analysis/Clustering/15ClusterData/%s/PCA/rotation.json",
+  rot_path <- sprintf("Analysis/Clustering/Teams/%s/PCA/rotation.json",
                       year)
   
   feather_df <- data.frame(
@@ -170,7 +170,7 @@ for (year in 2021:2024) {
     pca_df,                                         # already numeric
     stringsAsFactors = FALSE
   )
-  feather_path <- sprintf("Analysis/Clustering/15ClusterData/%s/PCA/data.feather", year)  
+  feather_path <- sprintf("Analysis/Clustering/Teams/%s/PCA/data.feather", year)  
   # write_json(rot_df, path = rot_path, rownames = "feature", pretty = TRUE)
   # write_json(params_list, path = param_path, auto_unbox = TRUE, pretty = TRUE)
   # write_feather(feather_df, feather_path)
@@ -185,7 +185,7 @@ for (year in 2021:2024) {
 
   # give each element the proper name
   names(loadings_list) <- features
-  loadings_path <- sprintf("Analysis/Clustering/15ClusterData/%s/PCA/loadings.json", year)
+  loadings_path <- sprintf("Analysis/Clustering/Teams/%s/PCA/loadings.json", year)
   # write_json(
   #   loadings_list,
   #   path       = loadings_path,
@@ -253,7 +253,7 @@ for (year in 2021:2024) {
 
   # Save Clustering
   profiles_df <- as.data.frame(kclu$Profiles)
-  profiles_csv_filepath <- sprintf("Analysis/Clustering/15ClusterData/%.0f/KClustering/profiles.csv", year)
+  profiles_csv_filepath <- sprintf("Analysis/Clustering/Teams/%.0f/KClustering/profiles.csv", year)
 
   labels_df <- data.frame(
     team_name = team_stats_df$team_name,
@@ -261,7 +261,7 @@ for (year in 2021:2024) {
     team_cluster = kclu$Subjects$Cluster,
     stringsAsFactors = FALSE
   )
-  labels_csv_filepath <- sprintf("Analysis/Clustering/15ClusterData/%.0f/KClustering/labels.csv", year)
+  labels_csv_filepath <- sprintf("Analysis/Clustering/Teams/%.0f/KClustering/labels.csv", year)
   # Rename columns: ID, PC1…PC<keep>, CHI
   colnames(profiles_df) <- c("ID", paste0("PC", seq_len(keep)), "CHI")
   write.csv(profiles_df, profiles_csv_filepath, row.names = FALSE)

@@ -1,0 +1,343 @@
+2025-08-02 16:17:13,323 - INFO - main:91 - Starting transfer success analysis
+2025-08-02 16:17:13,328 - INFO - load_player_data_by_year:53 - Loading data for year 2021
+2025-08-02 16:17:13,569 - INFO - load_player_data_by_year:53 - Loading data for year 2022
+2025-08-02 16:17:13,675 - INFO - load_player_data_by_year:53 - Loading data for year 2023
+2025-08-02 16:17:13,780 - INFO - load_player_data_by_year:53 - Loading data for year 2024
+2025-08-02 16:17:13,903 - INFO - main:105 - Starting to iterate over transfers
+2025-08-02 16:17:13,908 - INFO - main:120 - Processing: James Akinjo (G) - Arizona 2021 [ID: 66172]
+2025-08-02 16:17:14,577 - INFO - main:166 - Analysis Results:
+ESS: 35.0
+Position: G
+Rank: 80/181
+B-Mark Sample Size: 27
+Player Archetype(s): []
+Player Weight(s): [np.float64(1.0)]
+Team Archetype(s): []
+Team Weight(s): [np.float64(1.0)]
+Percentile Rank: 0.558
+Projected Top 30.0%: False
+Projected Bottom 40.0%: False
+Considered Success: True
+Success Score: 0.35876758121709523
+2025-08-02 16:17:14,577 - WARNING - main:195 - ✗ INCORRECT - Prediction mismatch
+2025-08-02 16:17:14,578 - INFO - main:199 - Running Stats: 0/1 = 0.000 accuracy
+2025-08-02 16:17:14,578 - INFO - main:120 - Processing: Terrell Brown (G) - Arizona 2021 [ID: 67778]
+2025-08-02 16:17:15,227 - INFO - main:166 - Analysis Results:
+ESS: 25.000000000000007
+Position: G
+Rank: 3/181
+B-Mark Sample Size: 32
+Player Archetype(s): []
+Player Weight(s): [np.float64(0.6812169024321408), np.float64(0.3187830975678591)]
+Team Archetype(s): []
+Team Weight(s): [np.float64(1.0)]
+Percentile Rank: 0.983
+Projected Top 30.0%: True
+Projected Bottom 40.0%: False
+Considered Success: False
+Success Score: -0.0814049019551953
+2025-08-02 16:17:15,227 - WARNING - main:195 - ✗ INCORRECT - Prediction mismatch
+2025-08-02 16:17:15,227 - INFO - main:199 - Running Stats: 0/2 = 0.000 accuracy
+2025-08-02 16:17:15,227 - INFO - main:120 - Processing: Justin Kier (G) - Arizona 2022 [ID: 49529]
+2025-08-02 16:17:16,300 - INFO - main:166 - Analysis Results:
+ESS: 57.0
+Position: G
+Rank: 200/361
+B-Mark Sample Size: 52
+Player Archetype(s): []
+Player Weight(s): [np.float64(1.0)]
+Team Archetype(s): []
+Team Weight(s): [np.float64(1.0)]
+Percentile Rank: 0.446
+Projected Top 30.0%: False
+Projected Bottom 40.0%: False
+Considered Success: True
+Success Score: 0.6258869604398942
+2025-08-02 16:17:16,300 - WARNING - main:195 - ✗ INCORRECT - Prediction mismatch
+2025-08-02 16:17:16,300 - INFO - main:199 - Running Stats: 0/3 = 0.000 accuracy
+2025-08-02 16:17:16,300 - INFO - main:120 - Processing: Kim Aiken Jr. (G) - Arizona 2022 [ID: 65457]
+2025-08-02 16:17:17,299 - WARNING - main:152 - Skipping because player was not here last season
+2025-08-02 16:17:17,300 - INFO - main:120 - Processing: Oumar Ballo (C) - Arizona 2022 [ID: 70681]
+2025-08-02 16:17:17,677 - WARNING - main:152 - Skipping because player was not here last season
+2025-08-02 16:17:17,677 - INFO - main:120 - Processing: Pelle Larsson (G) - Arizona 2022 [ID: 73366]
+2025-08-02 16:17:18,972 - INFO - main:166 - Analysis Results:
+ESS: 36.0
+Position: G
+Rank: 202/361
+B-Mark Sample Size: 35
+Player Archetype(s): []
+Player Weight(s): [np.float64(1.0)]
+Team Archetype(s): []
+Team Weight(s): [np.float64(1.0)]
+Percentile Rank: 0.440
+Projected Top 30.0%: False
+Projected Bottom 40.0%: False
+Considered Success: True
+Success Score: 0.28346028417511
+2025-08-02 16:17:18,972 - WARNING - main:195 - ✗ INCORRECT - Prediction mismatch
+2025-08-02 16:17:18,972 - INFO - main:199 - Running Stats: 0/4 = 0.000 accuracy
+2025-08-02 16:17:18,973 - INFO - main:120 - Processing: Courtney Ramey (G) - Arizona 2023 [ID: 66594]
+2025-08-02 16:17:20,061 - INFO - main:166 - Analysis Results:
+ESS: 73.0
+Position: G
+Rank: 239/390
+B-Mark Sample Size: 68
+Player Archetype(s): []
+Player Weight(s): [np.float64(1.0)]
+Team Archetype(s): []
+Team Weight(s): [np.float64(1.0)]
+Percentile Rank: 0.387
+Projected Top 30.0%: False
+Projected Bottom 40.0%: True
+Considered Success: True
+Success Score: 0.22831203484291418
+2025-08-02 16:17:20,061 - WARNING - main:195 - ✗ INCORRECT - Prediction mismatch
+2025-08-02 16:17:20,061 - INFO - main:199 - Running Stats: 0/5 = 0.000 accuracy
+2025-08-02 16:17:20,061 - INFO - main:120 - Processing: Matthew Lang (F) - Arizona 2023 [ID: 67563]
+2025-08-02 16:17:20,695 - WARNING - main:152 - Skipping because player was not here last season
+2025-08-02 16:17:20,695 - INFO - main:120 - Processing: Cedric Henderson Jr. (G) - Arizona 2023 [ID: 71279]
+2025-08-02 16:17:21,823 - INFO - main:166 - Analysis Results:
+ESS: 85.0
+Position: G
+Rank: 219/390
+B-Mark Sample Size: 84
+Player Archetype(s): []
+Player Weight(s): [np.float64(1.0)]
+Team Archetype(s): []
+Team Weight(s): [np.float64(1.0)]
+Percentile Rank: 0.438
+Projected Top 30.0%: False
+Projected Bottom 40.0%: False
+Considered Success: False
+Success Score: -0.4061940645447547
+2025-08-02 16:17:21,823 - INFO - main:199 - Running Stats: 0/5 = 0.000 accuracy
+2025-08-02 16:17:21,823 - INFO - main:120 - Processing: Keshad Johnson (F) - Arizona 2024 [ID: 71121]
+2025-08-02 16:17:22,564 - INFO - main:166 - Analysis Results:
+ESS: 50.0
+Position: F
+Rank: 162/216
+B-Mark Sample Size: 50
+Player Archetype(s): []
+Player Weight(s): [np.float64(1.0)]
+Team Archetype(s): []
+Team Weight(s): [np.float64(1.0)]
+Percentile Rank: 0.250
+Projected Top 30.0%: False
+Projected Bottom 40.0%: True
+Considered Success: True
+Success Score: 0.2701341138446141
+2025-08-02 16:17:22,564 - WARNING - main:195 - ✗ INCORRECT - Prediction mismatch
+2025-08-02 16:17:22,564 - INFO - main:199 - Running Stats: 0/6 = 0.000 accuracy
+2025-08-02 16:17:22,564 - INFO - main:120 - Processing: Caleb Love (G) - Arizona 2024 [ID: 72413]
+2025-08-02 16:17:23,836 - INFO - main:166 - Analysis Results:
+ESS: 75.0
+Position: G
+Rank: 81/433
+B-Mark Sample Size: 68
+Player Archetype(s): []
+Player Weight(s): [np.float64(1.0)]
+Team Archetype(s): []
+Team Weight(s): [np.float64(1.0)]
+Percentile Rank: 0.813
+Projected Top 30.0%: True
+Projected Bottom 40.0%: False
+Considered Success: True
+Success Score: 0.04994054249135817
+2025-08-02 16:17:23,836 - INFO - main:184 - ✓ CORRECT - Successful and Ranked High
+2025-08-02 16:17:23,836 - INFO - main:199 - Running Stats: 1/7 = 0.143 accuracy
+2025-08-02 16:17:23,836 - INFO - main:120 - Processing: Jaden Bradley (G) - Arizona 2024 [ID: 77082]
+2025-08-02 16:17:25,091 - INFO - main:166 - Analysis Results:
+ESS: 71.0
+Position: G
+Rank: 415/433
+B-Mark Sample Size: 61
+Player Archetype(s): []
+Player Weight(s): [np.float64(1.0)]
+Team Archetype(s): []
+Team Weight(s): [np.float64(1.0)]
+Percentile Rank: 0.042
+Projected Top 30.0%: False
+Projected Bottom 40.0%: True
+Considered Success: False
+Success Score: -0.1233602268159589
+2025-08-02 16:17:25,091 - INFO - main:189 - ✓ CORRECT - Unsuccessful and Ranked Low
+2025-08-02 16:17:25,091 - INFO - main:199 - Running Stats: 2/8 = 0.250 accuracy
+2025-08-02 16:17:25,160 - INFO - main:206 - FINAL RESULTS: 2 correct out of 8 total (0.250 accuracy rate)
+2025-08-02 16:17:25,160 - INFO - main:207 - Successful transfers: 1
+2025-08-02 16:17:25,160 - INFO - main:208 - Unsuccessful transfers: 1
+2025-08-02 16:17:25,160 - INFO - main:214 - Success rate: 0.500
+2025-08-02 16:17:25,160 - INFO - main:215 - Unsuccessful rate: 0.500
+2025-08-02 16:17:25,160 - INFO - main:217 - Chance percentage: 0.350
+2025-08-02 16:17:25,160 - INFO - main:219 - Transfer success analysis completed
+2025-08-02 16:20:00,461 - INFO - main:91 - Starting transfer success analysis
+2025-08-02 16:20:59,693 - INFO - main:91 - Starting transfer success analysis
+2025-08-02 16:20:59,699 - INFO - load_player_data_by_year:53 - Loading data for year 2021
+2025-08-02 16:20:59,942 - INFO - load_player_data_by_year:53 - Loading data for year 2022
+2025-08-02 16:21:00,049 - INFO - load_player_data_by_year:53 - Loading data for year 2023
+2025-08-02 16:21:00,152 - INFO - load_player_data_by_year:53 - Loading data for year 2024
+2025-08-02 16:21:00,276 - INFO - main:105 - Starting to iterate over transfers
+2025-08-02 16:21:00,280 - INFO - main:120 - Processing: James Akinjo (G) - Arizona 2021 [ID: 66172]
+2025-08-02 16:21:01,044 - INFO - main:166 - Analysis Results:
+ESS: 35.0
+Position: G
+Rank: 80/181
+B-Mark Sample Size: 27
+Player Archetype(s): []
+Player Weight(s): [np.float64(1.0)]
+Team Archetype(s): []
+Team Weight(s): [np.float64(1.0)]
+Percentile Rank: 0.558
+Projected Top 30.0%: False
+Projected Bottom 40.0%: False
+Considered Success: True
+Success Score: 0.35876758121709523
+2025-08-02 16:21:01,044 - WARNING - main:195 - ✗ INCORRECT - Prediction mismatch
+2025-08-02 16:21:01,044 - INFO - main:199 - Running Stats: 0/1 = 0.000 accuracy
+2025-08-02 16:21:01,044 - INFO - main:120 - Processing: Terrell Brown (G) - Arizona 2021 [ID: 67778]
+2025-08-02 16:21:01,697 - INFO - main:166 - Analysis Results:
+ESS: 25.000000000000007
+Position: G
+Rank: 3/181
+B-Mark Sample Size: 32
+Player Archetype(s): []
+Player Weight(s): [np.float64(0.6812169024321408), np.float64(0.3187830975678591)]
+Team Archetype(s): []
+Team Weight(s): [np.float64(1.0)]
+Percentile Rank: 0.983
+Projected Top 30.0%: True
+Projected Bottom 40.0%: False
+Considered Success: False
+Success Score: -0.0814049019551953
+2025-08-02 16:21:01,697 - WARNING - main:195 - ✗ INCORRECT - Prediction mismatch
+2025-08-02 16:21:01,697 - INFO - main:199 - Running Stats: 0/2 = 0.000 accuracy
+2025-08-02 16:21:01,697 - INFO - main:120 - Processing: Justin Kier (G) - Arizona 2022 [ID: 49529]
+2025-08-02 16:21:02,689 - INFO - main:166 - Analysis Results:
+ESS: 57.0
+Position: G
+Rank: 200/361
+B-Mark Sample Size: 52
+Player Archetype(s): []
+Player Weight(s): [np.float64(1.0)]
+Team Archetype(s): []
+Team Weight(s): [np.float64(1.0)]
+Percentile Rank: 0.446
+Projected Top 30.0%: False
+Projected Bottom 40.0%: False
+Considered Success: True
+Success Score: 0.6258869604398942
+2025-08-02 16:21:02,689 - WARNING - main:195 - ✗ INCORRECT - Prediction mismatch
+2025-08-02 16:21:02,689 - INFO - main:199 - Running Stats: 0/3 = 0.000 accuracy
+2025-08-02 16:21:02,689 - INFO - main:120 - Processing: Kim Aiken Jr. (G) - Arizona 2022 [ID: 65457]
+2025-08-02 16:21:03,671 - WARNING - main:152 - Skipping because player was not here last season
+2025-08-02 16:21:03,672 - INFO - main:120 - Processing: Oumar Ballo (C) - Arizona 2022 [ID: 70681]
+2025-08-02 16:21:04,101 - WARNING - main:152 - Skipping because player was not here last season
+2025-08-02 16:21:04,101 - INFO - main:120 - Processing: Pelle Larsson (G) - Arizona 2022 [ID: 73366]
+2025-08-02 16:21:05,269 - INFO - main:166 - Analysis Results:
+ESS: 36.0
+Position: G
+Rank: 202/361
+B-Mark Sample Size: 35
+Player Archetype(s): []
+Player Weight(s): [np.float64(1.0)]
+Team Archetype(s): []
+Team Weight(s): [np.float64(1.0)]
+Percentile Rank: 0.440
+Projected Top 30.0%: False
+Projected Bottom 40.0%: False
+Considered Success: True
+Success Score: 0.28346028417511
+2025-08-02 16:21:05,269 - WARNING - main:195 - ✗ INCORRECT - Prediction mismatch
+2025-08-02 16:21:05,269 - INFO - main:199 - Running Stats: 0/4 = 0.000 accuracy
+2025-08-02 16:21:05,269 - INFO - main:120 - Processing: Courtney Ramey (G) - Arizona 2023 [ID: 66594]
+2025-08-02 16:21:06,336 - INFO - main:166 - Analysis Results:
+ESS: 73.0
+Position: G
+Rank: 239/390
+B-Mark Sample Size: 68
+Player Archetype(s): []
+Player Weight(s): [np.float64(1.0)]
+Team Archetype(s): []
+Team Weight(s): [np.float64(1.0)]
+Percentile Rank: 0.387
+Projected Top 30.0%: False
+Projected Bottom 40.0%: True
+Considered Success: True
+Success Score: 0.22831203484291418
+2025-08-02 16:21:06,336 - WARNING - main:195 - ✗ INCORRECT - Prediction mismatch
+2025-08-02 16:21:06,336 - INFO - main:199 - Running Stats: 0/5 = 0.000 accuracy
+2025-08-02 16:21:06,336 - INFO - main:120 - Processing: Matthew Lang (F) - Arizona 2023 [ID: 67563]
+2025-08-02 16:21:06,967 - WARNING - main:152 - Skipping because player was not here last season
+2025-08-02 16:21:06,967 - INFO - main:120 - Processing: Cedric Henderson Jr. (G) - Arizona 2023 [ID: 71279]
+2025-08-02 16:21:08,128 - INFO - main:166 - Analysis Results:
+ESS: 85.0
+Position: G
+Rank: 219/390
+B-Mark Sample Size: 84
+Player Archetype(s): []
+Player Weight(s): [np.float64(1.0)]
+Team Archetype(s): []
+Team Weight(s): [np.float64(1.0)]
+Percentile Rank: 0.438
+Projected Top 30.0%: False
+Projected Bottom 40.0%: False
+Considered Success: False
+Success Score: -0.4061940645447547
+2025-08-02 16:21:08,128 - INFO - main:199 - Running Stats: 0/5 = 0.000 accuracy
+2025-08-02 16:21:08,128 - INFO - main:120 - Processing: Keshad Johnson (F) - Arizona 2024 [ID: 71121]
+2025-08-02 16:21:08,877 - INFO - main:166 - Analysis Results:
+ESS: 50.0
+Position: F
+Rank: 162/216
+B-Mark Sample Size: 50
+Player Archetype(s): []
+Player Weight(s): [np.float64(1.0)]
+Team Archetype(s): []
+Team Weight(s): [np.float64(1.0)]
+Percentile Rank: 0.250
+Projected Top 30.0%: False
+Projected Bottom 40.0%: True
+Considered Success: True
+Success Score: 0.2701341138446141
+2025-08-02 16:21:08,877 - WARNING - main:195 - ✗ INCORRECT - Prediction mismatch
+2025-08-02 16:21:08,877 - INFO - main:199 - Running Stats: 0/6 = 0.000 accuracy
+2025-08-02 16:21:08,878 - INFO - main:120 - Processing: Caleb Love (G) - Arizona 2024 [ID: 72413]
+2025-08-02 16:21:10,083 - INFO - main:166 - Analysis Results:
+ESS: 75.0
+Position: G
+Rank: 81/433
+B-Mark Sample Size: 68
+Player Archetype(s): []
+Player Weight(s): [np.float64(1.0)]
+Team Archetype(s): []
+Team Weight(s): [np.float64(1.0)]
+Percentile Rank: 0.813
+Projected Top 30.0%: True
+Projected Bottom 40.0%: False
+Considered Success: True
+Success Score: 0.04994054249135817
+2025-08-02 16:21:10,083 - INFO - main:184 - ✓ CORRECT - Successful and Ranked High
+2025-08-02 16:21:10,083 - INFO - main:199 - Running Stats: 1/7 = 0.143 accuracy
+2025-08-02 16:21:10,083 - INFO - main:120 - Processing: Jaden Bradley (G) - Arizona 2024 [ID: 77082]
+2025-08-02 16:21:11,249 - INFO - main:166 - Analysis Results:
+ESS: 71.0
+Position: G
+Rank: 415/433
+B-Mark Sample Size: 61
+Player Archetype(s): []
+Player Weight(s): [np.float64(1.0)]
+Team Archetype(s): []
+Team Weight(s): [np.float64(1.0)]
+Percentile Rank: 0.042
+Projected Top 30.0%: False
+Projected Bottom 40.0%: True
+Considered Success: False
+Success Score: -0.1233602268159589
+2025-08-02 16:21:11,249 - INFO - main:189 - ✓ CORRECT - Unsuccessful and Ranked Low
+2025-08-02 16:21:11,249 - INFO - main:199 - Running Stats: 2/8 = 0.250 accuracy
+2025-08-02 16:21:11,318 - INFO - main:206 - FINAL RESULTS: 2 correct out of 8 total (0.250 accuracy rate)
+2025-08-02 16:21:11,318 - INFO - main:207 - Successful transfers: 1
+2025-08-02 16:21:11,318 - INFO - main:208 - Unsuccessful transfers: 1
+2025-08-02 16:21:11,318 - INFO - main:214 - Success rate: 0.500
+2025-08-02 16:21:11,318 - INFO - main:215 - Unsuccessful rate: 0.500
+2025-08-02 16:21:11,318 - INFO - main:217 - Chance percentage: 0.350
+2025-08-02 16:21:11,318 - INFO - main:219 - Transfer success analysis completed

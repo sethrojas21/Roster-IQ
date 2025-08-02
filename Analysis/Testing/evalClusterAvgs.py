@@ -9,7 +9,7 @@ conn = sqlite3.connect('rosteriq.db')
 cluster_df = pd.DataFrame(columns=['season_year', 'pos', 'team_clu_id', 'player_clu_id', 'length', 'median', 'std'])
 for year in range(Config.START_YEAR, Config.END_YEAR_EXCLUDE):
 
-    team_df = pd.read_csv(f'Analysis/Clustering/15ClusterData/{year}/KClustering/labels.csv')
+    team_df = pd.read_csv(f'Analysis/Clustering/Teams/{year}/KClustering/labels.csv')
     for pos in Config.POSITIONS:
         pos_df = pd.read_csv(f'Analysis/Clustering/Players/{year}/KClustering/player_labels_{pos}.csv')
 

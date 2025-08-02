@@ -17,7 +17,7 @@ for year in range(Config.START_YEAR, Config.END_YEAR_EXCLUDE):
         pos_df = pd.read_csv(f'Analysis/Clustering/Players/{year}/KClustering/player_labels_{pos}.csv')
         poses_df = pd.concat([poses_df, pos_df], ignore_index=True)
     
-    team_df = pd.read_csv(f'Analysis/Clustering/15ClusterData/{year}/KClustering/labels.csv')
+    team_df = pd.read_csv(f'Analysis/Clustering/Teams/{year}/KClustering/labels.csv')
 
     merged_df = pd.merge(poses_df, team_df, how='left', on=['team_name', 'season_year'])
     all_year_df = pd.concat([all_year_df, merged_df])
