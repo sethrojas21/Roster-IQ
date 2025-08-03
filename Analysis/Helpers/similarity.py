@@ -7,7 +7,7 @@ def get_player_similarity_score(
         player_stats_df: pd.DataFrame,
         scaler: StandardScaler,
         columns: list,
-        nPercentile_vals: pd.DataFrame
+        benchmark_vals: pd.DataFrame
 ) -> float:
     """
     Apply an existing fitted StandardScaler to the given player_stats_df
@@ -19,7 +19,7 @@ def get_player_similarity_score(
         return -1  
     # Scale the player stats
     scaled_player_vec = scale_player_stats(player_stats_df_t, scaler, columns)
-    nPercentile_vec = nPercentile_vals[columns].values.reshape(1, -1)
+    benchmark_vec = benchmark_vals[columns].values.reshape(1, -1)
     # Compute cosine similarity
-    score = float(cosine_similarity(scaled_player_vec, nPercentile_vec)[0, 0])
+    score = float(cosine_similarity(scaled_player_vec, benchmark_vec)[0, 0])
     return score

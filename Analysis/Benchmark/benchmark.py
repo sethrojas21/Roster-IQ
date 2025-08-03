@@ -16,7 +16,7 @@ column_shift = 5
 
 
 def get_benchmark_stats(
-        nPercentile_players_cluster_df: pd.DataFrame,
+        benchmark_players_cluster_df: pd.DataFrame,
         cluster_weights: dict[int, float],
         player_cluster_weights: dict[int, float]
 ) -> pd.DataFrame:
@@ -29,7 +29,7 @@ def get_benchmark_stats(
     that can be used for player comparison.
     
     Args:
-        nPercentile_players_cluster_df (pd.DataFrame): DataFrame containing player stats 
+        benchmark_players_cluster_df (pd.DataFrame): DataFrame containing player stats 
                                                       with cluster assignments
         cluster_weights (dict[int, float]): Weights for each team cluster ID
         percentile (float): Percentile for statistical aggregation (default: 0.5 for median)
@@ -42,12 +42,12 @@ def get_benchmark_stats(
         ValueError: If the input DataFrame lacks required 'team_cluster' column
     """
     # Validate input DataFrame has required cluster column
-    if "team_cluster" not in nPercentile_players_cluster_df.columns:
+    if "team_cluster" not in benchmark_players_cluster_df.columns:
         raise ValueError("Input df must include a 'cluster_num' column.")
 
     # Extract statistical columns (skip metadata columns at start and cluster columns at end)
     # Rate-stat feature columns start after the first 5 metadata columns
-    stat_cols = nPercentile_players_cluster_df.columns[column_shift:-2]
+    stat_cols = benchmark_players_cluster_df.columns[column_shift:-2]
 
     # === STEP 1: Prepare clusters and weights ===
     team_clusters = list(cluster_weights.keys())
@@ -61,7 +61,7 @@ def get_benchmark_stats(
 
     # === STEP 2: Compute weighted means ===
     weighted_series = weighted_cluster_mean(
-        nPercentile_players_cluster_df,
+        benchmark_players_cluster_df,
         team_clusters=team_clusters,
         player_clusters=player_clusters,
         team_weights=team_weights,
