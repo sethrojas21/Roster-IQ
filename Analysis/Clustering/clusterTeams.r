@@ -141,7 +141,7 @@ for (year in 2021:2024) {
   pca_res <- prcomp(stats_df, center = TRUE, scale. = TRUE)  # df is pre‑scaled
   
 
-  # 2. Choose the minimum number of PCs that explain ≥ 85 % of variance
+  # 2. Choose the minimum number of PCs that explain ≥ 60 % of variance
   var_exp <- cumsum(pca_res$sdev^2) / sum(pca_res$sdev^2)
   keep    <- which(var_exp >= 0.6)[1]   # first PC count that passes threshold
 

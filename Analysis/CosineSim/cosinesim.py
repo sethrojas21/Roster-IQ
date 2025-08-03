@@ -5,6 +5,8 @@ import sqlite3
 import pandas as pd
 import Analysis.PredictBPM.queries as queries
 
+### Old code that was used to test the cosine similarity of players.
+
 conn = sqlite3.connect('rosteriq.db')
 
 c = conn.cursor()

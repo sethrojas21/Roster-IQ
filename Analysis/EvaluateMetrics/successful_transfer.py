@@ -1,6 +1,7 @@
 from typing import List
 import pandas as pd
 import numpy as np
+from Analysis.Helpers.weightedMean import weighted_cluster_mean
 
 def get_prev_new_season_data(prev_year, new_year, conn, transfer = True):
     
@@ -112,35 +113,54 @@ def successful_transfer(plyr_clusters: list, team_clusters: list, plyr_stats: pd
         and the team and player clusters they were mapped to
     """
 
-    META = ["player_name", "team_name", "season_year", "player_id", "position", 'player_id']
+    META = ["player_name", "team_name", "season_year", "player_id", "position"]
+
+    # ---- 1. identify numeric stat columns ----------------------------------
+    stats_columns = [
+        c for c in all_plyr_stats.columns
+        if c not in META + ["team_cluster", "Cluster"]
+    ]
+
+    # ---- 2. weighted mean via helper ---------------------------------------
+
+    mean_vals = weighted_cluster_mean(
+        all_plyr_stats,
+        team_clusters=team_clusters,
+        player_clusters=plyr_clusters,
+        team_weights=cluster_weights,
+        player_weights=plyr_weights,
+        stat_cols=stats_columns,
+    )
+
+    # ---- 3. build weighted dataframe once for std & ESS --------------------
     combined_df = pd.DataFrame()
-    for p_cluster, t_cluster, p_weight, t_weight in zip(plyr_clusters, team_clusters, plyr_weights, cluster_weights):
-        subset = all_plyr_stats[(all_plyr_stats['team_cluster'] == t_cluster) & (all_plyr_stats['Cluster'] == p_cluster)]
-        if not subset.empty:
-            weighted_subset = subset.copy()
-            weighted_subset['weight'] = p_weight * t_weight
-            combined_df = pd.concat([combined_df, weighted_subset], ignore_index=True)
+    for p_cluster, t_cluster, p_weight, t_weight in zip(
+            plyr_clusters, team_clusters, plyr_weights, cluster_weights):
+        subset = all_plyr_stats[
+            (all_plyr_stats["team_cluster"] == t_cluster) &
+            (all_plyr_stats["Cluster"] == p_cluster)
+        ]
+        if subset.empty:
+            continue
+        weighted_subset = subset.copy()
+        weighted_subset["weight"] = p_weight * t_weight
+        combined_df = pd.concat([combined_df, weighted_subset], ignore_index=True)
+
     if combined_df.empty:
         return (0.0, False)
 
-    columns = [col for col in combined_df.columns if col not in META + ["team_cluster", "Cluster", "weight"]]
-    stats_columns = columns
-
-    mean_vals = pd.Series(index=stats_columns, dtype=float)
+    # ---- 4. weighted std for each stat -------------------------------------
     std_vals = pd.Series(index=stats_columns, dtype=float)
     for col in stats_columns:
         vals = combined_df[col].dropna()
-        wts = combined_df.loc[vals.index, 'weight']
+        wts = combined_df.loc[vals.index, "weight"]
         if vals.empty:
-            mean_vals[col] = 0
-            std_vals[col] = 1
+            std_vals[col] = 1  # fallback when no data
         else:
-            mean_val = np.average(vals, weights=wts)
-            mean_vals[col] = mean_val
-            std_vals[col] = np.sqrt(np.average((vals - mean_val)**2, weights=wts))
-            if std_vals[col] == 0:
-                std_vals[col] = 1
+            std = np.sqrt(np.average((vals - mean_vals[col]) ** 2, weights=wts))
+            std_vals[col] = std if std != 0 else 1  # avoid divide‑by‑zero
 
+    # Player’s value vector to score
     plyr_vals = plyr_stats[stats_columns]
 
     # --- Effective Sample Size (ESS) check ---
@@ -211,4 +231,5 @@ def testing():
     plt.grid(True)
     plt.show()
 
-# testing()
+if __name__ == '__main__':
+    testing()

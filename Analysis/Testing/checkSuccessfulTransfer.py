@@ -18,7 +18,7 @@ def setup_logging():
     
     # Rotating file handler - keeps only 3 files (last 3 runs)
     file_handler = RotatingFileHandler(
-        'logs/transfer_analysis.log',
+        'logs/log1.log',
         maxBytes=50*1024*1024,  # 50MB per file
         backupCount=2  # Keep 2 backup files + current = 3 total
     )
@@ -79,7 +79,7 @@ def load_team_data(conn: sqlite3.Connection) -> Tuple[pd.DataFrame, pd.DataFrame
     all_teams_barthag = pd.read_sql("SELECT team_name, season_year, barthag_rank FROM Team_Seasons GROUP BY team_name, season_year", conn)
     top_teams_barthag = all_teams_barthag[all_teams_barthag['barthag_rank'] <= 90]
     top_teams_df = pd.merge(avail_team_df, top_teams_barthag, on=['team_name', 'season_year'], how='left').dropna()
-    sampled_teams = avail_team_df.sample(n=1000, random_state=random.randint(1, 100))
+    sampled_teams = avail_team_df.sample(n=500, random_state=random.randint(1, 100))
     
     return avail_team_df, all_teams_barthag, top_teams_df, sampled_teams
 
@@ -108,7 +108,7 @@ def main():
     unsucc_count = 0
     total = 0
     for idx, avail_team in avail_team_df.iterrows():
-        team_name = avail_team['team_name']        
+        team_name = avail_team['team_name']
 
         season_year = avail_team['season_year']
         player_id_to_replace = avail_team['player_id']  
@@ -118,8 +118,11 @@ def main():
         if team_name not in ["Arizona"]:
             continue
         logger.info(f"Processing: {player_name} ({position}) - {team_name} {season_year} [ID: {player_id_to_replace}]")
-        bmakr_plyr, cs_df = composite_score(conn, team_name, season_year, player_id_to_replace)
-
+        try:
+            bmakr_plyr, cs_df = composite_score(conn, team_name, season_year, player_id_to_replace)
+        except ValueError as e:
+            logger.error(e)
+            continue
         plyr_cluster_id = bmakr_plyr.plyr_ids
         team_cluster_id = bmakr_plyr.team_ids
         
@@ -142,9 +145,13 @@ def main():
         except Exception as e:
             logger.error(f"Error in successful_transfer calculation: {e}", exc_info=True)
 
+        # Player stats versus benchmark stats
+        logger.info(f"Player Stats:\n{plyr_stats}")
+        logger.info(f"Benchmark Stats:\n{plyr_pos_stats}")
+
         # ESS Cut-off
-        if True and ess <= 20:
-            logger.warning("ESS Sample below threshold - not moving forward")
+        if True and ess <= Config.ESS_THRESHOLD:
+            logger.warning("ESS Sample below {Config.ESS_THRESHOLD} - caution")
         
         try:
             rank = cs_df[cs_df['player_name'] == player_name].index[0]
@@ -160,8 +167,8 @@ def main():
         unsuccessCond = unsuccessPercentile and not is_succ
 
         # Log detailed analysis (using DEBUG level for verbose output)
-        logger.debug(f"Top 5 players:\n{cs_df.head(5)}")
-        logger.debug(f"Player context:\n{cs_df.iloc[rank - 2 : rank + 2]}")
+        logger.info(f"Top 5 players:\n{cs_df.head(5)}")
+        logger.info(f"Player context:\n{cs_df.iloc[rank - 2 : rank + 2]}")
         
         logger.info(f"""Analysis Results:
 ESS: {ess}

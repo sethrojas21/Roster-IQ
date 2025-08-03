@@ -27,7 +27,8 @@ def composite_ranking_percentiles(fs_df, vocrp_df, fs_w = 0.6, v_w = 0.4, sortBy
 
 def composite_score(conn, team_name, season_year, player_id_to_replace):
     """
-    Returns the benchmark player information and the rankings from the players inputted
+    Returns the benchmark player information and the rankings from the players inputted.
+    Generates a benchmark mark player and computes fit scores and value over clustered replacement player scores.
     """
     bmark_plyr = InitBenchmarkPlayer(conn, team_name, season_year, player_id_to_replace)
 
@@ -51,4 +52,5 @@ def testing():
     print(bmark_plyr.plyr_labels)
     print(bmark_plyr.team_labels)
 
-# testing()
+if __name__ == '__main__':
+    testing()

@@ -13,3 +13,4 @@ TeamPlayerInformation/
 *.rds
 *.txt
 OldPlayerInformationExtraction/apikeys.json
+*.log
