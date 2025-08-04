@@ -25,15 +25,15 @@ def composite_ranking_percentiles(fs_df, vocrp_df, fs_w = 0.6, v_w = 0.4, sortBy
     return df_sorted
 
 
-def composite_score(conn, team_name, season_year, player_id_to_replace):
+def composite_score(conn, team_name, season_year, player_id_to_replace, specific_name=None):
     """
     Returns the benchmark player information and the rankings from the players inputted.
     Generates a benchmark mark player and computes fit scores and value over clustered replacement player scores.
     """
     bmark_plyr = InitBenchmarkPlayer(conn, team_name, season_year, player_id_to_replace)
 
-    fs_df = calculate_fit_score_from_transfers(bmark_plyr, sort=False)
-    vocbp_df = calculate_vocbp_from_transfers(bmark_plyr, sort=False)
+    fs_df = calculate_fit_score_from_transfers(bmark_plyr, sort=False, specific_name=specific_name)
+    vocbp_df = calculate_vocbp_from_transfers(bmark_plyr, sort=False, specific_name=specific_name)
     cs_df = composite_ranking_percentiles(fs_df, vocbp_df)
     
     return bmark_plyr, cs_df
@@ -42,9 +42,9 @@ def testing():
     conn = sqlite3.connect('rosteriq.db')
     team = "Arizona"
 
-    player_name = "Caleb Love"
-    year = 2024
-    id = 72413
+    player_name = "James Akinjo"
+    year = 2021
+    id = 66172
     bmark_plyr, cs_df = composite_score(conn, team, year, id)
     print(cs_df.head(25))
     print(cs_df[cs_df['player_name'] == player_name])

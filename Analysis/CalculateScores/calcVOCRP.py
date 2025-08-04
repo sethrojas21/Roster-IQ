@@ -4,6 +4,7 @@ import pandas as pd
 from Analysis.Helpers.standardization import scale_player_stats
 from Analysis.Helpers.dataLoader import get_transfers
 from Analysis.Benchmark.init import InitBenchmarkPlayer
+from Analysis.CalculateScores.adjustmentFactor import apply_adjustment_factors
 
 # Position-specific stat weights; adjust values as needed
 POSITION_STAT_WEIGHTS = {
@@ -35,28 +36,6 @@ POSITION_STAT_WEIGHTS = {
         'ts_percent': 1.1,
     },
 }
-
-OFF_STAT = ['ast_percent', 'oreb_percent', 'ts_percent']
-DEF_STAT = ['dreb_percent', 'stl_percent', 'blk_percent']
-
-def get_adjustment_factor_year(season_year):
-
-    df = pd.read_csv(f'Analysis/CalculateScores/CSV/def_off_factors.csv')
-    print(f"Loaded adjustment factors for {season_year} from CSV")
-    season_df = df[df['season_year'] == season_year]
-    columns = ['team_name', 'season_year', 'off_factor', 'def_factor']
-    return season_df[columns]
-
-def apply_adjustment_factors(player_stats : pd.Series,
-                             off_factor : float,
-                             def_factor : float):
-    """
-    Apply the adjustment factors to the player's stats.
-    """
-    adjusted_stats = player_stats.copy()
-    adjusted_stats[OFF_STAT] *= off_factor
-    adjusted_stats[DEF_STAT] *= def_factor
-    return adjusted_stats
 
 def player_difference(player_stats_df,
                       scaler,
@@ -91,8 +70,8 @@ def _calculate_vocbp_scores(bmark_plyr : InitBenchmarkPlayer,
 
     # Get the adjustment factor for the season year
     if adjustment_factor:
-        adjustment_factor_df = get_adjustment_factor_year(season_year)
-    
+        adjustment_factor_df = bmark_plyr.adjustment_factor_year()
+        
     for _, plyr in iter_players_df.iterrows():
         name = plyr['player_name']
         prev_team_name = plyr.get('prev_team_name', None)

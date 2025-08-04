@@ -12,8 +12,9 @@ from Analysis.SyntheticRosters.aggregateRosterStats import aggregate_team_stats_
 from Analysis.Clustering.matchTeamToCluster import match_team_to_cluster_weights, match_team_cluster_to_label
 from Analysis.Clustering.matchPlayerToCluster import get_player_stats, match_player_to_cluster_weights, match_player_cluster_to_label
 from Analysis.Benchmark.benchmark import get_benchmark_info
-import numpy as np
-
+from Analysis.CalculateScores.adjustmentFactor import get_adjustment_factor_year
+from Analysis.EvaluateMetrics.successful_transfer import successful_transfer
+import pandas as pd
 
 class InitBenchmarkPlayer:
     """
@@ -43,7 +44,6 @@ class InitBenchmarkPlayer:
         # Clustering parameters - using k=1 for nearest cluster matching
         self.team_k = 1
         self.player_k = 2
-        max_k = 2  # Maximum clusters to consider (not currently used)
 
         # === TEAM CLUSTERING SETUP ===
         # Get the synthetic roster (team without the replaced player)
@@ -112,18 +112,10 @@ class InitBenchmarkPlayer:
             str: SQL query fragment for FS (Four Factors + Shot Selection) statistics
         """
         return """
-        -- ps.efg_percent,     # Effective field goal percentage (commented out)
-        -- ps.ast_percent,     # Assist percentage (commented out)
-        -- ps.oreb_percent,    # Offensive rebound percentage (commented out)
-        -- ps.dreb_percent,    # Defensive rebound percentage (commented out)
-        -- ps.tov_percent,     # Turnover percentage (commented out)
-        -- ps.ft_percent,      # Free throw percentage (commented out)
-        -- ps.stl_percent,     # Steal percentage (commented out)
-        -- ps.blk_percent,     # Block percentage (commented out)
         ps.usg_percent,                                    -- Usage percentage
         (ps.threeA / ps.FGA) AS threeRate,                -- Three-point attempt rate
         (ps.ast_pg * ps.adj_gp) / ps.FGA AS ast_fga,      -- Assists per field goal attempt
-        ps.FGA / ps.adj_gp AS fg_pg,                       -- Field goal attempts per game
+        ps.FGA * 100 / ps.POSS AS fga_per100,          -- Field goal attempts per 100 possessions
         ps.ftr,                                            -- Free throw rate
         (ps.rimA / ps.FGA) AS rimRate,                     -- Rim shot attempt rate
         (ps.midA / ps.FGA) AS midRate                      -- Mid-range shot attempt rate
@@ -145,12 +137,6 @@ class InitBenchmarkPlayer:
             str: SQL query fragment for VOCBP statistics
         """
         return """
-        -- (ps.AST / ps.POSS) * 100 AS ast100,      # Assists per 100 possessions (commented)
-        -- (ps.OREB / ps.POSS) * 100 AS oreb100,    # Off rebounds per 100 poss (commented)
-        -- (ps.DREB / ps.POSS) * 100 AS dreb100,    # Def rebounds per 100 poss (commented)
-        -- (CAST(ps.STL AS REAL) * 100 / ps.POSS) AS stl100,  # Steals per 100 poss (commented)
-        --(CAST(ps.BLK AS REAL) * 100 / ps.POSS) AS blk100,   # Blocks per 100 poss (commented)
-        -- ps.tov_percent,                           # Turnover percentage (commented)
         ps.ast_percent,          -- Percentage of team assists while on court
         ps.oreb_percent,         -- Percentage of offensive rebounds grabbed
         ps.dreb_percent,         -- Percentage of defensive rebounds grabbed
@@ -158,44 +144,9 @@ class InitBenchmarkPlayer:
         ps.stl_percent,          -- Percentage of opponent possessions ending in steal
         ps.blk_percent,          -- Percentage of opponent 2PA blocked
         ps.ts_percent            -- True shooting percentage (overall efficiency)
-    """
+    """ 
 
-    def effective_sample_size(weights, lengths):
-        """
-        Calculate the effective sample size for weighted cluster analysis.
-        
-        This method computes how many "effective" observations we have when
-        combining multiple clusters with different weights and sizes. It accounts
-        for the fact that higher weights and larger clusters contribute more to
-        the overall sample.
-        
-        Args:
-            weights (list): Weight of each cluster in the analysis
-            lengths (list): Number of players in each cluster
-            
-        Returns:
-            float: Effective sample size accounting for cluster weights and sizes
-        """
-        # Distribute cluster weight equally among all players in that cluster
-        expanded_weights = []
-        for w, l in zip(weights, lengths):
-            if l > 0:  # Only process clusters with players
-                # Each player gets equal share of cluster's total weight
-                expanded_weights.extend([w / l] * l)
-        
-        expanded_weights = np.array(expanded_weights)
-        
-        # Handle edge case of no weights
-        if expanded_weights.sum() == 0:
-            return 0
-        
-        # Calculate effective sample size using the formula:
-        # ESS = (sum of weights)² / (sum of squared weights)
-        # This gives the equivalent number of equally-weighted observations
-        return (expanded_weights.sum() ** 2) / (expanded_weights ** 2).sum()
-        
-
-    def fs_benchmark(self, adaptive_k = True):
+    def fs_benchmark(self):
         """
         Get or compute Four Factors + Shot Selection benchmark data.
         
@@ -313,3 +264,64 @@ class InitBenchmarkPlayer:
             return self.vocbp_benchmark_dict_saved['vals']
         
         return self.vocbp_benchmark()['vals']
+    
+    # Calculate adjustment factors for the player being replaced
+    def adjustment_factor_year(self):
+        """
+        Get the adjustment factor for the replaced player based on their previous team.
+        
+        Returns:
+            pd.DataFrame: DataFrame containing adjustment factors for the replaced player's previous team
+        """
+        prev_year = self.season_year - 1
+        return get_adjustment_factor_year(prev_year)
+
+    def successful_transfer(self, 
+                            plyr_stats : pd.Series,
+                            all_plyr_stats : pd.DataFrame,
+                            off_factor: float = None,
+                            def_factor : float = None):
+        """
+        Evaluate if a player transfer is successful based on clustering and statistics.
+        
+        Args:
+            plyr_clusters (list): List of player cluster IDs
+            team_clusters (list): List of team cluster IDs
+            plyr_stats (pd.Series): Player statistics for the current season
+            all_plyr_stats (pd.DataFrame): DataFrame of all players' stats from the previous season
+            plyr_weights (list): Weights for player clusters
+            cluster_weights (list): Weights for team clusters
+            off_factor (float, optional): Offensive adjustment factor
+            def_factor (float, optional): Defensive adjustment factor
+            debug (bool, optional): Whether to print debug information
+            
+        Returns:
+            tuple: (score, is_successful, ess_score)
+        """
+        plyr_clusters = self.plyr_ids
+        team_clusters = self.team_ids
+        plyr_weights = self.plyr_weights
+        team_weights = self.team_weights
+
+        return successful_transfer(
+            plyr_clusters,
+            team_clusters,
+            plyr_stats,
+            all_plyr_stats,
+            plyr_weights,
+            team_weights,
+            off_factor=off_factor,
+            def_factor=def_factor,
+            debug=False
+        )
+
+    def __repr__(self):
+        return f"InitBenchmarkPlayer(team_name={self.team_name}, season_year={self.season_year}, replaced_plyr_id={self.replaced_plyr_id})"
+
+    def __str__(self):
+        return f"Benchmark Player for {self.team_name} in {self.season_year} replacing player ID {self.replaced_plyr_id}"
+
+    def __len__(self):
+        return self.length
+
+

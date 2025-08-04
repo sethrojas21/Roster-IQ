@@ -94,7 +94,7 @@ def save_def_off_factors(conn, start_year, end_year_exc):
     """
     df = def_off_factor_years(conn, start_year, end_year_exc)
 
-    df.to_csv(f'Analysis/CalculateScores/CSV/def_off_factors_{start_year}_{end_year_exc - 1}.csv', index=False)
+    df.to_csv(f'Analysis/CalculateScores/CSV/def_off_factors.csv', index=False)
 
 def print_vocbp_summary(team_eff_df, year):
     """Print a comprehensive summary of the VOCBP adjustment factors and their relationship to team rankings."""
@@ -219,6 +219,41 @@ def print_vocbp_summary(team_eff_df, year):
     for _, row in easiest_sos.iterrows():
         print(f"  {row['team_name']:<25} Rank: {row['barthag_rank']:>3} | SOS: {row['sos']:>6.2f} | Off: {row['off_factor']:.3f} | Def: {row['def_factor']:.3f}")
 
+OFF_STAT = ['ast_percent', 'oreb_percent', 'ts_percent', 'porpag']
+DEF_STAT = ['dreb_percent', 'stl_percent', 'blk_percent', 'dporpag']
+
+def get_adjustment_factor_year(season_year):
+
+    df = pd.read_csv(f'Analysis/CalculateScores/CSV/def_off_factors.csv')
+    print(f"Loaded adjustment factors for {season_year} from CSV")
+    season_df = df[df['season_year'] == season_year]
+    columns = ['team_name', 'season_year', 'off_factor', 'def_factor']
+    return season_df[columns]
+
+def get_adjustment_factors_team_year(team_name, season_year):
+    """
+    Get the adjustment factors for a specific team in a given season.
+    """
+    df = get_adjustment_factor_year(season_year)
+    team_df = df[df['team_name'] == team_name]
+    
+    if team_df.empty:
+        raise ValueError(f"No adjustment factors found for {team_name} in {season_year}")
+    
+    return team_df.iloc[0][['off_factor', 'def_factor']].to_dict()
+
+def apply_adjustment_factors(player_stats : pd.Series,
+                             off_factor : float,
+                             def_factor : float):
+    """
+    Apply the adjustment factors to the player's stats.
+    """
+    off_columns = [col for col in player_stats.index if col in OFF_STAT]
+    def_columns = [col for col in player_stats.index if col in DEF_STAT]
+    adjusted_stats = player_stats.copy()
+    adjusted_stats[off_columns] *= off_factor
+    adjusted_stats[def_columns] *= def_factor
+    return adjusted_stats
 
 ### TESTING
 
@@ -226,4 +261,4 @@ if __name__ == "__main__":
     import sqlite3
     from Analysis.config import Config
     conn= sqlite3.connect('rosteriq.db')
-    save_def_off_factors(conn, start_year=Config.START_YEAR, end_year_exc=Config.END_YEAR_EXCLUDE)
+    save_def_off_factors(conn, start_year=Config.START_YEAR - 1, end_year_exc=Config.END_YEAR_EXCLUDE)
