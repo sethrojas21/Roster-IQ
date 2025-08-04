@@ -348,6 +348,7 @@ def get_transfers(connection, incoming_season_year, position, player_stats_fragm
         p.player_name,
         ps.player_id,
         ps.season_year,
+        ps.team_name AS prev_team_name,
         {player_stats_fragment}        
     FROM Player_Seasons AS ps
     JOIN Player_Seasons AS ps_next_year
