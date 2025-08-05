@@ -114,18 +114,102 @@ def print_vocbp_summary(team_eff_df, year):
     sos_off_corr = team_eff_df['sos'].corr(team_eff_df['off_factor'])
     sos_def_corr = team_eff_df['sos'].corr(team_eff_df['def_factor'])
     
+    # Calculate R² values (coefficient of determination)
+    barthag_off_r2 = barthag_off_corr ** 2
+    barthag_def_r2 = barthag_def_corr ** 2
+    sos_off_r2 = sos_off_corr ** 2
+    sos_def_r2 = sos_def_corr ** 2
+    
     print(f"\n=== CORRELATION ANALYSIS ===")
-    print(f"BartHag Rank vs Offensive Factor: {barthag_off_corr:.3f}")
-    print(f"BartHag Rank vs Defensive Factor: {barthag_def_corr:.3f}")
-    print(f"SOS vs Offensive Factor:          {sos_off_corr:.3f}")
-    print(f"SOS vs Defensive Factor:          {sos_def_corr:.3f}")
+    print(f"BartHag Rank vs Offensive Factor: r = {barthag_off_corr:.3f}, R² = {barthag_off_r2:.3f}")
+    print(f"BartHag Rank vs Defensive Factor: r = {barthag_def_corr:.3f}, R² = {barthag_def_r2:.3f}")
+    print(f"SOS vs Offensive Factor:          r = {sos_off_corr:.3f}, R² = {sos_off_r2:.3f}")
+    print(f"SOS vs Defensive Factor:          r = {sos_def_corr:.3f}, R² = {sos_def_r2:.3f}")
     
     # Additional correlations for context
     barthag_sos_corr = team_eff_df['barthag_rank'].corr(team_eff_df['sos'])
-    print(f"BartHag Rank vs SOS:              {barthag_sos_corr:.3f}")
+    barthag_sos_r2 = barthag_sos_corr ** 2
+    print(f"BartHag Rank vs SOS:              r = {barthag_sos_corr:.3f}, R² = {barthag_sos_r2:.3f}")
+    
+    # Cross-correlation between factors
+    factor_corr = team_eff_df['off_factor'].corr(team_eff_df['def_factor'])
+    factor_r2 = factor_corr ** 2
+    print(f"Offensive vs Defensive Factor:    r = {factor_corr:.3f}, R² = {factor_r2:.3f}")
+    
+    # Methodology evaluation
+    print(f"\n=== METHODOLOGY EVALUATION ===")
+    print(f"R² Interpretation (% of variance explained):")
+    print(f"  • BartHag → Off Factor: {barthag_off_r2*100:.1f}% (should be low - good teams don't necessarily face easier defenses)")
+    print(f"  • BartHag → Def Factor: {barthag_def_r2*100:.1f}% (should be low - good teams don't necessarily face easier offenses)")
+    print(f"  • SOS → Off Factor:     {sos_off_r2*100:.1f}% (should be moderate - teams with tough schedules face better defenses)")
+    print(f"  • SOS → Def Factor:     {sos_def_r2*100:.1f}% (should be moderate - teams with tough schedules face better offenses)")
+    print(f"  • Off ↔ Def Factors:    {factor_r2*100:.1f}% (should be moderate - teams face similar quality on both ends)")
+    
+    # Evaluation criteria
+    print(f"\n=== ADJUSTMENT METHODOLOGY ASSESSMENT ===")
+    
+    # 1. Independence from team quality (low BartHag correlation)
+    if barthag_off_r2 < 0.1 and barthag_def_r2 < 0.1:
+        barthag_assessment = "✓ GOOD"
+    elif barthag_off_r2 < 0.2 and barthag_def_r2 < 0.2:
+        barthag_assessment = "~ ACCEPTABLE"
+    else:
+        barthag_assessment = "✗ CONCERNING"
+    print(f"1. Independence from Team Quality: {barthag_assessment}")
+    print(f"   → Low correlation with BartHag ranking ensures adjustments reflect schedule, not team ability")
+    
+    # 2. Relationship with schedule strength
+    if sos_off_r2 > 0.15 and sos_def_r2 > 0.15:
+        sos_assessment = "✓ GOOD"
+    elif sos_off_r2 > 0.05 and sos_def_r2 > 0.05:
+        sos_assessment = "~ ACCEPTABLE"
+    else:
+        sos_assessment = "✗ CONCERNING"
+    print(f"2. Relationship with SOS: {sos_assessment}")
+    print(f"   → Moderate correlation with SOS confirms adjustments capture schedule difficulty")
+    
+    # 3. Factor balance
+    if 0.1 < factor_r2 < 0.5:
+        balance_assessment = "✓ GOOD"
+    elif factor_r2 < 0.7:
+        balance_assessment = "~ ACCEPTABLE"
+    else:
+        balance_assessment = "✗ CONCERNING"
+    print(f"3. Offensive/Defensive Balance: {balance_assessment}")
+    print(f"   → Moderate correlation between factors shows teams face similar quality on both ends")
+    
+    # 4. Factor distribution
+    off_range = team_eff_df['off_factor'].max() - team_eff_df['off_factor'].min()
+    def_range = team_eff_df['def_factor'].max() - team_eff_df['def_factor'].min()
+    if 0.15 < off_range < 0.35 and 0.15 < def_range < 0.35:
+        range_assessment = "✓ GOOD"
+    elif 0.1 < off_range < 0.4 and 0.1 < def_range < 0.4:
+        range_assessment = "~ ACCEPTABLE"
+    else:
+        range_assessment = "✗ CONCERNING"
+    print(f"4. Factor Range: {range_assessment}")
+    print(f"   → Off range: {off_range:.3f}, Def range: {def_range:.3f} (should be 0.15-0.30 for meaningful adjustments)")
+    
+    # Overall assessment
+    assessments = [barthag_assessment, sos_assessment, balance_assessment, range_assessment]
+    good_count = sum(1 for a in assessments if "✓" in a)
+    acceptable_count = sum(1 for a in assessments if "~" in a)
+    
+    print(f"\n=== OVERALL METHODOLOGY RATING ===")
+    if good_count >= 3:
+        overall = "EXCELLENT - Methodology is sound and effective"
+    elif good_count >= 2 or (good_count >= 1 and acceptable_count >= 2):
+        overall = "GOOD - Methodology is solid with minor concerns"
+    elif good_count >= 1 or acceptable_count >= 3:
+        overall = "ACCEPTABLE - Methodology works but has notable limitations"
+    else:
+        overall = "POOR - Methodology needs significant revision"
+    
+    print(f"Rating: {overall}")
+    print(f"✓ Good: {good_count}/4, ~ Acceptable: {acceptable_count}/4, ✗ Concerning: {4-good_count-acceptable_count}/4")
     
     # Interpretation of correlations
-    print(f"\n=== CORRELATION INTERPRETATIONS ===")
+    print(f"\n=== DETAILED CORRELATION INTERPRETATIONS ===")
     
     # BartHag correlations
     if abs(barthag_off_corr) > 0.3:
@@ -137,7 +221,7 @@ def print_vocbp_summary(team_eff_df, year):
         else:
             print("  (Worse ranked teams tend to have higher offensive adjustments)")
     else:
-        print("→ Weak correlation between BartHag ranking and offensive adjustment")
+        print("→ Weak correlation between BartHag ranking and offensive adjustment (GOOD)")
         
     if abs(barthag_def_corr) > 0.3:
         def_strength = "strong" if abs(barthag_def_corr) > 0.5 else "moderate"
@@ -148,7 +232,7 @@ def print_vocbp_summary(team_eff_df, year):
         else:
             print("  (Worse ranked teams tend to have higher defensive adjustments)")
     else:
-        print("→ Weak correlation between BartHag ranking and defensive adjustment")
+        print("→ Weak correlation between BartHag ranking and defensive adjustment (GOOD)")
     
     # SOS correlations
     if abs(sos_off_corr) > 0.3:
@@ -156,22 +240,22 @@ def print_vocbp_summary(team_eff_df, year):
         sos_off_direction = "positive" if sos_off_corr > 0 else "negative"
         print(f"→ {sos_off_strength.title()} {sos_off_direction} correlation between SOS and offensive adjustment")
         if sos_off_corr > 0:
-            print("  (Teams with tougher schedules get higher offensive adjustments)")
+            print("  (Teams with tougher schedules get higher offensive adjustments - GOOD)")
         else:
-            print("  (Teams with easier schedules get higher offensive adjustments)")
+            print("  (Teams with easier schedules get higher offensive adjustments - UNEXPECTED)")
     else:
-        print("→ Weak correlation between SOS and offensive adjustment")
+        print("→ Weak correlation between SOS and offensive adjustment (CONCERNING)")
         
     if abs(sos_def_corr) > 0.3:
         sos_def_strength = "strong" if abs(sos_def_corr) > 0.5 else "moderate"
         sos_def_direction = "positive" if sos_def_corr > 0 else "negative"
         print(f"→ {sos_def_strength.title()} {sos_def_direction} correlation between SOS and defensive adjustment")
         if sos_def_corr > 0:
-            print("  (Teams with tougher schedules get higher defensive adjustments)")
+            print("  (Teams with tougher schedules get higher defensive adjustments - GOOD)")
         else:
-            print("  (Teams with easier schedules get higher defensive adjustments)")
+            print("  (Teams with easier schedules get higher defensive adjustments - UNEXPECTED)")
     else:
-        print("→ Weak correlation between SOS and defensive adjustment")
+        print("→ Weak correlation between SOS and defensive adjustment (CONCERNING)")
     
     # Top and bottom teams by BartHag ranking
     print(f"\n=== TOP 10 TEAMS BY BARTHAG RANKING ===")
@@ -218,6 +302,25 @@ def print_vocbp_summary(team_eff_df, year):
     easiest_sos = team_eff_df.nsmallest(5, 'sos')[['team_name', 'barthag_rank', 'sos', 'off_factor', 'def_factor']]
     for _, row in easiest_sos.iterrows():
         print(f"  {row['team_name']:<25} Rank: {row['barthag_rank']:>3} | SOS: {row['sos']:>6.2f} | Off: {row['off_factor']:.3f} | Def: {row['def_factor']:.3f}")
+        
+    print(f"\n=== STATISTICAL COLUMNS BEING ADJUSTED ===")
+    print(f"Offensive stats (OFF_STAT): {OFF_STAT}")
+    print(f"Defensive stats (DEF_STAT): {DEF_STAT}")
+    print(f"→ These correspond to the VOCBP query columns that will be adjusted by the factors")
+    
+    return {
+        'barthag_off_corr': barthag_off_corr,
+        'barthag_def_corr': barthag_def_corr,
+        'sos_off_corr': sos_off_corr,
+        'sos_def_corr': sos_def_corr,
+        'barthag_off_r2': barthag_off_r2,
+        'barthag_def_r2': barthag_def_r2,
+        'sos_off_r2': sos_off_r2,
+        'sos_def_r2': sos_def_r2,
+        'factor_corr': factor_corr,
+        'factor_r2': factor_r2,
+        'overall_assessment': overall
+    }
 
 OFF_STAT = ['ast_percent', 'oreb_percent', 'ts_percent', 'porpag']
 DEF_STAT = ['dreb_percent', 'stl_percent', 'blk_percent', 'dporpag']
@@ -302,5 +405,71 @@ def apply_adj_fact_to_plyr_df(player_stats_df : pd.DataFrame,
 if __name__ == "__main__":
     import sqlite3
     from Analysis.config import Config
-    conn= sqlite3.connect('rosteriq.db')
-    save_def_off_factors(conn, start_year=Config.START_YEAR - 1, end_year_exc=Config.END_YEAR_EXCLUDE)
+    
+    # Connect to database
+    conn = sqlite3.connect('rosteriq.db')
+    
+    # Test with 2023 season as an example
+    test_year = 2023
+    print(f"Generating adjustment factors and analysis for {test_year} season...")
+    
+    # Generate the adjustment factors for the test year
+    team_eff_df = def_off_factor_year(conn, test_year)
+    
+    # Run comprehensive summary
+    results = print_vocbp_summary(team_eff_df, test_year)
+    
+    # Also test a few years to see consistency
+    print(f"\n" + "="*80)
+    print("MULTI-YEAR CONSISTENCY CHECK")
+    print("="*80)
+    
+    years_to_test = [2021, 2022, 2023, 2024]
+    multi_year_results = {}
+    
+    for year in years_to_test:
+        print(f"\n--- {year} Season Summary ---")
+        try:
+            year_df = def_off_factor_year(conn, year)
+            year_results = print_vocbp_summary(year_df, year)
+            multi_year_results[year] = year_results
+            print(f"{year} ✓ Complete")
+        except Exception as e:
+            print(f"{year} ✗ Error: {e}")
+    
+    # Summary across years
+    print(f"\n" + "="*80)
+    print("CROSS-YEAR METHODOLOGY ASSESSMENT")
+    print("="*80)
+    
+    if multi_year_results:
+        print("Consistency Metrics Across Years:")
+        print(f"{'Year':<6} {'BH-Off R²':<10} {'BH-Def R²':<10} {'SOS-Off R²':<11} {'SOS-Def R²':<11} {'Assessment'}")
+        print("-" * 75)
+        
+        for year, results in multi_year_results.items():
+            print(f"{year:<6} {results['barthag_off_r2']:<10.3f} {results['barthag_def_r2']:<10.3f} {results['sos_off_r2']:<11.3f} {results['sos_def_r2']:<11.3f} {results['overall_assessment']}")
+            
+        # Calculate averages
+        avg_barthag_off_r2 = np.mean([r['barthag_off_r2'] for r in multi_year_results.values()])
+        avg_barthag_def_r2 = np.mean([r['barthag_def_r2'] for r in multi_year_results.values()])
+        avg_sos_off_r2 = np.mean([r['sos_off_r2'] for r in multi_year_results.values()])
+        avg_sos_def_r2 = np.mean([r['sos_def_r2'] for r in multi_year_results.values()])
+        
+        print("-" * 75)
+        print(f"{'AVG':<6} {avg_barthag_off_r2:<10.3f} {avg_barthag_def_r2:<10.3f} {avg_sos_off_r2:<11.3f} {avg_sos_def_r2:<11.3f}")
+        
+        print(f"\nFinal Methodology Assessment:")
+        print(f"• Independence from team quality (low BartHag R²): {avg_barthag_off_r2:.3f}, {avg_barthag_def_r2:.3f}")
+        print(f"• Relationship with schedule strength (SOS R²): {avg_sos_off_r2:.3f}, {avg_sos_def_r2:.3f}")
+        
+        if avg_barthag_off_r2 < 0.1 and avg_barthag_def_r2 < 0.1 and avg_sos_off_r2 > 0.15 and avg_sos_def_r2 > 0.15:
+            final_assessment = "✓ EXCELLENT - Methodology is statistically sound across multiple years"
+        elif avg_barthag_off_r2 < 0.2 and avg_barthag_def_r2 < 0.2 and avg_sos_off_r2 > 0.1 and avg_sos_def_r2 > 0.1:
+            final_assessment = "✓ GOOD - Methodology is solid with consistent performance"
+        else:
+            final_assessment = "~ NEEDS IMPROVEMENT - Some metrics show concerning patterns"
+            
+        print(f"\nOVERALL: {final_assessment}")
+    
+    conn.close()
