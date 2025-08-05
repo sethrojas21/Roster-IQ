@@ -114,7 +114,7 @@ def main():
         player_name = conn.execute("SELECT player_name FROM Players WHERE player_id = ?", (int(player_id_to_replace),)).fetchone()[0]
         position = conn.execute("SELECT position FROM Player_Seasons WHERE player_id = ? AND season_year = ?",
                                 (player_id_to_replace, season_year)).fetchone()[0] 
-        if team_name not in ["Arizona"]:
+        if team_name not in ["Oregon"]:
             continue
         logger.info(f"Processing: {player_name} ({position}) - {team_name} {season_year} [ID: {player_id_to_replace}]")
         try:

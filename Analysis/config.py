@@ -11,6 +11,8 @@ class Config:
         "C" : "Centers"
     }
 
+    META = {"player_name", "position", "season_year", "team_name", "player_id"}
+
     TOP_PERCENT = 0.3
     BOTTOM_PERCENT = 0.4
     SAMPLE_SIZE_THRESHOLD = 30

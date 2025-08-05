@@ -242,7 +242,7 @@ def get_adjustment_factors_team_year(team_name, season_year):
     
     return team_df.iloc[0][['off_factor', 'def_factor']].to_dict()
 
-def apply_adjustment_factors(player_stats : pd.Series,
+def apply_adj_fact_to_plyr_srs(player_stats : pd.Series,
                              off_factor : float,
                              def_factor : float):
     """
@@ -254,6 +254,48 @@ def apply_adjustment_factors(player_stats : pd.Series,
     adjusted_stats[off_columns] *= off_factor
     adjusted_stats[def_columns] *= def_factor
     return adjusted_stats
+
+def apply_adj_fact_to_plyr_df(player_stats_df : pd.DataFrame,
+                              season_year : int):
+    """
+    Apply adjustment factors to all players in the DataFrame based on their team's schedule strength.
+    
+    Args:
+        player_stats_df: DataFrame containing player statistics with 'team_name' column
+        season_year: Season year to get adjustment factors for
+    
+    Returns:
+        pd.DataFrame: Copy of the DataFrame with adjusted statistics
+    """
+    # Create a copy to avoid modifying the original DataFrame
+    adjusted_df = player_stats_df.copy()
+    
+    # Get adjustment factors for all teams in this season
+    adj_fact_team_df = get_adjustment_factor_year(season_year=season_year)
+
+    print("INSIDE THE FUNCTION")
+    
+    # Apply adjustments for each player
+    for idx, (_, plyr) in enumerate(adjusted_df.iterrows()):
+        team_name = plyr.get('team_name', None)
+        if team_name:
+            # Find team adjustment factors
+            team_matches = adj_fact_team_df[adj_fact_team_df['team_name'] == team_name]
+            if not team_matches.empty:
+                team_adj_srs = team_matches.iloc[0]
+                off_factor = team_adj_srs['off_factor']
+                def_factor = team_adj_srs['def_factor']
+                
+                # Apply adjustments to this player's stats
+                adj_plyr_stats = apply_adj_fact_to_plyr_srs(player_stats=plyr,
+                                                            off_factor=off_factor,
+                                                            def_factor=def_factor)
+                
+                # Update the adjusted DataFrame with the new stats
+                adjusted_df.iloc[idx] = adj_plyr_stats
+    
+    return adjusted_df
+
 
 ### TESTING
 

@@ -2,7 +2,7 @@ from typing import List
 import pandas as pd
 import numpy as np
 from Analysis.Helpers.weightedMean import weighted_cluster_mean
-from Analysis.CalculateScores.adjustmentFactor import apply_adjustment_factors
+from Analysis.CalculateScores.adjustmentFactor import apply_adj_fact_to_plyr_srs
 
 def successful_transfer(plyr_clusters: list, 
                         team_clusters: list, 
@@ -20,7 +20,7 @@ def successful_transfer(plyr_clusters: list,
     """
 
     if off_factor and def_factor:
-        plyr_stats = apply_adjustment_factors(plyr_stats, off_factor, def_factor)
+        plyr_stats = apply_adj_fact_to_plyr_srs(plyr_stats, off_factor, def_factor)
 
     META = ["player_name", "team_name", "season_year", "player_id", "position"]
 

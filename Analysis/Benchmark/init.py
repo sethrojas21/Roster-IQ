@@ -97,20 +97,6 @@ class InitBenchmarkPlayer:
 
 
     def fs_query():
-        """
-        SQL query fragment for Four Factors + Shot Selection statistics.
-        
-        This query selects advanced basketball statistics focused on:
-        - Usage percentage: How much of team's possessions a player uses
-        - Three-point rate: Percentage of shots taken from beyond the arc
-        - Assist-to-FGA ratio: Playmaking relative to shot attempts
-        - Field goal attempts per game: Volume of shot attempts
-        - Free throw rate: Ability to get to the free throw line
-        - Shot location rates: Distribution of shots by court area (rim, mid-range)
-        
-        Returns:
-            str: SQL query fragment for FS (Four Factors + Shot Selection) statistics
-        """
         return """
         ps.usg_percent,                                    -- Usage percentage
         (ps.threeA / ps.FGA) AS threeRate,                -- Three-point attempt rate
@@ -123,16 +109,6 @@ class InitBenchmarkPlayer:
 
     def vocbp_query():
         """
-        SQL query fragment for Value Over Collegiate Baseline Player statistics.
-        
-        This query selects percentage-based statistics that measure a player's
-        contribution relative to collegiate baseline performance:
-        - Assist percentage: Share of team assists while on court
-        - Rebounding percentages: Share of available rebounds
-        - Free throw percentage: Shooting accuracy from the line
-        - Defensive percentages: Steals and blocks relative to opportunities
-        - True shooting percentage: Overall shooting efficiency
-        
         Returns:
             str: SQL query fragment for VOCBP statistics
         """
@@ -170,7 +146,8 @@ class InitBenchmarkPlayer:
                                                              self.season_year,                                                              
                                                              self.team_clusterID_weights_dict,
                                                              self.plyr_clusterID_weights_dict,
-                                                             self.replaced_plyr_pos)
+                                                             self.replaced_plyr_pos,
+                                                             is_vocbp=False)
 
         # Package results into dictionary
         dict = {
@@ -183,6 +160,31 @@ class InitBenchmarkPlayer:
         self.length = lth
         return dict
     
+    def fs_benchmark_indices(self):
+        """
+        Get the indices of the FS benchmark values.
+        
+        This method retrieves the indices of the FS benchmark values for use in
+        inverse transformation and other operations.
+        
+        Returns:
+            pd.Index: Indices of the FS benchmark values
+        """
+        return self.fs_bmark_srs().index
+    
+    def fs_benchmark_values(self):
+        return self.fs_bmark_srs().values
+    
+    def fs_benchmark_unscaled(self):
+        fs_benchmark = self.fs_bmark_srs()
+        # Convert to numpy array if it's a pandas Series, then reshape to 2D for inverse_transform
+        if hasattr(fs_benchmark, 'values'):
+            fs_benchmark = fs_benchmark.values
+        fs_benchmark_2d = fs_benchmark.reshape(1, -1)
+        indices = self.fs_benchmark_indices()
+        unscaled_arr = self.fs_benchmark_dict_saved['scalar'].inverse_transform(fs_benchmark_2d)
+        return pd.Series(unscaled_arr.flatten(), index=indices)
+
     def fs_scalar(self):
         """
         Get the StandardScaler for Four Factors + Shot Selection statistics.
@@ -195,13 +197,7 @@ class InitBenchmarkPlayer:
         
         return self.fs_benchmark()['scalar']
         
-    def fs_bmark_vals(self):
-        """
-        Get the benchmark values for Four Factors + Shot Selection statistics.
-        
-        Returns:
-            np.ndarray: Representative/median values for FS statistics in player's context
-        """
+    def fs_bmark_srs(self):
         if self.fs_benchmark_dict_saved:
             return self.fs_benchmark_dict_saved['vals']
         
@@ -228,7 +224,8 @@ class InitBenchmarkPlayer:
                                                              self.season_year,                                                              
                                                              self.team_clusterID_weights_dict,
                                                              self.plyr_clusterID_weights_dict,
-                                                             self.replaced_plyr_pos)
+                                                             self.replaced_plyr_pos,
+                                                             is_vocbp=True)
 
         # Package results into dictionary
         dict = {
@@ -241,6 +238,28 @@ class InitBenchmarkPlayer:
         self.length = lth
         return dict
     
+    def vocbp_benchmark_indices(self):
+        """
+        Get the indices of the VOCBP benchmark values.
+        
+        This method retrieves the indices of the VOCBP benchmark values for use in
+        inverse transformation and other operations.
+        
+        Returns:
+            pd.Index: Indices of the VOCBP benchmark values
+        """
+        return self.vocbp_benchmark()['vals'].index
+    
+    def vocbp_benchmark_unscaled(self):
+        vocbp_benchmark = self.vocbp_bmark_srs()
+        # Convert to numpy array if it's a pandas Series, then reshape to 2D for inverse_transform
+        if hasattr(vocbp_benchmark, 'values'):
+            vocbp_benchmark = vocbp_benchmark.values
+        vocbp_benchmark_2d = vocbp_benchmark.reshape(1, -1)
+        indices = self.vocbp_benchmark_indices()
+        unscaled_arr = self.vocbp_scalar().inverse_transform(vocbp_benchmark_2d)
+        return pd.Series(unscaled_arr.flatten(), index=indices)
+
     def vocbp_scalar(self):
         """
         Get the StandardScaler for Value Over Collegiate Baseline Player statistics.
@@ -253,7 +272,7 @@ class InitBenchmarkPlayer:
         
         return self.vocbp_benchmark()['scalar']
         
-    def vocbp_bmark_vals(self):
+    def vocbp_bmark_srs(self):
         """
         Get the benchmark values for Value Over Collegiate Baseline Player statistics.
         
@@ -264,6 +283,9 @@ class InitBenchmarkPlayer:
             return self.vocbp_benchmark_dict_saved['vals']
         
         return self.vocbp_benchmark()['vals']
+    
+    def vocbp_bmark_values(self):
+        return self.vocbp_bmark_srs().values
     
     # Calculate adjustment factors for the player being replaced
     def adjustment_factor_year(self):

@@ -4,7 +4,7 @@ import pandas as pd
 from Analysis.Helpers.standardization import scale_player_stats
 from Analysis.Helpers.dataLoader import get_transfers
 from Analysis.Benchmark.init import InitBenchmarkPlayer
-from Analysis.CalculateScores.adjustmentFactor import apply_adjustment_factors
+from Analysis.CalculateScores.adjustmentFactor import apply_adj_fact_to_plyr_srs
 
 # Position-specific stat weights; adjust values as needed
 POSITION_STAT_WEIGHTS = {
@@ -44,7 +44,8 @@ def player_difference(player_stats_df,
     player_stats_df_t = player_stats_df.to_frame().T
     player_vec = scale_player_stats(player_stats_df_t, scaler, columns)
     difference = np.subtract(player_vec, benchmark_vals)
-    return difference
+    # Convert to Series to avoid broadcasting issues
+    return pd.Series(difference.flatten(), index=columns)
 
 def avg_zScore_deviation(diff_vec):    
     return diff_vec.iloc[0].sum() / len(diff_vec.iloc[0])
@@ -59,14 +60,7 @@ def _calculate_vocbp_scores(bmark_plyr : InitBenchmarkPlayer,
 
     # pull scalar and benchmark DataFrame (1×N) back out
     scaler     = bmark_plyr.vocbp_scalar()
-    bmark_df   = bmark_plyr.vocbp_bmark_vals()    # should be a 1-row DataFrame
-
-    # inverse-scale back to original units
-    unscaled_arr   = scaler.inverse_transform(bmark_df.values)  # shape (1, N)
-    unscaled_bmark = pd.DataFrame(unscaled_arr, columns=bmark_df.columns)
-
-    print("Raw benchmark VALUE stats (unscaled):")
-    print(unscaled_bmark.iloc[0])  # get a Series if you like
+    bmark_vals = bmark_plyr.vocbp_bmark_values()  # This should return the benchmark values
 
     # Get the adjustment factor for the season year
     if adjustment_factor:
@@ -75,28 +69,28 @@ def _calculate_vocbp_scores(bmark_plyr : InitBenchmarkPlayer,
     for _, plyr in iter_players_df.iterrows():
         name = plyr['player_name']
         prev_team_name = plyr.get('prev_team_name', None)
-        columns_to_use = bmark_plyr.vocbp_bmark_vals().columns
+        indices = bmark_plyr.vocbp_benchmark_indices()
 
         # Apply adjustment factors if available
         if adjustment_factor and prev_team_name:
             def_factor = adjustment_factor_df.loc[adjustment_factor_df['team_name'] == prev_team_name, 'def_factor'].values[0]
             off_factor = adjustment_factor_df.loc[adjustment_factor_df['team_name'] == prev_team_name, 'off_factor'].values[0]
 
-            plyr_adjusted = apply_adjustment_factors(plyr[columns_to_use], off_factor, def_factor)
+            plyr_adjusted = apply_adj_fact_to_plyr_srs(plyr[indices], off_factor, def_factor)
         else:
-            plyr_adjusted = plyr[columns_to_use]
+            plyr_adjusted = plyr[indices]
             
         # Calculate the vector difference between player stats and benchmark stats
         vec_diff = player_difference(plyr_adjusted,
-                                     bmark_plyr.vocbp_scalar(),
-                                     columns_to_use,
-                                     bmark_plyr.vocbp_bmark_vals())
+                                     scaler,
+                                     indices,
+                                     bmark_vals)
         # Apply position-specific stat weights
         pos = plyr.get('position', bmark_plyr.replaced_plyr_pos)
         stat_weights = POSITION_STAT_WEIGHTS.get(pos, {})
         weights_series = pd.Series(
-            {stat: stat_weights.get(stat, 1.0) for stat in vec_diff.columns},
-            index=vec_diff.columns
+            {stat: stat_weights.get(stat, 1.0) for stat in indices},
+            index=indices
         )
         vec_diff = vec_diff * weights_series
 
@@ -109,7 +103,7 @@ def _calculate_vocbp_scores(bmark_plyr : InitBenchmarkPlayer,
             print(vec_diff)
 
         # Compute weighted average z-score deviation
-        vocbp = (vec_diff.iloc[0] * weights_series).sum() / weights_series.sum()
+        vocbp = (vec_diff * weights_series).sum() / weights_series.sum()
         df.loc[len(df)] = [name, vocbp]
 
     if sort:

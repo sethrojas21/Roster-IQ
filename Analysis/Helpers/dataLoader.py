@@ -140,6 +140,8 @@ def load_players(stat_query, connection, season_year, position):
         right=player_cluster_df,
         on=['player_name', 'season_year']
     )
+
+    print(final_merged_df)
     
     return final_merged_df
 

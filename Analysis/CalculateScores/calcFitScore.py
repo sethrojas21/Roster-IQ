@@ -7,28 +7,26 @@ from Analysis.Benchmark.init import InitBenchmarkPlayer
 from Analysis.config import Config
 
 
-def _calculate_fit_scores(bmark_plyr, iter_players_df, sort: bool, specific_name: str = None):
+def _calculate_fit_scores(bmark_plyr : InitBenchmarkPlayer, iter_players_df, sort: bool, specific_name: str = None):
     df = pd.DataFrame(columns=['player_name', 'sim_score'])
     # pull scalar and benchmark DataFrame (1×N) back out
-    scaler     = bmark_plyr.fs_scalar()
-    bmark_df   = bmark_plyr.fs_bmark_vals()    # should be a 1-row DataFrame
+    bmark_srs   = bmark_plyr.fs_bmark_srs()
+    scalar = bmark_plyr.fs_scalar()
+    indices = bmark_plyr.fs_benchmark_indices()
+    values = bmark_plyr.fs_benchmark_values()
 
-    # inverse-scale back to original units
-    unscaled_arr   = scaler.inverse_transform(bmark_df.values)  # shape (1, N)
-    unscaled_bmark = pd.DataFrame(unscaled_arr, columns=bmark_df.columns)
 
-    print("Raw FIT benchmark stats (unscaled):")
-    print(unscaled_bmark.iloc[0])  # get a Series if you like
     for _, plyr in iter_players_df.iterrows():
         name = plyr['player_name']
         if name == specific_name:
             print(specific_name)
-            print(plyr[bmark_plyr.fs_bmark_vals().columns])
+            print(plyr[bmark_srs.index])  # use Series index instead of columns
+            
         score = get_player_similarity_score(
             plyr,
-            bmark_plyr.fs_scalar(),
-            bmark_plyr.fs_bmark_vals().columns,
-            bmark_plyr.fs_bmark_vals()
+            scalar,
+            indices,  # use Series index
+            values  # use Series values
         )
         df.loc[len(df)] = [name, score]
 

@@ -10,6 +10,7 @@ comparison and evaluation.
 import pandas as pd
 from Analysis.Helpers.standardization import standardized_player_rate_stats, filter_cluster_players
 from Analysis.Helpers.weightedMean import weighted_cluster_mean
+from Analysis.CalculateScores.adjustmentFactor import apply_adj_fact_to_plyr_df
 
 # Number of columns to skip when selecting statistical columns (excludes metadata)
 column_shift = 5
@@ -18,8 +19,10 @@ column_shift = 5
 def get_benchmark_stats(
         benchmark_players_cluster_df: pd.DataFrame,
         cluster_weights: dict[int, float],
-        player_cluster_weights: dict[int, float]
-) -> pd.DataFrame:
+        player_cluster_weights: dict[int, float],
+        is_vocbp : bool,
+        year : str = None,
+) -> pd.Series:
     """
     Calculate weighted benchmark statistics from clustered player data.
     
@@ -44,10 +47,22 @@ def get_benchmark_stats(
     # Validate input DataFrame has required cluster column
     if "team_cluster" not in benchmark_players_cluster_df.columns:
         raise ValueError("Input df must include a 'cluster_num' column.")
+    
+    print("SFDDFSDF", is_vocbp, year)
 
+    # Apply schedule strength adjustments for VOCBP before any weighted calculations
+    if is_vocbp and year is not None:
+        # Apply adjustment factors to all players based on their team's schedule strength
+        adjusted_df = apply_adj_fact_to_plyr_df(benchmark_players_cluster_df, year)
+    else:
+        # For fit scoring or when no year provided, use original data
+        adjusted_df = benchmark_players_cluster_df
+
+    
+    print(adjusted_df)
     # Extract statistical columns (skip metadata columns at start and cluster columns at end)
     # Rate-stat feature columns start after the first 5 metadata columns
-    stat_cols = benchmark_players_cluster_df.columns[column_shift:-2]
+    stat_cols = adjusted_df.columns[column_shift:-2]
 
     # === STEP 1: Prepare clusters and weights ===
     team_clusters = list(cluster_weights.keys())
@@ -61,7 +76,7 @@ def get_benchmark_stats(
 
     # === STEP 2: Compute weighted means ===
     weighted_series = weighted_cluster_mean(
-        benchmark_players_cluster_df,
+        adjusted_df,  # Use adjusted DataFrame instead of original
         team_clusters=team_clusters,
         player_clusters=player_clusters,
         team_weights=team_weights,
@@ -70,12 +85,12 @@ def get_benchmark_stats(
     )
 
     # === STEP 3: Convert to single-row DataFrame ===
-    blended_vec = weighted_series.to_frame().T
+    blended_vec = weighted_series
     blended_vec = blended_vec[stat_cols]
 
     return blended_vec
 
-def get_benchmark_info(query, conn, year, cluster_weights, player_weights, pos : str, normalized = True):
+def get_benchmark_info(query, conn, year, cluster_weights, player_weights, pos : str, is_vocbp : bool, normalized = True):
     """
     Generate complete benchmark information including scaler and benchmark statistics.
     
@@ -113,7 +128,9 @@ def get_benchmark_info(query, conn, year, cluster_weights, player_weights, pos :
     # Calculate sample size for effective sample size computations
     length = len(filtered_df)
     # Generate weighted benchmark statistics using cluster weights
-    benchmark_stats = get_benchmark_stats(filtered_df, cluster_weights, player_weights)
+    benchmark_stats = get_benchmark_stats(filtered_df, cluster_weights, player_weights,
+                                          is_vocbp=is_vocbp,
+                                          year=year - 1)
     
     # Return complete benchmark package: scaler for normalization, 
     # benchmark values for comparison, and sample size for confidence
