@@ -402,7 +402,7 @@ def apply_adj_fact_to_plyr_df(player_stats_df : pd.DataFrame,
 
 ### TESTING
 
-if __name__ == "__main__":
+def testing_review():
     import sqlite3
     from Analysis.config import Config
     
@@ -473,3 +473,13 @@ if __name__ == "__main__":
         print(f"\nOVERALL: {final_assessment}")
     
     conn.close()
+
+def save_testing():
+    from Analysis.config import Config
+    import sqlite3
+
+    conn = sqlite3.connect('rosteriq.db')
+    save_def_off_factors(conn, 2018, Config.END_YEAR_EXCLUDE)
+
+if __name__ == "__main__":
+    testing_review()
