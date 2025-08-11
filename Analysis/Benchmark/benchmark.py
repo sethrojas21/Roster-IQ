@@ -10,7 +10,6 @@ comparison and evaluation.
 import pandas as pd
 from Analysis.Helpers.standardization import standardized_player_rate_stats, filter_cluster_players
 from Analysis.Helpers.weightedMean import weighted_cluster_mean
-from Analysis.CalculateScores.adjustmentFactor import apply_adj_fact_to_plyr_df
 
 # Number of columns to skip when selecting statistical columns (excludes metadata)
 column_shift = 5
@@ -29,7 +28,7 @@ def get_benchmark_stats(
     This function takes player data grouped by clusters and computes weighted
     benchmark statistics by combining team cluster weights with optional player
     cluster weights. The result is a single row of representative statistics
-    that can be used for player comparison.
+    that can be used for player comparison. No adjustment factors are applied in this function.
     
     Args:
         benchmark_players_cluster_df (pd.DataFrame): DataFrame containing player stats 
@@ -48,18 +47,8 @@ def get_benchmark_stats(
     if "team_cluster" not in benchmark_players_cluster_df.columns:
         raise ValueError("Input df must include a 'cluster_num' column.")
     
-    print("SFDDFSDF", is_vocbp, year)
-
-    # Apply schedule strength adjustments for VOCBP before any weighted calculations
-    if is_vocbp and year is not None:
-        # Apply adjustment factors to all players based on their team's schedule strength
-        adjusted_df = apply_adj_fact_to_plyr_df(benchmark_players_cluster_df, year)
-    else:
-        # For fit scoring or when no year provided, use original data
-        adjusted_df = benchmark_players_cluster_df
-
-    
-    print(adjusted_df)
+    # No adjustment factors are applied; use original data directly
+    adjusted_df = benchmark_players_cluster_df
     # Extract statistical columns (skip metadata columns at start and cluster columns at end)
     # Rate-stat feature columns start after the first 5 metadata columns
     stat_cols = adjusted_df.columns[column_shift:-2]

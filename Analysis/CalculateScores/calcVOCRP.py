@@ -4,7 +4,7 @@ import pandas as pd
 from Analysis.Helpers.standardization import scale_player_stats
 from Analysis.Helpers.dataLoader import get_transfers
 from Analysis.Benchmark.init import InitBenchmarkPlayer
-from Analysis.CalculateScores.adjustmentFactor import apply_adj_fact_to_plyr_srs
+from Analysis.CalculateScores.sosAdjustmentFactor import get_sos_adjustment_year, apply_sos_bonus_to_value_df
 
 # Position-specific stat weights; adjust values as needed
 POSITION_STAT_WEIGHTS = {
@@ -56,29 +56,19 @@ def _calculate_vocbp_scores(bmark_plyr : InitBenchmarkPlayer,
                             sort: bool,
                             adjustment_factor : bool = True, 
                             specific_name: str = None):
-    df = pd.DataFrame(columns=['player_name', 'vocbp'])
+    df = pd.DataFrame(columns=['player_name', 'prev_team_name', 'vocbp_raw'])
 
     # pull scalar and benchmark DataFrame (1×N) back out
     scaler     = bmark_plyr.vocbp_scalar()
     bmark_vals = bmark_plyr.vocbp_bmark_values()  # This should return the benchmark values
 
-    # Get the adjustment factor for the season year
-    if adjustment_factor:
-        adjustment_factor_df = bmark_plyr.adjustment_factor_year()
-        
     for _, plyr in iter_players_df.iterrows():
         name = plyr['player_name']
         prev_team_name = plyr.get('prev_team_name', None)
         indices = bmark_plyr.vocbp_benchmark_indices()
 
-        # Apply adjustment factors if available
-        if adjustment_factor and prev_team_name:
-            def_factor = adjustment_factor_df.loc[adjustment_factor_df['team_name'] == prev_team_name, 'def_factor'].values[0]
-            off_factor = adjustment_factor_df.loc[adjustment_factor_df['team_name'] == prev_team_name, 'off_factor'].values[0]
-
-            plyr_adjusted = apply_adj_fact_to_plyr_srs(plyr[indices], off_factor, def_factor)
-        else:
-            plyr_adjusted = plyr[indices]
+        # Use raw player stats; SOS bonus will be applied at the very end to the VALUE score
+        plyr_adjusted = plyr[indices]
             
         # Calculate the vector difference between player stats and benchmark stats
         vec_diff = player_difference(plyr_adjusted,
@@ -104,10 +94,23 @@ def _calculate_vocbp_scores(bmark_plyr : InitBenchmarkPlayer,
 
         # Compute weighted average z-score deviation
         vocbp = (vec_diff * weights_series).sum() / weights_series.sum()
-        df.loc[len(df)] = [name, vocbp]
+        df.loc[len(df)] = [name, prev_team_name, vocbp]
 
+    # Apply the SOS additive bump at the end (one-sided, precomputed per team-season)
+    if adjustment_factor:
+        # season_year here is the prior season for transfers (already passed as such by caller)
+        df = apply_sos_bonus_to_value_df(
+            df, season_year,
+            team_col='prev_team_name',
+            in_col='vocbp_raw',
+            out_col='vocbp',
+            csv_path="Analysis/CalculateScores/CSV/sos_value_adjustment.csv",
+        )
+    else:
+        df['vocbp'] = df['vocbp_raw']
+    
     if sort:
-        df = df.sort_values('vocbp', ascending=False).reset_index(drop = True)
+        df = df.sort_values('vocbp', ascending=False).reset_index(drop=True)
 
     return df
 
