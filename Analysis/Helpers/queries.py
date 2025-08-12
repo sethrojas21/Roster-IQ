@@ -29,7 +29,7 @@ pos_stat_queries_dict = {
     "C" : c_query
 }
 
-stats_query = lambda pos_query : f"""
+stats_meta_query = lambda pos_query : f"""
 SELECT 
     p.player_name,
     ps.position,
@@ -41,16 +41,21 @@ FROM Player_Seasons ps
 JOIN Players p ON ps.player_id = p.player_id
 """
 
+stats_query = lambda pos : f"""
+{gen_player_stats_query}
+{pos_stat_queries_dict[pos]}
+"""
+
 def all_players_query(pos):
     pos_query = pos_stat_queries_dict[pos]
     return f"""
-            {stats_query(pos_query)}
-            WHERE ps.season_year >= ? AND ps.season_year < ?"""
+            {stats_meta_query(pos_query)}
+            WHERE ps.season_year >= ? AND ps.season_year < ? AND ps.bpm > ?"""
 
 def single_player_query(pos):
     pos_query = pos_stat_queries_dict[pos]
     return f"""
-    {stats_query(pos_query)}
+    {stats_meta_query(pos_query)}
     WHERE ps.season_year = ? AND ps.player_id = ?
             """
 

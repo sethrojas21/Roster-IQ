@@ -8,19 +8,17 @@ comparison and evaluation.
 """
 
 import pandas as pd
-from Analysis.Helpers.standardization import standardized_player_rate_stats, filter_cluster_players
+from Analysis.Helpers.standardization import standardized_player_rate_stats
 from Analysis.Helpers.weightedMean import weighted_cluster_mean
+from Analysis.config import Config
+import numpy as np
 
 # Number of columns to skip when selecting statistical columns (excludes metadata)
-column_shift = 5
-
 
 def get_benchmark_stats(
         benchmark_players_cluster_df: pd.DataFrame,
         cluster_weights: dict[int, float],
-        player_cluster_weights: dict[int, float],
-        is_vocbp : bool,
-        year : str = None,
+        player_cluster_weights: dict[int, float]
 ) -> pd.Series:
     """
     Calculate weighted benchmark statistics from clustered player data.
@@ -45,13 +43,15 @@ def get_benchmark_stats(
     """
     # Validate input DataFrame has required cluster column
     if "team_cluster" not in benchmark_players_cluster_df.columns:
-        raise ValueError("Input df must include a 'cluster_num' column.")
-    
+        raise ValueError("Input df must include a 'team_cluster' column.")
+    if "Cluster" not in benchmark_players_cluster_df.columns:
+        raise ValueError("Input df must include a 'Cluster' column.")
+
     # No adjustment factors are applied; use original data directly
     adjusted_df = benchmark_players_cluster_df
     # Extract statistical columns (skip metadata columns at start and cluster columns at end)
     # Rate-stat feature columns start after the first 5 metadata columns
-    stat_cols = adjusted_df.columns[column_shift:-2]
+    stat_cols = [col for col in adjusted_df.columns if col not in Config.NON_STAT_COLS]
 
     # === STEP 1: Prepare clusters and weights ===
     team_clusters = list(cluster_weights.keys())
@@ -79,7 +79,7 @@ def get_benchmark_stats(
 
     return blended_vec
 
-def get_benchmark_info(query, conn, year, cluster_weights, player_weights, pos : str, is_vocbp : bool, normalized = True):
+def get_benchmark_info(query, conn, year, team_cluster_weights, player_cluster_weights, pos : str, normalized = True):
     """
     Generate complete benchmark information including scaler and benchmark statistics.
     
@@ -105,22 +105,49 @@ def get_benchmark_info(query, conn, year, cluster_weights, player_weights, pos :
     """
     # Load and standardize player data from specified clusters
     # This gets players matching both team and player cluster criteria
+    team_cluster_ids = list(team_cluster_weights.keys())
+    player_cluster_ids = list(player_cluster_weights.keys())
+
     df, scaler = standardized_player_rate_stats(query, conn, year, 
-                                                list(cluster_weights.keys()),  # Team cluster IDs
-                                                list(player_weights.keys()),   # Player cluster IDs
+                                                team_cluster_ids,  # Team cluster IDs
+                                                player_cluster_ids,   # Player cluster IDs
                                                 pos, normalized)
-    
-    # Apply performance filters to remove underperforming players
-    # This typically filters by team quality (Barthag ranking) and individual BPM
-    filtered_df = filter_cluster_players(df)
-    
-    # Calculate sample size for effective sample size computations
-    length = len(filtered_df)
+     
+# --- Compute group-aware ESS over (team_cluster, Cluster) intersections ---
+    # Count players per group
+    counts = (
+        df.groupby(["team_cluster", "Cluster"])
+          .size()
+          .reset_index(name="count")
+    )
+
+    # Group weights: product of team & player cluster weights
+    counts["weight"] = counts.apply(
+        lambda r: float(team_cluster_weights.get(int(r["team_cluster"]), 0.0)) *
+                  float(player_cluster_weights.get(int(r["Cluster"]), 0.0)),
+        axis=1
+    )
+
+    # Use only non-empty groups with positive weight
+    counts = counts[(counts["count"] > 0) & (counts["weight"] > 0)]
+
+    if counts.empty:
+        ess = 0.0
+    else:
+        w_sum = counts["weight"].sum()
+        # Normalize weights across the groups that actually appear in df
+        counts["w_norm"] = counts["weight"] / w_sum
+        # Kish ESS with group counts
+        ess = float(1.0 / np.sum((counts["w_norm"] ** 2) / counts["count"]))
+
+    # Raw sample size (just len of filtered df)
+    raw_n = int(len(df))
+
     # Generate weighted benchmark statistics using cluster weights
-    benchmark_stats = get_benchmark_stats(filtered_df, cluster_weights, player_weights,
-                                          is_vocbp=is_vocbp,
-                                          year=year - 1)
+    benchmark_stats = get_benchmark_stats(df, 
+                                          team_cluster_weights, 
+                                          player_cluster_weights)
     
     # Return complete benchmark package: scaler for normalization, 
     # benchmark values for comparison, and sample size for confidence
-    return (scaler, benchmark_stats, length)
+    return (scaler, benchmark_stats, ess)

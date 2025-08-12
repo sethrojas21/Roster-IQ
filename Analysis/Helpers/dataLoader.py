@@ -111,7 +111,7 @@ def load_players(stat_query, connection, season_year, position):
         ON ps.player_id = p.player_id
     JOIN Team_Seasons ts
         ON ts.team_name = ps.team_name AND ts.season_year = ps.season_year
-    WHERE ps.season_year < ? AND ps.season_year >= ? AND ps.position = ?
+    WHERE ps.season_year < ? AND ps.season_year >= ? AND ps.position = ? AND ps.bpm > -2
     """
     
     # Execute query to get player statistics
@@ -125,7 +125,7 @@ def load_players(stat_query, connection, season_year, position):
     # Load player cluster assignments
     player_cluster_df = pd.read_csv(f'Analysis/Clustering/Players/{season_year}/KClustering/player_labels_{position}.csv')
     # Remove duplicate columns to avoid merge conflicts
-    player_cluster_df = player_cluster_df.drop(['player_id', 'team_name'], axis=1)
+    player_cluster_df = player_cluster_df.drop(['team_name'], axis=1)
 
     # Merge player stats with team cluster information
     merged_with_team_clusters = pd.merge(
@@ -138,8 +138,11 @@ def load_players(stat_query, connection, season_year, position):
     final_merged_df = pd.merge(
         left=merged_with_team_clusters, 
         right=player_cluster_df,
-        on=['player_name', 'season_year']
+        on=['player_id', 'season_year', 'player_name']
     )
+
+
+    final_merged_df.drop(columns=['player_id'], inplace=True)
     
     return final_merged_df
 
@@ -311,21 +314,6 @@ def get_incoming_synthetic_roster(connection, team_name, incoming_season_year, p
     remaining_roster_df = full_roster_df[full_roster_df['player_id'] != player_id_to_replace]
     
     return remaining_roster_df, replaced_player_df
-
-
-def remove_player_from_team(team_roster_df, player_id):
-    """
-    Remove a specific player from a team roster DataFrame.
-    
-    Args:
-        team_roster_df (pd.DataFrame): Team roster DataFrame
-        player_id (int): ID of player to remove
-    
-    Returns:
-        pd.DataFrame: DataFrame containing only the removed player's information
-    """
-    removed_player_df = team_roster_df[team_roster_df['player_id'] == player_id]
-    return removed_player_df
 
 
 def get_transfers(connection, incoming_season_year, position, player_stats_fragment, min_minutes_cutoff=80):

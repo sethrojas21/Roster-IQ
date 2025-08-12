@@ -15,6 +15,9 @@ def _calculate_fit_scores(bmark_plyr : InitBenchmarkPlayer, iter_players_df, sor
     indices = bmark_plyr.fs_benchmark_indices()
     values = bmark_plyr.fs_benchmark_values()
 
+    print("Fit Score BMark Player")
+    print(bmark_plyr.fs_benchmark_unscaled())
+
 
     for _, plyr in iter_players_df.iterrows():
         name = plyr['player_name']

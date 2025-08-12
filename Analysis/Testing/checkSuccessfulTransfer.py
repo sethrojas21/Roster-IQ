@@ -8,7 +8,7 @@ from typing import Dict, Tuple
 from Analysis.CalculateScores.calcCompositeScore import composite_score
 from Analysis.EvaluateMetrics.successful_transfer import successful_transfer
 from Analysis.config import Config
-from Analysis.Helpers.queries import all_players_query, single_player_query
+from Analysis.Helpers.queries import single_player_query
 
 
 def setup_logging():
@@ -41,35 +41,6 @@ def setup_logging():
     
     return logger
 
-
-def load_player_data_by_year(conn: sqlite3.Connection, years_range: range, positions: list) -> Dict[int, Dict[str, pd.DataFrame]]:
-    """Load and merge player data for all years and positions."""
-    logger = logging.getLogger(__name__)
-    plyr_df_dict = {}
-    
-    for year in years_range:
-        plyr_df_dict[year] = {}
-        team_df = pd.read_csv(f'Analysis/Clustering/Teams/{year}/KClustering/labels.csv')
-        logger.info(f"Loading data for year {year}")
-        
-        for pos in positions:
-            # Load player-team data from database
-            plyr_team_df = pd.read_sql(all_players_query(pos), 
-                                       conn,
-                                       params=(year - 3, year))
-            
-            # Load player clustering data from CSV
-            plyr_df = pd.read_csv(f'Analysis/Clustering/Players/{year}/KClustering/player_labels_{pos}.csv')
-            
-            # Merge player data with team data
-            merged_plyr_df = pd.merge(plyr_df, plyr_team_df, on=['player_name', 'season_year', 'team_name'])
-            merged_df = pd.merge(merged_plyr_df, team_df, on=['team_name', 'season_year'])
-            
-            plyr_df_dict[year][pos] = merged_df
-    
-    return plyr_df_dict
-
-
 def load_team_data(conn: sqlite3.Connection) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Load available teams and barthag ranking data."""
     # Load available transfer teams
@@ -91,14 +62,11 @@ def main():
     logger.info("Starting transfer success analysis")
     
     conn = sqlite3.connect('rosteriq.db')
-    positions = Config.POSITIONS
-    years_range = range(Config.START_YEAR, Config.END_YEAR_EXCLUDE)
     
     TOP_PERCENT = Config.TOP_PERCENT
     BOTTOM_PERCENT = Config.BOTTOM_PERCENT
     
     # Load all data
-    plyr_df_dict = load_player_data_by_year(conn, years_range, positions)
     avail_team_df, all_teams_barthag, top_teams_df, sampled_teams = load_team_data(conn)
 
     logger.info("Starting to iterate over transfers")
@@ -114,7 +82,7 @@ def main():
         player_name = conn.execute("SELECT player_name FROM Players WHERE player_id = ?", (int(player_id_to_replace),)).fetchone()[0]
         position = conn.execute("SELECT position FROM Player_Seasons WHERE player_id = ? AND season_year = ?",
                                 (player_id_to_replace, season_year)).fetchone()[0] 
-        if team_name not in ["Oregon"]:
+        if team_name not in ["Arizona"]:
             continue
         logger.info(f"Processing: {player_name} ({position}) - {team_name} {season_year} [ID: {player_id_to_replace}]")
         try:
@@ -122,8 +90,6 @@ def main():
         except ValueError as e:
             logger.error(e)
             continue
-        plyr_cluster_id = bmakr_plyr.plyr_ids
-        team_cluster_id = bmakr_plyr.team_ids
         
         plyr_query = single_player_query(position)
 
@@ -131,15 +97,9 @@ def main():
                                  conn, 
                                  params = (season_year, player_id_to_replace)).iloc[0]
         
-        plyr_pos_stats = plyr_df_dict[season_year][position]
         try:
-            score, is_succ, ess = successful_transfer(plyr_cluster_id,
-                                                 team_cluster_id,
-                                                 plyr_stats,
-                                                 plyr_pos_stats,
-                                                 bmakr_plyr.plyr_weights,
-                                                 bmakr_plyr.team_weights,
-                                                 debug=True)
+            score, is_succ = successful_transfer(bmakr_plyr, plyr_stats=plyr_stats, debug=True)
+            ess = bmakr_plyr.ess
             logger.debug(f"ESS Score: {ess}")
         except Exception as e:
             logger.error(f"Error in successful_transfer calculation: {e}", exc_info=True)
@@ -166,10 +126,9 @@ def main():
         logger.info(f"Player context:\n{cs_df.iloc[rank - 2 : rank + 2]}")
         
         logger.info(f"""Analysis Results:
-ESS: {ess}
 Position: {position}
 Rank: {rank}/{length}
-B-Mark Sample Size: {bmakr_plyr.length}
+B-Mark ESS: {ess}
 Player Archetype(s): {bmakr_plyr.plyr_labels}
 Player Weight(s): {bmakr_plyr.plyr_weights}
 Team Archetype(s): {bmakr_plyr.team_labels}

@@ -52,7 +52,7 @@ for idx, avail_team in avail_team_df.iterrows():
     role = success_row['new_role']
 
     bmakr_plyr, cs_df = composite_score(conn, team_name, season_year, player_id_to_replace)                
-    if bmakr_plyr.length < 30:
+    if bmakr_plyr.ess < 30:
         print("Skipping because not enough sample size")
         print("-" * 10)
         continue        
@@ -78,7 +78,7 @@ for idx, avail_team in avail_team_df.iterrows():
 Pos: {position}, 
 Role: {role}, 
 Rank: {rank}, 
-Length of B-Mark Sample: {bmakr_plyr.length},
+Length of B-Mark Sample: {bmakr_plyr.ess},
 Player Archetype(s): {bmakr_plyr.plyr_labels},
 Player Weight(s) : {bmakr_plyr.plyr_weights}
 Team Archetype(s): {bmakr_plyr.team_labels},

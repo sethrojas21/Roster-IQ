@@ -288,11 +288,11 @@ def match_player_to_cluster_weights(player_stats,
             k = 2
         
     # Special handling for centers (typically fewer distinct archetypes)
-    if pos == ["C"]:
+    if pos in ["C"]:
         k = 2
 
     # Select the k nearest clusters for weighted assignment
-    topK_df = df.head(k).copy() 
+    topK_df = df.head(min(k, len(df))).copy()
 
     # Transform distances to similarity weights using specified method
     epsilon = 1e-6  # Small value to prevent division by zero
@@ -304,7 +304,7 @@ def match_player_to_cluster_weights(player_stats,
         if alpha is None:
             # Auto-calculate alpha based on median distance
             alpha = 1.0 / max(topK_df['distance'].median(), epsilon)
-        sim = np.exp(-alpha * distances)
+        sim = np.exp(-alpha * distances**2)
         
     elif method == 'inverse':
         # Simple inverse distance weighting: sim = 1 / (distance + epsilon)

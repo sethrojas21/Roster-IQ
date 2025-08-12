@@ -12,8 +12,7 @@ from Analysis.SyntheticRosters.aggregateRosterStats import aggregate_team_stats_
 from Analysis.Clustering.matchTeamToCluster import match_team_to_cluster_weights, match_team_cluster_to_label
 from Analysis.Clustering.matchPlayerToCluster import get_player_stats, match_player_to_cluster_weights, match_player_cluster_to_label
 from Analysis.Benchmark.benchmark import get_benchmark_info
-from Analysis.CalculateScores.adjustmentFactor import get_adjustment_factor_year
-from Analysis.EvaluateMetrics.successful_transfer import successful_transfer
+from Analysis.Helpers import queries
 import pandas as pd
 
 class InitBenchmarkPlayer:
@@ -93,7 +92,8 @@ class InitBenchmarkPlayer:
         # Cache dictionaries to store computed benchmarks (avoid recomputation)
         self.fs_benchmark_dict_saved = None   # Four Factors + Shot Selection benchmark
         self.vocbp_benchmark_dict_saved = None  # Value Over Collegiate Baseline Player benchmark
-        self.length = 0  # Sample size for effective sample size calculations
+        self.succ_transfer_dict_saved = None
+        self.ess = 0  # Sample size for effective sample size calculations
 
 
     def fs_query():
@@ -146,8 +146,7 @@ class InitBenchmarkPlayer:
                                                              self.season_year,                                                              
                                                              self.team_clusterID_weights_dict,
                                                              self.plyr_clusterID_weights_dict,
-                                                             self.replaced_plyr_pos,
-                                                             is_vocbp=False)
+                                                             self.replaced_plyr_pos)
 
         # Package results into dictionary
         dict = {
@@ -157,7 +156,7 @@ class InitBenchmarkPlayer:
         
         # Cache results and update sample size
         self.fs_benchmark_dict_saved = dict
-        self.length = lth
+        self.ess = lth
         return dict
     
     def fs_benchmark_indices(self):
@@ -219,25 +218,25 @@ class InitBenchmarkPlayer:
             return self.vocbp_benchmark_dict_saved
 
         # Compute benchmark info using VOCBP query and cluster data
-        scalar, bmark_vals, lth = get_benchmark_info(InitBenchmarkPlayer.vocbp_query(), 
+        scalar, bmark_srs, ess = get_benchmark_info(InitBenchmarkPlayer.vocbp_query(), 
                                                              self.conn, 
                                                              self.season_year,                                                              
                                                              self.team_clusterID_weights_dict,
                                                              self.plyr_clusterID_weights_dict,
-                                                             self.replaced_plyr_pos,
-                                                             is_vocbp=True)
+                                                             self.replaced_plyr_pos)
 
         # Package results into dictionary
         dict = {
-            "scalar" : scalar,    # StandardScaler fitted to benchmark data
-            "vals" : bmark_vals   # Benchmark values (medians/representatives)
+            "scalar": scalar,                 # subset StandardScaler (no porpag/dporpag)
+            "vals": bmark_srs,       # subset benchmark values
         }
 
         # Cache results and update sample size
         self.vocbp_benchmark_dict_saved = dict
-        self.length = lth
+        self.ess = ess
         return dict
     
+
     def vocbp_benchmark_indices(self):
         """
         Get the indices of the VOCBP benchmark values.
@@ -287,56 +286,42 @@ class InitBenchmarkPlayer:
     def vocbp_bmark_values(self):
         return self.vocbp_bmark_srs().values
     
-    # Calculate adjustment factors for the player being replaced
-    def adjustment_factor_year(self):
-        """
-        Get the adjustment factor for the replaced player based on their previous team.
+    def successful_transfer_query(pos : str):
+        return queries.stats_query(pos)
+
+    def successful_transfer_benchmark(self):
+        scalar, bmark_srs, lth = get_benchmark_info(InitBenchmarkPlayer.successful_transfer_query(self.replaced_plyr_pos), 
+                                                             self.conn, 
+                                                             self.season_year,                                                              
+                                                             self.team_clusterID_weights_dict,
+                                                             self.plyr_clusterID_weights_dict,
+                                                             self.replaced_plyr_pos)
         
-        Returns:
-            pd.DataFrame: DataFrame containing adjustment factors for the replaced player's previous team
-        """
-        prev_year = self.season_year - 1
-        return get_adjustment_factor_year(prev_year)
+        dict = {
+            "scalar" : scalar,
+            "bmark_srs" : bmark_srs
+        }
 
-    def successful_transfer(self, 
-                            plyr_stats : pd.Series,
-                            all_plyr_stats : pd.DataFrame,
-                            off_factor: float = None,
-                            def_factor : float = None):
-        """
-        Evaluate if a player transfer is successful based on clustering and statistics.
+        self.succ_transfer_dict_saved = dict
+
+        return dict
+    
+    def successful_transfer_scalar(self):
+        if self.succ_transfer_dict_saved:
+            return self.succ_transfer_dict_saved['scalar']
         
-        Args:
-            plyr_clusters (list): List of player cluster IDs
-            team_clusters (list): List of team cluster IDs
-            plyr_stats (pd.Series): Player statistics for the current season
-            all_plyr_stats (pd.DataFrame): DataFrame of all players' stats from the previous season
-            plyr_weights (list): Weights for player clusters
-            cluster_weights (list): Weights for team clusters
-            off_factor (float, optional): Offensive adjustment factor
-            def_factor (float, optional): Defensive adjustment factor
-            debug (bool, optional): Whether to print debug information
-            
-        Returns:
-            tuple: (score, is_successful, ess_score)
-        """
-        plyr_clusters = self.plyr_ids
-        team_clusters = self.team_ids
-        plyr_weights = self.plyr_weights
-        team_weights = self.team_weights
-
-        return successful_transfer(
-            plyr_clusters,
-            team_clusters,
-            plyr_stats,
-            all_plyr_stats,
-            plyr_weights,
-            team_weights,
-            off_factor=off_factor,
-            def_factor=def_factor,
-            debug=False
-        )
-
+        return self.successful_transfer_benchmark()['scalar']
+    
+    def successful_transfer_bmark_srs(self):
+        if self.succ_transfer_dict_saved:
+            return self.succ_transfer_dict_saved['bmark_srs']
+        
+        return self.successful_transfer_benchmark()['bmark_srs']
+    
+    def successful_transfer_bmark_unscaled(self):
+        benchmark = self.successful_transfer_bmark_srs()
+        return pd.Series(self.successful_transfer_scalar().inverse_transform(benchmark.values.reshape(1, -1)).flatten(), index=benchmark.index)
+   
     def __repr__(self):
         return f"InitBenchmarkPlayer(team_name={self.team_name}, season_year={self.season_year}, replaced_plyr_id={self.replaced_plyr_id})"
 
@@ -344,6 +329,6 @@ class InitBenchmarkPlayer:
         return f"Benchmark Player for {self.team_name} in {self.season_year} replacing player ID {self.replaced_plyr_id}"
 
     def __len__(self):
-        return self.length
+        return self.ess
 
 

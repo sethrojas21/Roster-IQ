@@ -4,7 +4,7 @@ import pandas as pd
 from Analysis.Helpers.standardization import scale_player_stats
 from Analysis.Helpers.dataLoader import get_transfers
 from Analysis.Benchmark.init import InitBenchmarkPlayer
-from Analysis.CalculateScores.sosAdjustmentFactor import get_sos_adjustment_year, apply_sos_bonus_to_value_df
+from Analysis.CalculateScores.sosAdjustmentFactor import apply_sos_bonus_to_value_df
 
 # Position-specific stat weights; adjust values as needed
 POSITION_STAT_WEIGHTS = {
@@ -31,7 +31,7 @@ POSITION_STAT_WEIGHTS = {
         'oreb_percent': 1.4,
         'dreb_percent': 1.5,
         'ft_percent': 1.2,
-        'stl_percent': 0.7,
+        'stl_percent': 0.8,
         'blk_percent': 1.3,
         'ts_percent': 1.1,
     },
@@ -62,6 +62,9 @@ def _calculate_vocbp_scores(bmark_plyr : InitBenchmarkPlayer,
     scaler     = bmark_plyr.vocbp_scalar()
     bmark_vals = bmark_plyr.vocbp_bmark_values()  # This should return the benchmark values
 
+    print("VOCBP Benchmark Raw")
+    print(bmark_plyr.vocbp_benchmark_unscaled())
+
     for _, plyr in iter_players_df.iterrows():
         name = plyr['player_name']
         prev_team_name = plyr.get('prev_team_name', None)
@@ -70,30 +73,37 @@ def _calculate_vocbp_scores(bmark_plyr : InitBenchmarkPlayer,
         # Use raw player stats; SOS bonus will be applied at the very end to the VALUE score
         plyr_adjusted = plyr[indices]
             
-        # Calculate the vector difference between player stats and benchmark stats
-        vec_diff = player_difference(plyr_adjusted,
-                                     scaler,
-                                     indices,
-                                     bmark_vals)
-        # Apply position-specific stat weights
+        # Calculate the vector difference between player stats and benchmark stats (global z-units)
+        vec_diff = player_difference(plyr_adjusted, scaler, indices, bmark_vals)
+
+        # Keep unweighted diff for correct aggregation
+        raw_vec_diff = vec_diff.astype(float).copy()
+
+        # Build position weights aligned to indices and normalize to mean=1
         pos = plyr.get('position', bmark_plyr.replaced_plyr_pos)
         stat_weights = POSITION_STAT_WEIGHTS.get(pos, {})
         weights_series = pd.Series(
             {stat: stat_weights.get(stat, 1.0) for stat in indices},
-            index=indices
+            index=indices,
+            dtype=float,
         )
-        vec_diff = vec_diff * weights_series
+        w_mean = float(weights_series.mean()) if len(weights_series) else 1.0
+        if w_mean == 0.0:
+            w_mean = 1.0
+        norm_weights = weights_series / w_mean
 
         # Print specific player stats if requested
         if name == specific_name:
             print("Specific player:", specific_name)
             print("Player Stats:")
             print(plyr_adjusted)
-            print("Vector Difference:")
-            print(vec_diff)
+            # print("Position Weights (normalized, mean=1):")
+            # print(norm_weights)
+            # print("Vector Diff (position-weighted, for display only):")
+            # print(raw_vec_diff * norm_weights)
 
-        # Compute weighted average z-score deviation
-        vocbp = (vec_diff * weights_series).sum() / weights_series.sum()
+        # Compute weighted average z-score deviation (apply weights once)
+        vocbp = float((raw_vec_diff * norm_weights).sum() / norm_weights.sum())
         df.loc[len(df)] = [name, prev_team_name, vocbp]
 
     # Apply the SOS additive bump at the end (one-sided, precomputed per team-season)
