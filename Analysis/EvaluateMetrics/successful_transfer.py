@@ -24,11 +24,12 @@ def successful_transfer(bmark_plyr, plyr_stats: pd.Series, debug: bool = False) 
     scalar = bmark_plyr.successful_transfer_scalar()
     bmark_stats_unscaled = bmark_plyr.successful_transfer_bmark_unscaled()
 
-    print("Successful Transfer Benchmark Raw:")
-    print(bmark_stats_unscaled)
+    if debug:
+        print("Successful Transfer Benchmark Raw:")
+        print(bmark_stats_unscaled)
 
-    print("Player Success Stats")
-    print(plyr_stats)
+        print("Player Success Stats")
+        print(plyr_stats)
 
     # 1) Choose columns (intersection) and stable order (prefer scaler's fit order)
     bm_cols = set(bmark_stats_unscaled.index)

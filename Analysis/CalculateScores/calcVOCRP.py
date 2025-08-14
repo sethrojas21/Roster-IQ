@@ -54,6 +54,7 @@ def _calculate_vocbp_scores(bmark_plyr : InitBenchmarkPlayer,
                             iter_players_df,
                             season_year : str, 
                             sort: bool,
+                            debug: bool,
                             adjustment_factor : bool = True, 
                             specific_name: str = None):
     df = pd.DataFrame(columns=['player_name', 'prev_team_name', 'vocbp_raw'])
@@ -62,8 +63,9 @@ def _calculate_vocbp_scores(bmark_plyr : InitBenchmarkPlayer,
     scaler     = bmark_plyr.vocbp_scalar()
     bmark_vals = bmark_plyr.vocbp_bmark_values()  # This should return the benchmark values
 
-    print("VOCBP Benchmark Raw")
-    print(bmark_plyr.vocbp_benchmark_unscaled())
+    if debug:
+        print("VOCBP Benchmark Raw")
+        print(bmark_plyr.vocbp_benchmark_unscaled())
 
     for _, plyr in iter_players_df.iterrows():
         name = plyr['player_name']
@@ -93,7 +95,7 @@ def _calculate_vocbp_scores(bmark_plyr : InitBenchmarkPlayer,
         norm_weights = weights_series / w_mean
 
         # Print specific player stats if requested
-        if name == specific_name:
+        if debug and name == specific_name:
             print("Specific player:", specific_name)
             print("Player Stats:")
             print(plyr_adjusted)
@@ -125,7 +127,7 @@ def _calculate_vocbp_scores(bmark_plyr : InitBenchmarkPlayer,
     return df
 
 
-def calculate_vocbp_score(conn, team_name, incoming_season_year, player_id_to_replace, sort=True, specific_name=None):
+def calculate_vocbp_score(conn, team_name, incoming_season_year, player_id_to_replace, sort=True, debug=False, specific_name=None):
     bmark = InitBenchmarkPlayer(conn, team_name, incoming_season_year, player_id_to_replace)
     transfers = get_transfers(
             conn,
@@ -133,9 +135,9 @@ def calculate_vocbp_score(conn, team_name, incoming_season_year, player_id_to_re
             bmark.replaced_plyr_pos,
             InitBenchmarkPlayer.vocbp_query()
         )
-    return _calculate_vocbp_scores(bmark, transfers, incoming_season_year - 1, sort, specific_name=specific_name)
+    return _calculate_vocbp_scores(bmark, transfers, incoming_season_year - 1, sort, debug, specific_name=specific_name)
 
-def calculate_vocbp_from_transfers(bmark_plyr: InitBenchmarkPlayer, sort=True, specific_name=None):
+def calculate_vocbp_from_transfers(bmark_plyr: InitBenchmarkPlayer, sort=True, debug=False, specific_name=None):
     transfers = get_transfers(
             bmark_plyr.conn,
             bmark_plyr.season_year,
@@ -143,12 +145,12 @@ def calculate_vocbp_from_transfers(bmark_plyr: InitBenchmarkPlayer, sort=True, s
             InitBenchmarkPlayer.vocbp_query()
         )
 
-    return _calculate_vocbp_scores(bmark_plyr, transfers, bmark_plyr.season_year - 1, sort, specific_name=specific_name)
+    return _calculate_vocbp_scores(bmark_plyr, transfers, bmark_plyr.season_year - 1, sort, debug, specific_name=specific_name)
 
 
 def testing():
     conn = sqlite3.connect('rosteriq.db')
-    df = calculate_vocbp_score(conn, "Arizona", 2024, 72413, sort=True, specific_name="Caleb Love")
+    df = calculate_vocbp_score(conn, "Arizona", 2024, 72413, sort=True, debug=True, specific_name="Caleb Love")
     print(df.head(20))
     print(df[df['player_name'] == "Caleb Love"])
 

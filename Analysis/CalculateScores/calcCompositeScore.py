@@ -24,7 +24,8 @@ def composite_ranking_robust(fs_df: pd.DataFrame,
                              fs_w: float = 0.6,
                              v_w: float = 0.4,
                              cap: float = 3.5,
-                             t_scale: bool = True) -> pd.DataFrame:
+                             t_scale: bool = True,
+                             debug: bool = False) -> pd.DataFrame:
     """
     Robust composite ranking:
     1. Robust z‑score each metric (median/MAD) and winsorise at ±cap SD.
@@ -52,7 +53,12 @@ def composite_ranking_robust(fs_df: pd.DataFrame,
     else:
         sort_col = "comp_raw"
 
-    return df.sort_values(sort_col, ascending=False).reset_index(drop=True)
+    result = df.sort_values(sort_col, ascending=False).reset_index(drop=True)
+    
+    if debug:
+        analyze_composite_metrics(result)
+    
+    return result
 
 def analyze_composite_metrics(df: pd.DataFrame) -> None:
     """
@@ -132,16 +138,16 @@ def composite_ranking_percentiles(fs_df, vocrp_df, fs_w = 0.6, v_w = 0.4, sortBy
     return df_sorted
 
 
-def composite_score(conn, team_name, season_year, player_id_to_replace, specific_name=None):
+def composite_score(conn, team_name, season_year, player_id_to_replace, debug=False, specific_name=None):
     """
     Returns the benchmark player information and the rankings from the players inputted.
     Generates a benchmark mark player and computes fit scores and value over clustered replacement player scores using robust median‑MAD scaling.
     """
     bmark_plyr = InitBenchmarkPlayer(conn, team_name, season_year, player_id_to_replace)
 
-    fs_df = calculate_fit_score_from_transfers(bmark_plyr, sort=False, specific_name=specific_name)
-    vocbp_df = calculate_vocbp_from_transfers(bmark_plyr, sort=False, specific_name=specific_name)
-    cs_df = composite_ranking_robust(fs_df, vocbp_df)
+    fs_df = calculate_fit_score_from_transfers(bmark_plyr, sort=False, debug=debug, specific_name=specific_name)
+    vocbp_df = calculate_vocbp_from_transfers(bmark_plyr, sort=False, debug=debug, specific_name=specific_name)
+    cs_df = composite_ranking_robust(fs_df, vocbp_df, debug=debug)
     
     return bmark_plyr, cs_df
 
@@ -152,24 +158,11 @@ def testing():
     player_name = "Caleb Love"
     year = 2024
     id = 72413
-    bmark_plyr, cs_df = composite_score(conn, team, year, id)
     
-    # Analyze the composite metrics
-    analyze_composite_metrics(cs_df)
-    
-    print(f"\n=== TOP 25 PLAYERS ===")
+    bmark_plyr, cs_df = composite_score(conn, team, year, id, debug=True, specific_name=player_name)
+    print(f"\n=== TOP 25 COMPOSITE SCORES ===")
     print(cs_df.head(25))
-    
-    print(f"\n=== SEARCH RESULT FOR {player_name} ===")
-    player_row = cs_df[cs_df['player_name'] == player_name]
-    if not player_row.empty:
-        print(player_row)
-    else:
-        print(f"Player '{player_name}' not found in results")
-
-    print(f"\n=== BENCHMARK PLAYER INFO ===")
-    print("Player Labels:", bmark_plyr.plyr_labels)
-    print("Team Labels:", bmark_plyr.team_labels)
-
+    print(f"\n=== SPECIFIC PLAYER: {player_name} ===")
+    print(cs_df[cs_df['player_name'] == player_name])
 if __name__ == '__main__':
     testing()

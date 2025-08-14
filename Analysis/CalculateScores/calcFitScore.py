@@ -7,7 +7,11 @@ from Analysis.Benchmark.init import InitBenchmarkPlayer
 from Analysis.config import Config
 
 
-def _calculate_fit_scores(bmark_plyr : InitBenchmarkPlayer, iter_players_df, sort: bool, specific_name: str = None):
+def _calculate_fit_scores(bmark_plyr : InitBenchmarkPlayer, 
+                          iter_players_df, 
+                          sort: bool,
+                          debug: bool, 
+                          specific_name: str = None):
     df = pd.DataFrame(columns=['player_name', 'sim_score'])
     # pull scalar and benchmark DataFrame (1×N) back out
     bmark_srs   = bmark_plyr.fs_bmark_srs()
@@ -15,13 +19,15 @@ def _calculate_fit_scores(bmark_plyr : InitBenchmarkPlayer, iter_players_df, sor
     indices = bmark_plyr.fs_benchmark_indices()
     values = bmark_plyr.fs_benchmark_values()
 
-    print("Fit Score BMark Player")
-    print(bmark_plyr.fs_benchmark_unscaled())
+    if debug:
+        print("Fit Score BMark Player")
+        print(bmark_plyr.fs_benchmark_unscaled())
 
 
     for _, plyr in iter_players_df.iterrows():
         name = plyr['player_name']
-        if name == specific_name:
+
+        if debug and name == specific_name:
             print(specific_name)
             print(plyr[bmark_srs.index])  # use Series index instead of columns
             
@@ -37,7 +43,7 @@ def _calculate_fit_scores(bmark_plyr : InitBenchmarkPlayer, iter_players_df, sor
         df = df.sort_values('sim_score', ascending=False).reset_index(drop=True)
     return df
 
-def calculate_fit_score(conn, team_name, season_year, player_id_to_replace, sort=True, specific_name=None):
+def calculate_fit_score(conn, team_name, season_year, player_id_to_replace, sort=True, debug=False, specific_name=None):
     bmark = InitBenchmarkPlayer(conn, team_name, season_year, player_id_to_replace)
     transfers = get_transfers(
         conn,
@@ -45,12 +51,12 @@ def calculate_fit_score(conn, team_name, season_year, player_id_to_replace, sort
         bmark.replaced_plyr_pos,
         InitBenchmarkPlayer.fs_query()
     )
-    return _calculate_fit_scores(bmark, transfers, sort, specific_name=specific_name)
+    return _calculate_fit_scores(bmark, transfers, sort, debug, specific_name=specific_name)
 
-def calculate_fit_score_from_players(bmark_plyr: InitBenchmarkPlayer, iter_players_df, sort=True, specific_name=None):
-    return _calculate_fit_scores(bmark_plyr, iter_players_df, sort, specific_name=specific_name)
+def calculate_fit_score_from_players(bmark_plyr: InitBenchmarkPlayer, iter_players_df, sort=True, debug=False, specific_name=None):
+    return _calculate_fit_scores(bmark_plyr, iter_players_df, sort, debug, specific_name=specific_name)
 
-def calculate_fit_score_from_transfers(bmark_plyr: InitBenchmarkPlayer, sort=True, specific_name=None):
+def calculate_fit_score_from_transfers(bmark_plyr: InitBenchmarkPlayer, sort=True, debug=False, specific_name=None):
     transfers = get_transfers(
         bmark_plyr.conn,
         bmark_plyr.season_year,
@@ -58,7 +64,7 @@ def calculate_fit_score_from_transfers(bmark_plyr: InitBenchmarkPlayer, sort=Tru
         InitBenchmarkPlayer.fs_query()
     )
 
-    return _calculate_fit_scores(bmark_plyr, transfers, sort=sort, specific_name=specific_name)
+    return _calculate_fit_scores(bmark_plyr, transfers, sort, debug, specific_name=specific_name)
 
 # run
 def test():
@@ -67,7 +73,7 @@ def test():
     name = "Caleb Love"
     year = 2024
     id = 72413
-    df = calculate_fit_score(conn, team_name, year, id, sort=True, specific_name=name)
+    df = calculate_fit_score(conn, team_name, year, id, sort=True, debug=True, specific_name=name)
     print(df.head(20))
     print(df[df['player_name'] == name])
 
