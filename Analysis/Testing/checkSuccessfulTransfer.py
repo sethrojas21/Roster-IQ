@@ -20,8 +20,9 @@ STATS = {
     'succ_count': 0,
     'unsucc_count': 0,
     'logger': None,
-    'TOP_PERCENT': 0.3,
-    'BOTTOM_PERCENT': 0.4
+    'TOP_PERCENT': Config.TOP_PERCENT,
+    'BOTTOM_PERCENT': Config.BOTTOM_PERCENT,
+    'BREAKOUT_NUMBER': Config.BREAKOUT_NUMBER
 }
 
 def print_final_results():
@@ -105,7 +106,7 @@ def load_team_data(conn: sqlite3.Connection) -> Tuple[pd.DataFrame, pd.DataFrame
     all_teams_barthag = pd.read_sql("SELECT team_name, season_year, barthag_rank FROM Team_Seasons GROUP BY team_name, season_year", conn)
     top_teams_barthag = all_teams_barthag[all_teams_barthag['barthag_rank'] <= 90]
     top_teams_df = pd.merge(avail_team_df, top_teams_barthag, on=['team_name', 'season_year'], how='left').dropna()
-    sampled_teams = avail_team_df.sample(n=1000, random_state=random.randint(1, 100))
+    sampled_teams = avail_team_df.sample(n=500, random_state=random.randint(1, 100))
     
     return avail_team_df, all_teams_barthag, top_teams_df, sampled_teams
 
@@ -124,11 +125,13 @@ def main():
     
     TOP_PERCENT = Config.TOP_PERCENT
     BOTTOM_PERCENT = Config.BOTTOM_PERCENT
-    
+    BREAKOUT_NUMBER = Config.BREAKOUT_NUMBER
+
     # Update global stats with config values
     STATS['TOP_PERCENT'] = TOP_PERCENT
     STATS['BOTTOM_PERCENT'] = BOTTOM_PERCENT
-    
+    STATS['BREAKOUT_NUMBER'] = BREAKOUT_NUMBER
+
     # Load all data
     avail_team_df, all_teams_barthag, top_teams_df, sampled_teams = load_team_data(conn)
 
@@ -168,7 +171,7 @@ def main():
             # ESS Cut-off
             if ess <= Config.ESS_THRESHOLD:
                 logger.warning(f"ESS Sample below {Config.ESS_THRESHOLD} - caution")
-                # continue
+                continue
 
             try:
                 rank = cs_df[cs_df['player_name'] == player_name].index[0]
@@ -216,6 +219,10 @@ Success Score: {score}""")
             else:
                 STATS['total'] += 1
                 logger.warning("✗ INCORRECT - Prediction mismatch")
+
+            if STATS['total'] == BREAKOUT_NUMBER:
+                logger.info(f"Reached {BREAKOUT_NUMBER} samples, stopping...")
+                break
 
             try:
                 accuracy = STATS['correct'] / STATS['total'] if STATS['total'] > 0 else 0

@@ -53,6 +53,7 @@ def get_benchmark_stats(
     # Rate-stat feature columns start after the first 5 metadata columns
     stat_cols = [col for col in adjusted_df.columns if col not in Config.NON_STAT_COLS]
 
+    print(adjusted_df[stat_cols + ["player_name"]])
     # === STEP 1: Prepare clusters and weights ===
     team_clusters = list(cluster_weights.keys())
     team_weights = [cluster_weights[t] for t in team_clusters]
@@ -113,35 +114,33 @@ def get_benchmark_info(query, conn, year, team_cluster_weights, player_cluster_w
                                                 player_cluster_ids,   # Player cluster IDs
                                                 pos, normalized)
      
-# --- Compute group-aware ESS over (team_cluster, Cluster) intersections ---
-    # Count players per group
-    counts = (
-        df.groupby(["team_cluster", "Cluster"])
-          .size()
-          .reset_index(name="count")
-    )
-
-    # Group weights: product of team & player cluster weights
-    counts["weight"] = counts.apply(
-        lambda r: float(team_cluster_weights.get(int(r["team_cluster"]), 0.0)) *
-                  float(player_cluster_weights.get(int(r["Cluster"]), 0.0)),
-        axis=1
-    )
-
-    # Use only non-empty groups with positive weight
-    counts = counts[(counts["count"] > 0) & (counts["weight"] > 0)]
-
-    if counts.empty:
+     
+# --- Compute individual-level ESS using Kish formula ---
+    # Calculate individual weight for each player
+    individual_weights = []
+    for _, row in df.iterrows():
+        w_team = team_cluster_weights.get(int(row["team_cluster"]), 0.0)
+        w_player = player_cluster_weights.get(int(row["Cluster"]), 0.0)
+        individual_weight = w_team * w_player
+        individual_weights.append(individual_weight)
+    
+    individual_weights = np.array(individual_weights)
+    
+    if len(individual_weights) == 0 or individual_weights.sum() == 0:
         ess = 0.0
     else:
-        w_sum = counts["weight"].sum()
-        # Normalize weights across the groups that actually appear in df
-        counts["w_norm"] = counts["weight"] / w_sum
-        # Kish ESS with group counts
-        ess = float(1.0 / np.sum((counts["w_norm"] ** 2) / counts["count"]))
+        # Normalize weights to sum to sample size (standard practice for ESS)
+        n = len(individual_weights)
+        individual_weights = individual_weights * n / individual_weights.sum()
+        
+        # Kish ESS formula: ESS = (Σ w_i)² / Σ w_i²
+        sum_weights = individual_weights.sum()
+        sum_weights_squared = (individual_weights ** 2).sum()
+        ess = float((sum_weights ** 2) / sum_weights_squared)
 
     # Raw sample size (just len of filtered df)
     raw_n = int(len(df))
+    print("ESSSS", ess)
 
     # Generate weighted benchmark statistics using cluster weights
     benchmark_stats = get_benchmark_stats(df, 

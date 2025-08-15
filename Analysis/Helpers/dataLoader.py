@@ -170,7 +170,7 @@ def load_players_from_cluster(stat_query, connection, season_year, cluster_id, p
 
 def load_players_from_multiple_clusters(stat_query, connection, season_year, team_cluster_ids, 
                                        player_cluster_ids, position: str, keep_metadata: bool = False, 
-                                       use_top_k_teams=True):
+                                       use_top_k_teams=False):
     """
     Load players from multiple team and player clusters.
     

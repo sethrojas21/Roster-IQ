@@ -81,13 +81,6 @@ def successful_transfer(bmark_plyr, plyr_stats: pd.Series, debug: bool = False) 
     is_successful = score > THRESHOLD
     return (score, is_successful)
 
-def effective_sample_size(weights):
-    weights = np.array(weights)
-    if weights.sum() == 0:
-        return 0
-    return (weights.sum()**2) / (weights**2).sum()
-    
-
 
 def testing():
     pass  # Placeholder for testing logic
