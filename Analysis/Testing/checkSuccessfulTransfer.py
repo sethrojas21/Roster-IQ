@@ -139,7 +139,7 @@ def main():
     logger.info("Starting to iterate over transfers")
     
     try:
-        for idx, avail_team in sampled_teams.iterrows():
+        for idx, avail_team in top_teams_df.iterrows():
             team_name = avail_team['team_name']
 
             season_year = avail_team['season_year']
