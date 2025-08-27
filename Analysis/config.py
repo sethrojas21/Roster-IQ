@@ -21,4 +21,4 @@ class Config:
 
     BPM_REPLACEMENT = -2
 
-    BREAKOUT_NUMBER = 150
+    BREAKOUT_NUMBER = 6600

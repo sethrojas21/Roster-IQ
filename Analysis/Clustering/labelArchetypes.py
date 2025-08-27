@@ -70,7 +70,7 @@ def get_sample_length_plyr_team_archeytpe(plyr_cluster_id : int,
     return line.iloc[0]['length']
 
 if __name__ == '__main__':
-    val = get_sample_length_plyr_team_archeytpe(1, 1, Config.START_YEAR, "G")
-    print(val)
+    team_labels()
+    player_labels()
         
         

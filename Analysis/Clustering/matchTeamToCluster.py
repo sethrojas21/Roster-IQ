@@ -129,8 +129,8 @@ def match_team_to_cluster_weights(team_stats, year, k = 1):
     topK_df = df.head(k).copy()
     for _, team in topK_df.iterrows():
         id = team['cluster_id']
-        label = match_team_cluster_to_label(year, id)
-        labels.append(label)
+        # label = match_team_cluster_to_label(year, id)
+        # labels.append(label)
 
     # ---- similarity transform ---------------------------------------------
     epsilon = 1e-6

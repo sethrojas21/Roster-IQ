@@ -18,7 +18,8 @@ import numpy as np
 def get_benchmark_stats(
         benchmark_players_cluster_df: pd.DataFrame,
         cluster_weights: dict[int, float],
-        player_cluster_weights: dict[int, float]
+        player_cluster_weights: dict[int, float],
+        debug: bool = False
 ) -> pd.Series:
     """
     Calculate weighted benchmark statistics from clustered player data.
@@ -53,7 +54,9 @@ def get_benchmark_stats(
     # Rate-stat feature columns start after the first 5 metadata columns
     stat_cols = [col for col in adjusted_df.columns if col not in Config.NON_STAT_COLS]
 
-    print(adjusted_df[stat_cols + ["player_name"]])
+    if debug:
+        print(adjusted_df[stat_cols + ["player_name"]])
+
     # === STEP 1: Prepare clusters and weights ===
     team_clusters = list(cluster_weights.keys())
     team_weights = [cluster_weights[t] for t in team_clusters]
@@ -140,7 +143,6 @@ def get_benchmark_info(query, conn, year, team_cluster_weights, player_cluster_w
 
     # Raw sample size (just len of filtered df)
     raw_n = int(len(df))
-    print("ESSSS", ess)
 
     # Generate weighted benchmark statistics using cluster weights
     benchmark_stats = get_benchmark_stats(df, 

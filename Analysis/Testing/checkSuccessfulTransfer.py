@@ -106,8 +106,9 @@ def load_team_data(conn: sqlite3.Connection) -> Tuple[pd.DataFrame, pd.DataFrame
     all_teams_barthag = pd.read_sql("SELECT team_name, season_year, barthag_rank FROM Team_Seasons GROUP BY team_name, season_year", conn)
     top_teams_barthag = all_teams_barthag[all_teams_barthag['barthag_rank'] <= 90]
     top_teams_df = pd.merge(avail_team_df, top_teams_barthag, on=['team_name', 'season_year'], how='left').dropna()
-    sampled_teams = avail_team_df.sample(n=500, random_state=random.randint(1, 100))
-    
+    top_teams_df = top_teams_df[top_teams_df['barthag_rank'] <= 90]    
+    SAMPLE_SIZE = 1000
+    sampled_teams = avail_team_df.sample(n=SAMPLE_SIZE, random_state=random.randint(1, 100))
     return avail_team_df, all_teams_barthag, top_teams_df, sampled_teams
 
 
@@ -146,11 +147,11 @@ def main():
             player_name = conn.execute("SELECT player_name FROM Players WHERE player_id = ?", (int(player_id_to_replace),)).fetchone()[0]
             position = conn.execute("SELECT position FROM Player_Seasons WHERE player_id = ? AND season_year = ?",
                                     (player_id_to_replace, season_year)).fetchone()[0] 
-            # if team_name not in ["Arizona"]:
+            # if team_name not in ["Kansas"]:
             #     continue
             logger.info(f"Processing: {player_name} ({position}) - {team_name} {season_year} [ID: {player_id_to_replace}]")
             try:
-                bmakr_plyr, cs_df = composite_score(conn, team_name, season_year, player_id_to_replace, specific_name=player_name)
+                bmakr_plyr, cs_df = composite_score(conn, team_name, season_year, player_id_to_replace, specific_name=player_name, debug=False)
             except ValueError as e:
                 logger.error(e)
                 continue
@@ -169,7 +170,7 @@ def main():
                 logger.error(f"Error in successful_transfer calculation: {e}", exc_info=True)
 
             # ESS Cut-off
-            if ess <= Config.ESS_THRESHOLD:
+            if ess < Config.ESS_THRESHOLD:
                 logger.warning(f"ESS Sample below {Config.ESS_THRESHOLD} - caution")
                 continue
 
