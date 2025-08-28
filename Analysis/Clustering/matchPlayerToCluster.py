@@ -176,7 +176,7 @@ def match_player_cluster_to_label(year, pos, ids_or_id, rationale=False):
     # Map position abbreviations to full names used in JSON structure
     positions_dict = Config.POSITION_DICT
     year_s = str(year)
-    pos_s  = positions_dict[pos]
+    pos_s  = str(pos)
 
     # Load archetype labels from JSON file (contains all years/positions/clusters)
     with open('Analysis/Clustering/Players/archetypeLables.json', 'r') as f:

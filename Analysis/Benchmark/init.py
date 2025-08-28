@@ -61,9 +61,8 @@ class InitBenchmarkPlayer:
         self.team_weights = list(self.team_clusterID_weights_dict.values())
         
         # Team cluster labels (currently disabled/empty)
-        # self.team_labels = match_team_cluster_to_label(incoming_season_year,
-        #                                           self.team_ids)
-        self.team_labels = []
+        self.team_labels = match_team_cluster_to_label(incoming_season_year,
+                                                  self.team_ids)
         
         # === PLAYER CLUSTERING SETUP ===
         # Get statistics for the player being replaced
@@ -83,10 +82,9 @@ class InitBenchmarkPlayer:
         self.plyr_weights = list(self.plyr_clusterID_weights_dict.values())
         
         # Player cluster labels (currently disabled/empty)
-        # self.plyr_labels = match_player_cluster_to_label(incoming_season_year,
-        #                                                  self.replaced_plyr_pos,
-        #                                                  self.plyr_ids)
-        self.plyr_labels = []
+        self.plyr_labels = match_player_cluster_to_label(incoming_season_year,
+                                                         self.replaced_plyr_pos,
+                                                         self.plyr_ids)
 
         # === BENCHMARK CACHING ===
         # Cache dictionaries to store computed benchmarks (avoid recomputation)

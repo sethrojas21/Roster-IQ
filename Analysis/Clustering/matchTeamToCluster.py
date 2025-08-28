@@ -112,7 +112,7 @@ def match_team_cluster_to_label(year, ids_or_id, rationale=False):
     def _lookup(single_id):
         single_id = int(single_id)
         year_s, id_s = str(year), str(single_id)
-        clu = data[year_s]["Teams"][id_s]
+        clu = data[year_s][id_s]
         return (clu['label'], clu['rationale']) if rationale else clu['label']
 
     if isinstance(ids_or_id, (list, tuple)):
