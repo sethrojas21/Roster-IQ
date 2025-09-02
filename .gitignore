@@ -15,7 +15,6 @@ TeamPlayerInformation/
 *.DS_Store
 *.feather
 *.rds
-*.txt
 OldPlayerInformationExtraction/apikeys.json
 *.log
 .env
