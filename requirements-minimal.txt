@@ -5,3 +5,6 @@ scikit-learn
 xgboost
 rapidfuzz
 requests
+ipykernel
+fastapi
+uvicorn

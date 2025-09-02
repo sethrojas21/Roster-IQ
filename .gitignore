@@ -3,6 +3,10 @@ __pychache__/
 NatStat CSVs/
 Torvik-CSVSs/
 rosteriq.db
+*.db
+*.db-wal
+*.db-shm
+PRAGMA
 TeamPlayerInformation/
 *.csv
 *.pkl
@@ -14,3 +18,4 @@ TeamPlayerInformation/
 *.txt
 OldPlayerInformationExtraction/apikeys.json
 *.log
+.env

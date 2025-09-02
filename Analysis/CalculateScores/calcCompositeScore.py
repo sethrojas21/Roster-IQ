@@ -57,7 +57,7 @@ def composite_ranking_robust(fs_df: pd.DataFrame,
     
     if debug:
         analyze_composite_metrics(result)
-    
+
     return result
 
 def analyze_composite_metrics(df: pd.DataFrame) -> None:
@@ -164,5 +164,6 @@ def testing():
     print(cs_df.head(25))
     print(f"\n=== SPECIFIC PLAYER: {player_name} ===")
     print(cs_df[cs_df['player_name'] == player_name])
+    
 if __name__ == '__main__':
     testing()
