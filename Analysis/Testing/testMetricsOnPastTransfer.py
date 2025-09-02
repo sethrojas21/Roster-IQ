@@ -6,7 +6,7 @@ import random
 
 conn = sqlite3.connect('rosteriq.db')
 
-avail_team_df = pd.read_csv('/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Helpers/availTransferTeams.csv')
+avail_team_df = pd.read_csv('Analysis/Helpers/availTransferTeams.csv')
 
 skip = 0
 see = 40

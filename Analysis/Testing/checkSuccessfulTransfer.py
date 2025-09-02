@@ -100,7 +100,7 @@ def setup_logging():
 def load_team_data(conn: sqlite3.Connection) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Load available teams and barthag ranking data."""
     # Load available transfer teams
-    avail_team_df = pd.read_csv('/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Helpers/CSV/availTransferTeams.csv')
+    avail_team_df = pd.read_csv('Analysis/Helpers/CSV/availTransferTeams.csv')
     
     # Load team barthag rankings
     all_teams_barthag = pd.read_sql("SELECT team_name, season_year, barthag_rank FROM Team_Seasons GROUP BY team_name, season_year", conn)

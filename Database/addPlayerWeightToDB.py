@@ -112,7 +112,7 @@ def main():
         playerInfoDB = getPlayerInfoDB(conn, nextYear)
 
         fileType = "csv"
-        folderPath = f'/Users/sethrojas/Documents/CodeProjects/baresearch/TeamPlayerInformation/TeamCSVs/{currYear}-{nextYear}'
+        folderPath = f'TeamPlayerInformation/TeamCSVs/{currYear}-{nextYear}'
         savedTeamFileList = getFolderPath(folderPath, fileType)
         
 

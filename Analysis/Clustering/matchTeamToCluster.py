@@ -2,8 +2,8 @@ import json
 import pandas as pd
 import numpy as np
 
-scaling_path = lambda year: f'/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/Teams/{year}/PCA/params.json'
-profiles_path = lambda year: f'/Users/sethrojas/Documents/CodeProjects/BAResearch/Analysis/Clustering/Teams/{year}/KClustering/profiles.csv'
+scaling_path = lambda year: f'Analysis/Clustering/Teams/{year}/PCA/params.json'
+profiles_path = lambda year: f'Analysis/Clustering/Teams/{year}/KClustering/profiles.csv'
 rot_path = lambda year: f'Analysis/Clustering/Teams/{year}/PCA/rotation.json'
 
 def scale_center_vector_data(team_stats, year, profiles = None):
