@@ -1,0 +1,566 @@
+{
+  "2021": {
+    "G": {
+        "1": {
+            "label": "High-usage, all-around efficient creator",
+            "rationale": "Very high PC1 (+1.34, ts% +0.25, usg +0.23), high PC2 (+1.46, oreb% +0.34, blk% +0.27), and high PC3 (+1.00, ts% +0.47, dreb% +0.35) describe guards who combine efficient scoring with heavy usage and strong secondary contributions."
+        },
+        "2": {
+            "label": "Low-scoring, facilitating guard",
+            "rationale": "Very negative PC1 (-1.60, ts% +0.25, usg +0.23), slightly negative PC2 (-0.13), and positive PC3 (+0.63, oreb% +0.34, dreb% +0.35) reflect guards with limited scoring/usage but more passing and rebounding contributions."
+        },
+        "3": {
+            "label": "Scoring guard with turnover and shot mix issues",
+            "rationale": "High PC1 (+1.03, ts% +0.25, usg +0.23), moderate PC2 (+0.28), but very negative PC3 (-0.50, tov% -0.47) and very negative PC4 (-1.89, midRate +0.61) suggest offensive upside tempered by turnovers and poor midrange efficiency."
+        },
+        "4": {
+            "label": "Defensive-oriented guard with rebounding activity",
+            "rationale": "Positive PC1 (+0.34), near-neutral PC2 (-0.11), very negative PC3 (-1.24, tov% -0.47), and high PC4 (+1.04, midRate +0.61) indicate guards with low offensive polish but defensive/rebounding activity and some midrange reliance."
+        },
+        "5": {
+            "label": "Versatile scoring guard",
+            "rationale": "Moderately high PC1 (+0.76, ts% +0.25, usg +0.23), high PC2 (+0.57, oreb% +0.34), and high PC3 (+0.68, ts% +0.47, dreb% +0.35) with very high PC4 (+1.39, midRate +0.61) show a guard archetype mixing scoring, rebounding, and midrange usage."
+        },
+        "6": {
+            "label": "Facilitating combo guard",
+            "rationale": "Negative PC1 (-0.83), high PC2 (+0.86, ast% -0.43, blk% +0.27), and negative PC3 (-0.41) suggest guards with lower scoring efficiency but stronger passing and defensive activity."
+        },
+        "7": {
+            "label": "Low-efficiency guard",
+            "rationale": "Moderate PC1 (+0.58), very negative PC2 (-1.30, ast% -0.43, usg -0.45), and negative PC3 (-0.40) reflect a guard type that struggles to generate efficient offense or usage."
+        },
+        "8": {
+            "label": "Low-usage role guard",
+            "rationale": "Negative PC1 (-0.53), negative PC2 (-0.61), slightly positive PC3 (+0.08), and moderately positive PC4 (+0.45, midRate +0.61) suggest a guard archetype with minimal creation responsibility but some midrange reliance."
+        },
+        "9": {
+            "label": "Defensive guard with limited creation",
+            "rationale": "Negative PC1 (-0.58), negative PC2 (-0.26), negative PC3 (-0.19), and very negative PC4 (-1.08, midRate +0.61) indicate low offensive output but defensive tilt."
+        },
+        "10": {
+            "label": "Streaky shooter with weak playmaking",
+            "rationale": "Positive PC1 (+0.42), high PC2 (+0.57, oreb% +0.34), very negative PC3 (-1.63, tov% -0.47), and negative PC4 (-0.63) show guards relying on shooting bursts but with turnover/playmaking limitations."
+        },
+        "11": {
+            "label": "Two-way combo guard",
+            "rationale": "Positive PC1 (+0.47), very negative PC2 (-1.35, ast% -0.43), near-neutral PC3 (-0.13), and high PC4 (+1.18, midRate +0.61) represent guards who combine some scoring and defensive tools with modest playmaking."
+        },
+        "12": {
+            "label": "Rebounding and slashing guard",
+            "rationale": "Negative PC1 (-0.35), positive PC2 (+0.45, oreb% +0.34, ftr +0.36), and high PC3 (+1.13, dreb% +0.35) point to guards contributing through rebounding and rim pressure rather than shooting."
+        },
+        "13": {
+            "label": "Scoring-oriented guard with balanced profile",
+            "rationale": "High PC1 (+1.00, ts% +0.25, usg +0.23), slightly negative PC2 (-0.29), and positive PC3 (+0.74, ts% +0.47, dreb% +0.35) describe an efficient scoring guard archetype with balanced play."
+        }
+    },
+        "F": {
+            "1": {
+                "label": "Defensive rebounder with midrange reliance",
+                "rationale": "Near-neutral PC1 (+0.02), slightly positive PC2 (+0.12), very negative PC3 (-1.03, midRate -0.56), and very high PC4 (+1.54, midRate +0.49) show limited scoring efficiency but reliance on midrange shots with defensive rebounding."
+            },
+            "2": {
+                "label": "Scoring forward with inside-out versatility",
+                "rationale": "High PC1 (+0.73, oreb% +0.41, dreb% +0.26), near-neutral PC2 (-0.03), positive PC3 (+0.71, ts% +0.53), and high PC4 (+1.07) reflect forwards who mix rebounding with efficient inside and midrange scoring."
+            },
+            "3": {
+                "label": "Facilitating stretch forward",
+                "rationale": "Negative PC1 (-0.38), negative PC2 (-0.30, ast% -0.40), positive PC3 (+0.61, ts% +0.53), and very negative PC4 (-1.12, midRate -0.56) indicate forwards who contribute passing and perimeter spacing with limited midrange reliance."
+            },
+            "4": {
+                "label": "Defensive utility forward",
+                "rationale": "Moderate PC1 (+0.29), neutral PC2 (-0.06), very negative PC3 (-1.03), and slightly negative PC4 (-0.15) describe forwards who impact defense and rebounding without strong offensive roles."
+            },
+            "5": {
+                "label": "Low-efficiency stretch forward",
+                "rationale": "High PC1 (+0.63), very negative PC2 (-1.33, ast% -0.40, usg -0.48), negative PC3 (-0.58), and positive PC4 (+0.60) point to forwards with some scoring and shooting volume but limited creation efficiency."
+            },
+            "6": {
+                "label": "All-around forward with rebounding strength",
+                "rationale": "Moderate PC1 (+0.25, oreb% +0.41, dreb% +0.26), very high PC2 (+1.14, ftr +0.35, rimRate +0.22), near-neutral PC3 (+0.03), and positive PC4 (+0.45) reflect forwards contributing across rebounding, rim finishing, and inside scoring."
+            },
+            "7": {
+                "label": "Defensive stopper forward",
+                "rationale": "Very negative PC1 (-1.28), high PC2 (+0.75, stl% -0.16, blk% -0.02), negative PC3 (-0.30), and negative PC4 (-0.69) highlight defensive-oriented forwards with limited scoring roles."
+            },
+            "8": {
+                "label": "High-usage scorer",
+                "rationale": "Very high PC1 (+1.06, ts% +0.53, usg +0.20), negative PC2 (-0.41, ast% -0.40), positive PC3 (+0.40), and negative PC4 (-0.48) represent forwards who take on heavy scoring loads but sacrifice playmaking and efficiency."
+            },
+            "9": {
+                "label": "Low-efficiency rim protector",
+                "rationale": "Moderate PC1 (+0.51), very negative PC2 (-1.62, ast% -0.40, usg -0.48), very negative PC3 (-0.88), and very negative PC4 (-1.24) indicate rim-protecting forwards with little offensive efficiency or creation."
+            },
+            "10": {
+                "label": "Rim-finishing forward",
+                "rationale": "High PC1 (+0.70), high PC2 (+1.00, rimRate +0.22), negative PC3 (-0.20), and very negative PC4 (-1.72, midRate -0.56) describe forwards who attack the rim effectively while avoiding midrange play."
+            },
+            "11": {
+                "label": "Offensive star forward",
+                "rationale": "Very high PC1 (+1.21, ts% +0.53, usg +0.20), high PC2 (+0.96, rimRate +0.22), very high PC3 (+1.57, ts% +0.53), and near-neutral PC4 show forwards with elite offensive efficiency and scoring volume."
+            },
+            "12": {
+                "label": "Defensive rebounding anchor",
+                "rationale": "Very negative PC1 (-1.44), slightly negative PC2 (-0.17), high PC3 (+1.04, dreb% +0.26), and positive PC4 (+0.34) indicate forwards with limited scoring but strong rebounding and defensive presence."
+            },
+            "13": {
+                "label": "Low-usage role forward",
+                "rationale": "Negative PC1 (-0.69), negative PC2 (-0.61), near-neutral PC3 (-0.03), and slightly positive PC4 (+0.15) show low-usage forwards filling minor complementary roles."
+            }
+        },
+        "C": {
+            "1": {
+                "label": "Offensive star center with rim protection",
+                "rationale": "Very high PC1 (+1.03, ts% -0.35, oreb% -0.32), high PC2 (+1.02, tov% +0.29), negative PC3 (-0.75), and high PC4 (+0.95, blk% +0.57, stl% +0.33) describe efficient scoring centers with usage who also protect the rim."
+            },
+            "2": {
+                "label": "Defensive rebounder",
+                "rationale": "Negative PC1 (-0.77), positive PC2 (+0.65, tov% +0.29), negative PC3 (-0.58), and near-neutral PC4 (-0.00) suggest centers with limited scoring but strong rebounding and defensive presence."
+            },
+            "3": {
+                "label": "Playmaking big with inside finishing",
+                "rationale": "Negative PC1 (-0.76), positive PC2 (+0.80), slightly positive PC3 (+0.13, blk% +0.57, dreb% -0.09), and very high PC4 (+1.49, stl% +0.33) indicate versatile bigs with rebounding, rim finishing, and defensive activity."
+            },
+            "4": {
+                "label": "Stretch big",
+                "rationale": "Near-neutral PC1 (-0.02), negative PC2 (-0.64, ast% -0.39), high PC3 (+0.66, threeRate +0.51), and slightly positive PC4 (+0.22, blk% +0.57) show bigs who provide shooting range and spacing with some rim protection."
+            },
+            "5": {
+                "label": "Balanced two-way center",
+                "rationale": "Moderate PC1 (+0.60), positive PC2 (+0.70), near-neutral PC3 (+0.00), and negative PC4 (-0.92, ft% -0.60) reflect centers with balanced scoring/rebounding profiles but poor free throw shooting."
+            },
+            "6": {
+                "label": "Low-usage defensive big",
+                "rationale": "Negative PC1 (-0.21), very negative PC2 (-0.88), negative PC3 (-0.39), and very negative PC4 (-0.81, ft% -0.60) describe rim-focused centers with limited offensive usage and efficiency."
+            },
+            "7": {
+                "label": "Defensive anchor with weak offense",
+                "rationale": "Negative PC1 (-0.71), very negative PC2 (-1.16), very negative PC3 (-0.97), and high PC4 (+0.75, blk% +0.57, stl% +0.33) show defensive stoppers who lack offensive skills but provide rim protection."
+            },
+            "8": {
+                "label": "Rim-protecting rebounder",
+                "rationale": "Very negative PC1 (-0.99), positive PC2 (+0.52), high PC3 (+0.84, blk% +0.57, dreb% -0.09), and very negative PC4 (-0.96, ft% -0.60) point to traditional bigs who rebound and defend the rim but offer little offensive skill."
+            },
+            "10": {
+                "label": "Scoring-focused big",
+                "rationale": "Very high PC1 (+1.54, ts% -0.35, usg -0.52), negative PC2 (-0.63, ast% -0.39), negative PC3 (-0.31), and negative PC4 (-0.20) represent centers who carry offensive scoring loads while contributing less defensively."
+            }
+        }
+    },
+    "2022": {
+        "G": {
+            "1": {
+                "label": "Low-turnover secondary guard",
+                "rationale": "Moderate PC1 (+0.48), very negative PC2 (-0.77, ast% -0.44, usg -0.44), and near-neutral PC3 (+0.06) show guards with modest scoring efficiency but low turnover risk and limited creation."
+            },
+            "2": {
+                "label": "High-usage slashing guard",
+                "rationale": "High PC1 (+0.65, ts% -0.53, usg -0.44), near-neutral PC2 (-0.19), near-neutral PC3 (+0.07), and very high PC4 (+1.33, ftr +0.44) indicate guards who attack the rim and draw fouls as primary scorers."
+            },
+            "4": {
+                "label": "Defensive-oriented guard with limited efficiency",
+                "rationale": "Negative PC1 (-0.80), very negative PC2 (-1.05, ast% -0.44, usg -0.44), positive PC3 (+0.20), and positive PC4 (+0.64) suggest defense-leaning guards with modest scoring and low offensive efficiency."
+            },
+            "5": {
+                "label": "Offensive centerpiece guard",
+                "rationale": "High PC1 (+0.98, ts% -0.53, usg -0.44), very high PC2 (+0.79), high PC3 (+0.57, tov% +0.48, stl% +0.48), and slightly negative PC4 (-0.18) describe high-usage creators with strong scoring output."
+            },
+            "6": {
+                "label": "Low-output defensive guard",
+                "rationale": "Negative PC1 (-0.58), very negative PC2 (-1.42), negative PC3 (-0.14), and very negative PC4 (-0.87) reflect guards with limited offensive impact but defensive utility."
+            },
+            "8": {
+                "label": "Defensive stopper guard",
+                "rationale": "Near-neutral PC1 (+0.03), positive PC2 (+0.57, stl% +0.30, blk% +0.20), very negative PC3 (-0.97), and positive PC4 (+0.39) suggest guards defined by defense, steals, and rim pressure rather than offense."
+            },
+            "9": {
+                "label": "Low-usage perimeter guard",
+                "rationale": "Moderate PC1 (+0.24), near-neutral PC2 (+0.11), negative PC3 (-0.41), and very negative PC4 (-1.10, midRate -0.54) describe low-usage guards contributing mostly in spot-up or perimeter roles."
+            },
+            "10": {
+                "label": "Playmaking guard with defensive activity",
+                "rationale": "Very negative PC1 (-1.37), very high PC2 (+1.75, stl% +0.30, blk% +0.20), negative PC3 (-0.74), and near-neutral PC4 (+0.11) reflect guards who stand out defensively and as facilitators despite low scoring."
+            },
+            "11": {
+                "label": "High-usage creator with turnover risk",
+                "rationale": "Negative PC1 (-0.37), negative PC2 (-0.28), very high PC3 (+1.27, tov% +0.48), and very negative PC4 (-0.97, midRate -0.54) highlight guards who take on creation but struggle with turnovers and shot selection."
+            },
+            "12": {
+                "label": "Scoring-focused lead guard",
+                "rationale": "Very high PC1 (+1.47, ts% -0.53, usg -0.44), near-neutral PC2 (-0.02), very negative PC3 (-0.77), and positive PC4 (+0.20) indicate primary scorers who rely on volume scoring despite inefficiency."
+            },
+            "13": {
+                "label": "Defensive utility guard",
+                "rationale": "Very negative PC1 (-1.18), slightly positive PC2 (+0.26), very negative PC3 (-0.91), and very negative PC4 (-0.76) describe guards with limited offense but defensive responsibility."
+            },
+            "14": {
+                "label": "Two-way combo guard",
+                "rationale": "Negative PC1 (-0.44), positive PC2 (+0.41), very high PC3 (+1.65, tov% +0.48, stl% +0.48), and high PC4 (+0.72) suggest guards who balance defensive disruption with offensive creation duties."
+            }
+        },
+        "F": {
+            "1": {
+                "label": "Defensive forward with poor efficiency",
+                "rationale": "Very negative PC1 (-1.16, ts% -0.54, oreb% -0.40), high PC2 (+1.12, ast% -0.42), very negative PC3 (-1.47), and near-neutral PC4 (-0.09) reflect defense-leaning forwards who lack offensive efficiency."
+            },
+            "2": {
+                "label": "Scoring forward with inside efficiency",
+                "rationale": "Very high PC1 (+1.26, ts% -0.54), high PC2 (+0.69, ftr +0.26), positive PC3 (+0.27), and negative PC4 (-0.61) describe forwards with efficient inside scoring and rebounding focus."
+            },
+            "3": {
+                "label": "Facilitating stretch forward",
+                "rationale": "Near-neutral PC1 (-0.15), near-neutral PC2 (-0.12), very high PC3 (+1.01, midRate +0.54), and near-neutral PC4 (-0.10) indicate forwards who contribute as passers with spacing value from midrange/perimeter."
+            },
+            "4": {
+                "label": "Defensive rebounder with limited shooting",
+                "rationale": "Negative PC1 (-0.37), high PC2 (+0.85, oreb% -0.40), positive PC3 (+0.39), and very negative PC4 (-1.91, stl% -0.61) highlight forwards who rebound and defend but lack perimeter scoring."
+            },
+            "5": {
+                "label": "Stretch forward with rim efficiency",
+                "rationale": "Near-neutral PC1 (-0.14), near-neutral PC2 (+0.04), very high PC3 (+1.09, midRate +0.54), and very high PC4 (+1.60) represent forwards who mix rim finishing with spacing value."
+            },
+            "6": {
+                "label": "Traditional defensive big forward",
+                "rationale": "Very negative PC1 (-1.25, ts% -0.54), negative PC2 (-0.19), negative PC3 (-0.46), and negative PC4 (-0.69) describe forwards with limited scoring and heavy defensive orientation."
+            },
+            "7": {
+                "label": "Defensive utility forward",
+                "rationale": "Negative PC1 (-0.39), high PC2 (+1.17, ast% -0.42), slightly positive PC3 (+0.13), and positive PC4 (+0.34) indicate versatile forwards who defend and facilitate more than score."
+            },
+            "8": {
+                "label": "Low-efficiency rim protector",
+                "rationale": "Negative PC1 (-0.67), near-neutral PC2 (+0.08), negative PC3 (-0.69), and high PC4 (+0.98, blk% +0.57) suggest rim-protecting forwards who lack offensive efficiency."
+            },
+            "9": {
+                "label": "Perimeter-oriented role forward",
+                "rationale": "Positive PC1 (+0.40), negative PC2 (-0.52, usg -0.50), negative PC3 (-0.54), and negative PC4 (-0.83) reflect low-usage forwards with spacing roles but limited creation."
+            },
+            "10": {
+                "label": "Scoring star forward",
+                "rationale": "Very high PC1 (+1.39, ts% -0.54), negative PC2 (-0.13), very negative PC3 (-1.06), and positive PC4 (+0.26) describe lead forwards with strong scoring efficiency and usage."
+            },
+            "11": {
+                "label": "Balanced inside-out forward",
+                "rationale": "High PC1 (+0.75), negative PC2 (-0.60), near-neutral PC3 (+0.07), and positive PC4 (+0.53, midRate +0.54) show forwards blending rim finishing and some perimeter creation."
+            },
+            "12": {
+                "label": "Defensive rebounding specialist",
+                "rationale": "Negative PC1 (-0.50), very negative PC2 (-1.69, ast% -0.42), high PC3 (+0.86, dreb% +0.26), and very negative PC4 (-1.29) reflect forwards who control the glass but provide little offense."
+            },
+            "13": {
+                "label": "Low-usage defensive forward",
+                "rationale": "Very negative PC1 (-0.85), very negative PC2 (-1.40), slightly positive PC3 (+0.34), and positive PC4 (+0.37) indicate defense-first forwards with minimal offensive responsibility."
+            }
+        },
+        "C": {
+            "1": {
+                "label": "Interior scorer with rebounding strength",
+                "rationale": "High PC1 (+0.77, ts% +0.24, oreb% +0.21), very negative PC2 (-1.33, tov% -0.32), positive PC3 (+0.42), and near-neutral PC4 (-0.24) describe centers who finish efficiently inside while limiting turnovers."
+            },
+            "2": {
+                "label": "Rim-running finisher",
+                "rationale": "High PC1 (+0.65, ts% +0.24), near-neutral PC2 (-0.11), positive PC3 (+0.27), and very high PC4 (+1.13, ft% +0.62) highlight athletic bigs who score inside, draw fouls, and provide vertical spacing."
+            },
+            "3": {
+                "label": "Inside-out skilled center",
+                "rationale": "Moderate PC1 (+0.50), slightly positive PC2 (+0.23), high PC3 (+0.72, ast% +0.35, oreb% +0.21), and negative PC4 (-0.57) indicate bigs with post scoring, rebounding, and some passing skill."
+            },
+            "4": {
+                "label": "Low-post scorer with defensive weakness",
+                "rationale": "Very high PC1 (+0.91, ts% +0.24), slightly positive PC2 (+0.15), very negative PC3 (-0.50), and very negative PC4 (-1.49, blk% -0.66) reflect offensive-minded centers who struggle defensively."
+            },
+            "6": {
+                "label": "Defensive rebounder with limited scoring",
+                "rationale": "Negative PC1 (-0.90), high PC2 (+0.71, dreb% +0.41, ast% +0.35), near-neutral PC3 (+0.08), and near-neutral PC4 (+0.11) describe defense-first centers who provide rebounding and facilitation but little scoring."
+            },
+            "7": {
+                "label": "Rim protector with limited offense",
+                "rationale": "Moderate PC1 (+0.57), slightly positive PC2 (+0.13), very negative PC3 (-1.08, blk% -0.66), and positive PC4 (+0.56, ft% +0.62) point to centers who anchor defense through rim protection but offer modest scoring."
+            },
+            "8": {
+                "label": "Playmaking, versatile big",
+                "rationale": "Slightly positive PC1 (+0.16), very high PC2 (+1.81, ast% +0.35, usg +0.49), high PC3 (+0.69), and negative PC4 (-0.43) reflect bigs who contribute passing, rebounding, and versatile offense."
+            },
+            "10": {
+                "label": "Defensive anchor with rebounding",
+                "rationale": "Very negative PC1 (-1.04), negative PC2 (-0.56), positive PC3 (+0.41, dreb% +0.41), and positive PC4 (+0.70, ft% +0.62) show traditional centers who emphasize rebounding and defense over offense."
+            }
+        }
+    },
+    "2023" : {
+        "G": {
+            "1": {
+                "label": "Low-efficiency guard with defensive lean",
+                "rationale": "Moderate PC1 (+0.30), negative PC2 (-0.42, ast% +0.43, usg +0.44), very negative PC3 (-1.14, ts% -0.54), and near-neutral PC4 (+0.13) describe guards with limited offensive efficiency but some defensive value."
+            },
+            "3": {
+                "label": "Playmaking guard with turnover issues",
+                "rationale": "Moderate PC1 (+0.31), high PC2 (+0.57, ast% +0.43, usg +0.44), near-neutral PC3 (-0.10), and very negative PC4 (-1.04, tov% -0.48) suggest guards who facilitate offense but are turnover-prone."
+            },
+            "4": {
+                "label": "Defensive-minded low-usage guard",
+                "rationale": "Very negative PC1 (-1.05, ts% -0.54), near-neutral PC2 (+0.06), negative PC3 (-0.44), and negative PC4 (-0.17) indicate guards who avoid usage but contribute defensively."
+            },
+            "5": {
+                "label": "Low-output guard",
+                "rationale": "Very negative PC1 (-0.92), very negative PC2 (-1.35, ast% +0.43, usg +0.44), negative PC3 (-0.55), and very negative PC4 (-1.24) represent guards with minimal offensive impact and little defensive upside."
+            },
+            "6": {
+                "label": "Offensive star guard",
+                "rationale": "Very high PC1 (+1.56, ts% -0.54, usg +0.44), near-neutral PC2 (+0.02), negative PC3 (-0.65), and negative PC4 (-0.37) describe high-usage scoring guards who carry offensive loads."
+            },
+            "8": {
+                "label": "Facilitating defensive guard",
+                "rationale": "Negative PC1 (-0.68), very high PC2 (+1.52, ast% +0.43, usg +0.44), positive PC3 (+0.27), and slightly negative PC4 (-0.13) reflect guards who create offense and provide defensive support despite weaker shooting."
+            },
+            "9": {
+                "label": "Slashing guard",
+                "rationale": "Moderate PC1 (+0.49), negative PC2 (-0.58), slightly positive PC3 (+0.17), and very high PC4 (+1.19, ftr -0.45, rimRate +0.50) suggest guards who attack the rim and draw fouls effectively."
+            },
+            "10": {
+                "label": "Defensive stopper guard",
+                "rationale": "Very negative PC1 (-1.23, ts% -0.54), very negative PC2 (-1.33), very negative PC3 (-0.85), and positive PC4 (+0.76, stl% +0.24, blk% +0.24) indicate guards with low offensive value but strong defensive disruption."
+            },
+            "11": {
+                "label": "Balanced two-way guard",
+                "rationale": "Moderate PC1 (+0.57), high PC2 (+0.74, ast% +0.43), near-neutral PC3 (+0.05), and positive PC4 (+0.35) represent guards who contribute on both ends with balanced offense and defense."
+            },
+            "12": {
+                "label": "Defensive facilitator guard",
+                "rationale": "Negative PC1 (-0.67), high PC2 (+0.76, ast% +0.43), negative PC3 (-0.40), and very high PC4 (+1.30, blk% +0.24, stl% +0.24) show guards who combine playmaking with defensive activity."
+            },
+            "13": {
+                "label": "High-usage creator",
+                "rationale": "Negative PC1 (-0.43), slightly positive PC2 (+0.22), very high PC3 (+1.48, tov% +0.48), and positive PC4 (+0.35) reflect guards who generate offense at high usage but risk turnovers."
+            },
+            "14": {
+                "label": "Streaky scoring guard",
+                "rationale": "High PC1 (+0.73), very negative PC2 (-0.77), high PC3 (+0.63, tov% +0.48), and negative PC4 (-0.40) describe scoring-oriented guards with inconsistent efficiency and turnover risk."
+            }
+        },
+        "F": {
+            "1": {
+                "label": "Defensive rebounding forward",
+                "rationale": "Negative PC1 (-0.26, ts% -0.58), very negative PC2 (-1.07, ast% +0.43, usg +0.51), positive PC3 (+0.50, tov% +0.37), and high PC4 (+0.93, ft% +0.23, midRate +0.51) show forwards who provide rebounding and defense while offering limited efficiency."
+            },
+            "2": {
+                "label": "Playmaking forward",
+                "rationale": "Negative PC1 (-0.12), slightly positive PC2 (+0.18, ast% +0.43, usg +0.51), very high PC3 (+1.16, tov% +0.37, midRate +0.51), and near-neutral PC4 (-0.16) reflect facilitating forwards with some turnover risk."
+            },
+            "3": {
+                "label": "Defensive stopper forward",
+                "rationale": "Very negative PC1 (-1.03, ts% -0.58), very high PC2 (+1.43, ast% +0.43, usg +0.51), positive PC3 (+0.43), and very negative PC4 (-1.50, stl% -0.55) indicate defense-first forwards with little offensive impact."
+            },
+            "4": {
+                "label": "All-around efficient forward",
+                "rationale": "High PC1 (+0.65, ts% -0.58, threeRate +0.49), high PC2 (+0.66, ast% +0.43, usg +0.51), near-neutral PC3 (+0.03), and moderately high PC4 (+0.49) suggest balanced forwards who contribute efficiently across scoring, usage, and playmaking."
+            },
+            "5": {
+                "label": "Slashing forward",
+                "rationale": "Negative PC1 (-0.20), positive PC2 (+0.43), very high PC3 (+0.99, tov% +0.37), and very high PC4 (+1.72, midRate +0.51) describe forwards who attack inside but take risks with turnovers and midrange play."
+            },
+            "6": {
+                "label": "Low-usage defensive big forward",
+                "rationale": "Very negative PC1 (-1.03, ts% -0.58), near-neutral PC2 (-0.04), negative PC3 (-0.39), and moderately high PC4 (+0.50) reflect defense-oriented forwards who avoid usage and limit mistakes."
+            },
+            "7": {
+                "label": "Scoring stretch forward",
+                "rationale": "Very high PC1 (+1.28, threeRate +0.49), negative PC2 (-0.62), positive PC3 (+0.33), and negative PC4 (-0.60) represent forwards who emphasize perimeter scoring and spacing with less inside play."
+            },
+            "8": {
+                "label": "Low-efficiency role forward",
+                "rationale": "Moderate PC1 (+0.36), high PC2 (+0.59), negative PC3 (-0.38), and very negative PC4 (-1.07) describe forwards with complementary roles who provide usage but lack scoring efficiency."
+            },
+            "9": {
+                "label": "Defensive facilitator",
+                "rationale": "Negative PC1 (-0.69), very high PC2 (+1.49, ast% +0.43, usg +0.51), slightly positive PC3 (+0.17), and near-neutral PC4 (+0.21) show forwards who facilitate offense while contributing defensively."
+            },
+            "10": {
+                "label": "Low-output forward",
+                "rationale": "Negative PC1 (-0.73), very negative PC2 (-1.02), near-neutral PC3 (+0.20), and very negative PC4 (-1.18) reflect forwards with minimal offensive and defensive contributions."
+            },
+            "12": {
+                "label": "Defensive forward with turnover issues",
+                "rationale": "Moderate PC1 (+0.31), negative PC2 (-0.25), very negative PC3 (-0.96, tov% +0.37), and near-neutral PC4 (+0.20) highlight defense-leaning forwards who struggle with ball security."
+            },
+            "13": {
+                "label": "Scoring star forward",
+                "rationale": "Very high PC1 (+1.61, ts% -0.58, threeRate +0.49), moderately high PC2 (+0.28), very negative PC3 (-1.03), and near-neutral PC4 (+0.14) represent primary scoring forwards with perimeter efficiency and usage."
+            },
+            "14": {
+                "label": "Low-efficiency defensive forward",
+                "rationale": "Very negative PC1 (-1.20, ts% -0.58), very negative PC2 (-1.15), very negative PC3 (-1.46), and near-neutral PC4 (-0.08) indicate defense-oriented forwards who offer little scoring impact."
+            }
+        }, 
+        "C": {
+            "1": {
+                "label": "Mobile rim-running big",
+                "rationale": "High PC1 (+0.66, ts% -0.12, ast% +0.24), negative PC2 (-0.26), very negative PC3 (-0.74, blk% -0.70), and slightly positive PC4 (+0.21, ft% +0.58) describe athletic centers who finish inside and draw fouls but lack rim protection."
+            },
+            "2": {
+                "label": "Low-usage defensive center",
+                "rationale": "Negative PC1 (-0.52), negative PC2 (-0.37), near-neutral PC3 (-0.06), and very negative PC4 (-1.46, stl% -0.47, tov% -0.31) indicate traditional bigs who avoid usage and focus on defense."
+            },
+            "4": {
+                "label": "Defensive anchor with rebounding",
+                "rationale": "Very negative PC1 (-1.05), high PC2 (+0.81, dreb% +0.29, ast% +0.24), positive PC3 (+0.47), and slightly negative PC4 (-0.22) suggest centers who rebound and facilitate while protecting the paint."
+            },
+            "5": {
+                "label": "Playmaking big with inside finishing",
+                "rationale": "Negative PC1 (-0.65), slightly positive PC2 (+0.22), near-neutral PC3 (+0.14), and very high PC4 (+1.29, ft% +0.58) describe versatile centers who pass and score inside while drawing fouls."
+            },
+            "6": {
+                "label": "All-around offensive center",
+                "rationale": "Very high PC1 (+1.10, ts% -0.12), moderately high PC2 (+0.49), high PC3 (+0.52), and positive PC4 (+0.44, ft% +0.58) reflect bigs with efficient scoring, rebounding, and offensive versatility."
+            },
+            "7": {
+                "label": "Defensive specialist center",
+                "rationale": "Very negative PC1 (-1.01), negative PC2 (-0.45), very negative PC3 (-1.37, blk% -0.70), and positive PC4 (+0.56) highlight rim-protecting centers who lack scoring output."
+            },
+            "9": {
+                "label": "Rebounding rim defender",
+                "rationale": "Negative PC1 (-0.27), very negative PC2 (-0.74), high PC3 (+0.55, dreb% +0.29), and slightly positive PC4 (+0.25) represent centers who control the boards and defend the paint without high usage."
+            },
+            "10": {
+                "label": "High-usage interior scorer",
+                "rationale": "High PC1 (+0.69, ts% -0.12), very negative PC2 (-1.53), high PC3 (+0.76, oreb% +0.22), and negative PC4 (-0.73) describe traditional scoring bigs who emphasize interior offense over defense."
+            }
+        }
+    },
+    "2024" : {
+        "G": {
+            "1": {
+                "label": "Low-output defensive guard",
+                "rationale": "Negative PC1 (-0.59), very negative PC2 (-1.38, ast% -0.44, usg -0.44), slightly negative PC3 (-0.18), and negative PC4 (-0.65) describe guards who contribute defensively but offer little offensive impact."
+            },
+            "2": {
+                "label": "Defensive facilitator guard",
+                "rationale": "Near-neutral PC1 (+0.03), positive PC2 (+0.46, ast% +0.39), very negative PC3 (-1.11, ts% -0.57), and slightly negative PC4 (-0.13) indicate guards who pass and defend but lack shooting efficiency."
+            },
+            "3": {
+                "label": "Slashing combo guard",
+                "rationale": "Positive PC1 (+0.53, ts% -0.57, threeRate +0.49), very negative PC2 (-0.85, ast% -0.44), near-neutral PC3 (-0.08), and slightly positive PC4 (+0.09) show scoring-oriented guards who attack but provide limited facilitation."
+            },
+            "4": {
+                "label": "Low-usage perimeter guard",
+                "rationale": "Positive PC1 (+0.45), near-neutral PC2 (+0.01), slightly positive PC3 (+0.15), and very negative PC4 (-1.12, ftr -0.45) suggest guards with modest scoring volume who avoid the foul line."
+            },
+            "5": {
+                "label": "Two-way role guard",
+                "rationale": "Very negative PC1 (-0.84), very negative PC2 (-0.80), slightly positive PC3 (+0.09), and high PC4 (+0.86, ft% +0.38) reflect guards who contribute defense and rim pressure but lack offensive consistency."
+            },
+            "6": {
+                "label": "High-usage offensive guard",
+                "rationale": "Very high PC1 (+1.02, ts% -0.57, threeRate +0.49), slightly negative PC2 (-0.15), negative PC3 (-0.67), and very high PC4 (+1.20, ft% +0.44) describe guards who shoulder scoring loads with foul-drawing ability."
+            },
+            "7": {
+                "label": "Defensive stopper guard",
+                "rationale": "Very negative PC1 (-1.19), slightly positive PC2 (+0.20), negative PC3 (-0.71), and very negative PC4 (-1.16, stl% -0.28) show defense-oriented guards who provide little offensive efficiency."
+            },
+            "8": {
+                "label": "Playmaking guard",
+                "rationale": "Negative PC1 (-0.42), negative PC2 (-0.61), very high PC3 (+1.35, tov% +0.45), and slightly negative PC4 (-0.26) indicate guards who handle creation responsibilities with turnover risk."
+            },
+            "10": {
+                "label": "Defensive facilitator with size",
+                "rationale": "Very negative PC1 (-0.94), very high PC2 (+1.73, ast% +0.39), near-neutral PC3 (-0.14), and negative PC4 (-0.57) describe guards who emphasize playmaking and defense rather than scoring."
+            },
+            "11": {
+                "label": "Balanced two-way guard",
+                "rationale": "Positive PC1 (+0.47, ts% -0.57), high PC2 (+0.55, ast% +0.39), positive PC3 (+0.57), and positive PC4 (+0.41) reflect guards who provide scoring, passing, and balanced contributions on both ends."
+            },
+            "12": {
+                "label": "Offensive centerpiece guard",
+                "rationale": "Very high PC1 (+1.58, ts% -0.57, threeRate +0.49), moderately positive PC2 (+0.30), negative PC3 (-0.41), and near-neutral PC4 (-0.06) highlight lead guards with heavy scoring and usage responsibility."
+            }
+        },
+        "F": {
+            "1": {
+                "label": "High-usage slashing forward",
+                "rationale": "Moderate PC1 (+0.21), very negative PC2 (-0.73), very high PC3 (+1.86, tov% +0.41, midRate +0.45), and high PC4 (+0.76, ft% +0.27) describe forwards who attack inside, draw fouls, and lean on midrange creation."
+            },
+            "2": {
+                "label": "Defensive facilitator forward",
+                "rationale": "Very negative PC1 (-0.97, ts% -0.60), high PC2 (+1.06, ast% +0.44, usg +0.52), slightly positive PC3 (+0.24), and very negative PC4 (-1.80, stl% -0.58) reflect forwards who defend and pass more than they score."
+            },
+            "3": {
+                "label": "Low-output role forward",
+                "rationale": "Very negative PC1 (-0.79, ts% -0.60), very negative PC2 (-1.57), near-neutral PC3 (+0.09), and negative PC4 (-0.61) indicate forwards with minimal scoring and usage impact."
+            },
+            "4": {
+                "label": "Playmaking forward with rim pressure",
+                "rationale": "Negative PC1 (-0.29), high PC2 (+0.71, ast% +0.44, usg +0.52), very high PC3 (+0.92, oreb% +0.41), and very high PC4 (+1.60, ft% +0.27) describe forwards who combine facilitating with offensive rebounding and rim pressure."
+            },
+            "5": {
+                "label": "Defensive rebounding forward",
+                "rationale": "Very negative PC1 (-0.89), moderately high PC2 (+0.54), negative PC3 (-0.41), and positive PC4 (+0.36, dreb% +0.30) reflect defense-first forwards with strong rebounding but little scoring."
+            },
+            "6": {
+                "label": "Scoring stretch forward",
+                "rationale": "Very high PC1 (+1.31, threeRate +0.49), near-neutral PC2 (+0.01), very negative PC3 (-1.15), and slightly positive PC4 (+0.29) represent perimeter-oriented scorers who space the floor."
+            },
+            "7": {
+                "label": "Low-efficiency role forward",
+                "rationale": "Moderate PC1 (+0.49), slightly positive PC2 (+0.32), negative PC3 (-0.65), and very negative PC4 (-0.83, stl% -0.58) describe low-usage forwards with limited scoring efficiency."
+            },
+            "8": {
+                "label": "Facilitating forward",
+                "rationale": "Negative PC1 (-0.49), very high PC2 (+1.80, ast% +0.44, usg +0.52), positive PC3 (+0.43), and slightly negative PC4 (-0.27) highlight playmaking forwards who prioritize passing over scoring."
+            },
+            "9": {
+                "label": "Scoring combo forward",
+                "rationale": "Very high PC1 (+1.30, ts% -0.60, threeRate +0.49), negative PC2 (-0.63), positive PC3 (+0.30), and negative PC4 (-0.36) describe versatile scorers who mix perimeter shooting with some inside play."
+            },
+            "10": {
+                "label": "Defensive stopper forward",
+                "rationale": "Very negative PC1 (-1.15, ts% -0.60), very negative PC2 (-0.94), very negative PC3 (-1.29), and near-neutral PC4 (-0.08) indicate defense-oriented forwards who contribute little offensively."
+            },
+            "12": {
+                "label": "Defensive rebounding big forward",
+                "rationale": "Negative PC1 (-0.37), very negative PC2 (-0.68), near-neutral PC3 (-0.10), and high PC4 (+1.04, dreb% +0.30) show forwards who emphasize defense and rebounding rather than usage."
+            },
+            "13": {
+                "label": "Balanced scoring forward",
+                "rationale": "Moderate PC1 (+0.69, ts% -0.60, threeRate +0.49), high PC2 (+0.74, ast% +0.44), near-neutral PC3 (+0.03), and moderately high PC4 (+0.50) reflect well-rounded forwards with efficient scoring and some facilitation."
+            },
+            "14": {
+                "label": "Rebounding slasher",
+                "rationale": "Negative PC1 (-0.32), near-neutral PC2 (-0.02), high PC3 (+0.72, oreb% +0.41, midRate +0.45), and negative PC4 (-0.41) describe forwards who rely on rebounding and attacking the basket for offense."
+            }
+        },
+        "C": {
+            "1": {
+                "label": "Offensive centerpiece center",
+                "rationale": "Very high PC1 (+1.37, ts% +0.19, oreb% +0.11), near-neutral PC2 (-0.10), negative PC3 (-0.52), and very high PC4 (+0.99, ft% +0.48, blk% +0.49) describe scoring bigs who combine efficient inside play with rim protection."
+            },
+            "2": {
+                "label": "Defensive stopper center",
+                "rationale": "Very negative PC1 (-1.41, ts% +0.19, oreb% +0.11), near-neutral PC2 (+0.03), negative PC3 (-0.58), and near-neutral PC4 (+0.02) reflect traditional centers who emphasize defense and rebounding over offense."
+            },
+            "4": {
+                "label": "Low-usage rim protector",
+                "rationale": "High PC1 (+0.80), very negative PC2 (-0.82, ast% -0.31, usg -0.44), near-neutral PC3 (+0.02), and very negative PC4 (-0.83, stl% -0.58) indicate centers who defend the rim and rebound but avoid offensive involvement."
+            },
+            "5": {
+                "label": "Defensive rebounding center",
+                "rationale": "Negative PC1 (-0.19), very negative PC2 (-0.83), negative PC3 (-0.73), and positive PC4 (+0.56, dreb% +0.40, blk% +0.49) highlight centers who clean the glass and provide rim protection without much scoring."
+            },
+            "6": {
+                "label": "Balanced interior center",
+                "rationale": "Moderate PC1 (+0.41), positive PC2 (+0.56, ast% +0.40), negative PC3 (-0.77), and slightly negative PC4 (-0.16) represent bigs who offer a mix of passing and scoring with average defensive impact."
+            },
+            "7": {
+                "label": "Defensive facilitator center",
+                "rationale": "Negative PC1 (-0.44), very high PC2 (+1.37, ast% +0.40, usg +0.44), negative PC3 (-0.13), and very negative PC4 (-1.13, stl% -0.58) reflect bigs who emphasize passing and defense rather than efficient scoring."
+            },
+            "8": {
+                "label": "Playmaking rim finisher",
+                "rationale": "Near-neutral PC1 (-0.04), moderately high PC2 (+0.40), positive PC3 (+0.46, blk% +0.49, stl% +0.42), and positive PC4 (+0.55, ft% +0.48) describe centers who mix playmaking with rim finishing and foul drawing."
+            },
+            "9": {
+                "label": "Offensive star center",
+                "rationale": "High PC1 (+0.61, ts% +0.19, oreb% +0.11), moderately high PC2 (+0.63, ast% +0.40), very high PC3 (+1.42, blk% +0.49, stl% +0.42), and negative PC4 (-0.64) indicate bigs with elite scoring, rebounding, and rim protection."
+            }
+        }
+    }
+}

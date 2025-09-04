@@ -55,4 +55,4 @@ OldPlayerInformationExtraction/apikeys.json
 !Analysis/Clustering/Players/2024/PCA/*.json
 !Analysis/Clustering/Players/2024/PCA/*.csv
 
-Analysis/Clustering/Players/archetypeLables.json
+!Analysis/Clustering/Players/archetypeLables.json
