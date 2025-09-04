@@ -105,6 +105,8 @@ def load_players(stat_query, connection, season_year, position):
         ts.barthag_rank,
         ps.min_pg,        
         ps.bpm,
+        ps.player_cluster AS Cluster,
+        ts.team_cluster,
         {stat_query}
     FROM Player_Seasons ps            
     JOIN Players p
@@ -118,33 +120,8 @@ def load_players(stat_query, connection, season_year, position):
     player_stats_df = pd.read_sql(
         player_query, connection, params=(season_year, season_year - 3, position)
     )
-
-    # Load team cluster assignments
-    team_cluster_df = pd.read_csv(f'Analysis/Clustering/Teams/{season_year}/KClustering/labels.csv')
-
-    # Load player cluster assignments
-    player_cluster_df = pd.read_csv(f'Analysis/Clustering/Players/{season_year}/KClustering/player_labels_{position}.csv')
-    # Remove duplicate columns to avoid merge conflicts
-    player_cluster_df = player_cluster_df.drop(['team_name'], axis=1)
-
-    # Merge player stats with team cluster information
-    merged_with_team_clusters = pd.merge(
-        left=player_stats_df, 
-        right=team_cluster_df, 
-        on=['team_name', 'season_year']
-    )
-
-    # Merge with player cluster information
-    final_merged_df = pd.merge(
-        left=merged_with_team_clusters, 
-        right=player_cluster_df,
-        on=['player_id', 'season_year', 'player_name']
-    )
-
-
-    final_merged_df.drop(columns=['player_id'], inplace=True)
     
-    return final_merged_df
+    return player_stats_df
 
 def load_players_from_cluster(stat_query, connection, season_year, cluster_id, position: str):
     """

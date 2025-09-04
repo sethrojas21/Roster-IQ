@@ -139,7 +139,7 @@ def main():
     logger.info("Starting to iterate over transfers")
     
     try:
-        for idx, avail_team in top_teams_df.iterrows():
+        for idx, avail_team in avail_team_df.iterrows():
             team_name = avail_team['team_name']
 
             season_year = avail_team['season_year']
@@ -147,8 +147,8 @@ def main():
             player_name = conn.execute("SELECT player_name FROM Players WHERE player_id = ?", (int(player_id_to_replace),)).fetchone()[0]
             position = conn.execute("SELECT position FROM Player_Seasons WHERE player_id = ? AND season_year = ?",
                                     (player_id_to_replace, season_year)).fetchone()[0] 
-            # if team_name not in ["Kansas"]:
-            #     continue
+            if player_name != "Caleb Love":
+                continue
             logger.info(f"Processing: {player_name} ({position}) - {team_name} {season_year} [ID: {player_id_to_replace}]")
             try:
                 bmakr_plyr, cs_df = composite_score(conn, team_name, season_year, player_id_to_replace, specific_name=player_name, debug=False)
