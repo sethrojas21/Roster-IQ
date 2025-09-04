@@ -28,6 +28,7 @@ OldPlayerInformationExtraction/apikeys.json
 !Analysis/Clustering/Teams/2023/PCA/*.json
 !Analysis/Clustering/Teams/2024/KClustering/profiles.csv
 !Analysis/Clustering/Teams/2024/PCA/*.json
+!Analysis/Clustering/Teams/archetypeLabels.json
 
 # Players
 !Analysis/Clustering/Players/2021/KClustering/cluster_profiles_C.csv
@@ -53,3 +54,5 @@ OldPlayerInformationExtraction/apikeys.json
 !Analysis/Clustering/Players/2024/KClustering/cluster_profiles_F.csv
 !Analysis/Clustering/Players/2024/PCA/*.json
 !Analysis/Clustering/Players/2024/PCA/*.csv
+
+Analysis/Clustering/Players/archetypeLables.json

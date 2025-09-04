@@ -1,0 +1,158 @@
+{
+  "2021": {
+    "1": {
+      "label": "Balanced but below-average efficiency team",
+      "rationale": "Slightly negative on PC1 (-0.04, tied to adjoe +0.58 and eFG +0.55), near-neutral PC2 (-0.03, tied to threeRate +0.56), and negative PC3 (-0.29, tied to stltov +0.62 and dreb100 +0.75), suggesting modest offense and shooting with weaker rebounding/turnover play."
+    },
+    "2": {
+      "label": "Inside-out, opportunistic defense team",
+      "rationale": "Low PC1 (-0.87, adjoe +0.58), low PC2 (-0.42, threeRate +0.56), and very high PC3 (+1.04, stltov +0.62, dreb100 +0.75) indicate poor offensive output but heavy reliance on forcing turnovers and rebounding inside."
+    },
+    "3": {
+      "label": "High-octane efficient shooting team",
+      "rationale": "Very high PC1 (+1.45, adjoe +0.58, eFG +0.55), high PC2 (+0.74, threeRate +0.56), and near-neutral PC3 (-0.07), showing elite offensive efficiency with strong shooting volume."
+    },
+    "4": {
+      "label": "Defensive-minded, low-offense grinder",
+      "rationale": "Very low PC1 (-1.70, adjoe +0.58, eFG +0.55), above-average PC2 (+0.39, adjde +0.36), and negative PC3 (-0.50), reflecting weak scoring but stronger defensive orientation."
+    },
+    "5": {
+      "label": "Drive-and-foul heavy offense",
+      "rationale": "High PC1 (+0.76, adjoe +0.58, eFG +0.55), very low PC2 (-1.07, ftr -0.47, oreb100 -0.49), and positive PC3 (+0.22), consistent with teams generating offense through foul drawing and paint play rather than spacing."
+    },
+    "6": {
+      "label": "Turnover-prone, rebounding-limited team",
+      "rationale": "Near-neutral PC1 (-0.08), very high PC2 (+0.99, threeRate +0.56, adjde +0.36), and very negative PC3 (-1.48, dreb100 +0.75, stltov +0.62), pointing to defensive efforts and 3-point reliance but big rebounding/turnover issues."
+    },
+    "7": {
+      "label": "Transition-heavy but vulnerable defense",
+      "rationale": "High PC1 (+0.86, adjoe +0.58), low PC2 (-0.53, oreb100 -0.49, ftr -0.47), and very negative PC3 (-1.23, dreb100 +0.75), suggesting a scoring-oriented, up-tempo team that sacrifices defensive rebounding and interior stability."
+    },
+    "8": {
+      "label": "Defensive rebounding specialists",
+      "rationale": "Moderately low PC1 (-0.24), very high PC2 (+1.35, threeRate +0.56, adjde +0.36), and positive PC3 (+0.35, dreb100 +0.75), describing teams that emphasize rebounding control and defensive efficiency."
+    },
+    "9": {
+      "label": "Low-scoring, interior-deficient team",
+      "rationale": "Low PC1 (-0.72, adjoe +0.58, eFG +0.55), very low PC2 (-1.41, oreb100 -0.49, ftr -0.47), and negative PC3 (-0.58), reflecting poor scoring efficiency and weak interior play on both ends."
+    },
+    "10": {
+      "label": "Elite versatile offensive powerhouse",
+      "rationale": "High PC1 (+0.67, adjoe +0.58, eFG +0.55), slightly positive PC2 (+0.12, threeRate +0.56), and very high PC3 (+1.54, stltov +0.62, dreb100 +0.75), signaling strong offense with rebounding and turnover-creation strengths."
+    }
+  },
+  "2022": {
+    "1": {
+      "label": "High-efficiency fast-paced offense",
+      "rationale": "Very high PC1 (+1.27, adjoe +0.60, eFG +0.52), positive PC2 (+0.37, oreb100 +0.52, ftr +0.46), and negative PC3 (-0.77, dreb100 +0.77, stltov +0.54) indicate efficient scoring with some rebounding/FT strength but weaker turnover/rebounding balance."
+    },
+    "2": {
+      "label": "Defensive grinder with poor offense",
+      "rationale": "Very low PC1 (-1.70, adjoe +0.60, eFG +0.52), slightly negative PC2 (-0.20, adjde -0.30), and negative PC3 (-0.60, dreb100 +0.77) describe a team with poor scoring and shooting efficiency but leaning into defensive play."
+    },
+    "3": {
+      "label": "Rebounding-focused disruptor",
+      "rationale": "Negative PC1 (-0.38), high PC2 (+1.02, oreb100 +0.52, ftr +0.46), and negative PC3 (-0.77, stltov +0.54, dreb100 +0.77) show teams that push rebounding/FT rates while being turnover-prone and weaker offensively."
+    },
+    "4": {
+      "label": "Low-efficiency, perimeter-susceptible team",
+      "rationale": "Negative PC1 (-0.60, adjoe +0.60, eFG +0.52), very low PC2 (-1.25, threeRate -0.57, adjde -0.30), and positive PC3 (+0.47, stltov +0.54) highlight poor offense and defense against shooting but some turnover generation upside."
+    },
+    "5": {
+      "label": "Weak-scoring, interior-deficient team",
+      "rationale": "Slightly negative PC1 (-0.08), negative PC2 (-0.62, adjde -0.30, threeRate -0.57), and very negative PC3 (-1.09, dreb100 +0.77) capture low efficiency on both ends and poor interior presence."
+    },
+    "6": {
+      "label": "Elite rebounding and paint-control team",
+      "rationale": "Moderately high PC1 (+0.34, adjoe +0.60, eFG +0.52), very high PC2 (+1.58, oreb100 +0.52, ftr +0.46), and positive PC3 (+0.42, dreb100 +0.77) suggest teams dominating rebounds and free throws with solid offense."
+    },
+    "8": {
+      "label": "Defensive rebounding anchor with low pace",
+      "rationale": "Low PC1 (-0.84), positive PC2 (+0.42, oreb100 +0.52, ftr +0.46), and high PC3 (+0.82, dreb100 +0.77) point to teams leaning heavily on defensive rebounding and inside control despite limited offensive firepower."
+    },
+    "9": {
+      "label": "Run-and-gun scoring team",
+      "rationale": "High PC1 (+1.18, adjoe +0.60, eFG +0.52), very low PC2 (-1.35, threeRate -0.57, adjde -0.30), and near-neutral PC3 (+0.03) represent high-octane offense with defensive tradeoffs, especially against perimeter shooting."
+    },
+    "10": {
+      "label": "Balanced but average efficiency team",
+      "rationale": "Moderately high PC1 (+0.55, adjoe +0.60, eFG +0.52), neutral PC2 (+0.01), and positive PC3 (+0.47, dreb100 +0.77, stltov +0.54) show balanced offense and defense with modest strengths in rebounding and turnovers."
+    }
+  },
+  "2023": {
+    "1": {
+      "label": "Defensive rebounding and free-throw team",
+      "rationale": "Negative PC1 (-0.78, adjoe +0.60, eFG +0.52), high PC2 (+1.13, oreb100 +0.53, ftr +0.44), and slightly negative PC3 (-0.24, dreb100 +0.72) show weak scoring but strong rebounding and foul-drawing ability."
+    },
+    "2": {
+      "label": "High-powered but defensively vulnerable offense",
+      "rationale": "Very high PC1 (+1.47, adjoe +0.60, eFG +0.52), low PC2 (-0.96, threeRate -0.56, adjde -0.31), and slightly negative PC3 (-0.32) indicate efficient scoring with poor defensive metrics and perimeter weaknesses."
+    },
+    "3": {
+      "label": "Low-efficiency, perimeter-deficient team",
+      "rationale": "Negative PC1 (-0.26), very low PC2 (-1.45, threeRate -0.56, adjde -0.31), and near-neutral PC3 (-0.11) represent poor offense and struggles guarding the perimeter."
+    },
+    "4": {
+      "label": "Interior control and defensive anchor",
+      "rationale": "Low PC1 (-1.01, adjoe +0.60, eFG +0.52), near-neutral PC2 (-0.08), and high PC3 (+0.83, dreb100 +0.72, stltov +0.60) reflect limited scoring but strong rebounding and turnover generation."
+    },
+    "5": {
+      "label": "Inefficient, slow-paced team",
+      "rationale": "Very low PC1 (-1.64, adjoe +0.60, eFG +0.52), moderately low PC2 (-0.38, adjde -0.31), and negative PC3 (-0.57, dreb100 +0.72) describe teams that lack both offensive firepower and rebounding strength."
+    },
+    "6": {
+      "label": "Up-tempo rebounding team",
+      "rationale": "High PC1 (+0.86, adjoe +0.60, eFG +0.52), high PC2 (+0.91, oreb100 +0.53, ftr +0.44), and negative PC3 (-0.74, dreb100 +0.72) show solid offense and rebounding emphasis but weaker defensive rebounding balance."
+    },
+    "7": {
+      "label": "Balanced but modest efficiency team",
+      "rationale": "Positive PC1 (+0.55, adjoe +0.60, eFG +0.52), neutral PC2 (-0.08), and positive PC3 (+0.39, stltov +0.60, dreb100 +0.72) suggest average scoring with modest interior and turnover strengths."
+    },
+    "8": {
+      "label": "Turnover-prone, low-offense team",
+      "rationale": "Near-neutral PC1 (-0.06), negative PC2 (-0.16, adjde -0.31, threeRate -0.56), and very negative PC3 (-1.22, dreb100 +0.72, stltov +0.60) reflect weak rebounding, poor scoring, and ball security issues."
+    },
+    "10": {
+      "label": "Well-rounded high-rebounding team",
+      "rationale": "Moderately positive PC1 (+0.27, adjoe +0.60, eFG +0.52), very high PC2 (+1.33, oreb100 +0.53, ftr +0.44), and very high PC3 (+0.88, dreb100 +0.72, stltov +0.60) highlight balanced offense with elite rebounding and defensive disruption."
+    }
+  },
+  "2024": {
+    "1": {
+      "label": "Defensive disruptors with weak efficiency",
+      "rationale": "Low PC1 (-0.69, adjoe +0.61, eFG +0.53), very low PC2 (-1.06, threeRate -0.54, adjde -0.31), and high PC3 (+1.23, stltov +0.55, dreb100 +0.73) show inefficient offense but strong turnover creation and rebounding."
+    },
+    "2": {
+      "label": "Elite rebounding and inside-control team",
+      "rationale": "Moderately high PC1 (+0.46, adjoe +0.61, eFG +0.53), very high PC2 (+1.42, oreb100 +0.56, ftr +0.36), and near-neutral PC3 (-0.12) describe teams that dominate the paint and free-throw line with solid scoring."
+    },
+    "3": {
+      "label": "High-powered interior offense",
+      "rationale": "Very high PC1 (+1.26, adjoe +0.61, eFG +0.53), negative PC2 (-0.60, threeRate -0.54), and high PC3 (+0.85, dreb100 +0.73) indicate efficient scoring that leans inside rather than perimeter play, backed by rebounding strength."
+    },
+    "4": {
+      "label": "Run-and-gun perimeter team with weak defense",
+      "rationale": "High PC1 (+1.19, adjoe +0.61, eFG +0.53), positive PC2 (+0.34, oreb100 +0.56, ftr +0.36), and very negative PC3 (-1.02, stltov +0.55, dreb100 +0.73) reflect fast-paced scoring but vulnerability in rebounding and turnovers."
+    },
+    "5": {
+      "label": "Low-efficiency, perimeter-deficient team",
+      "rationale": "Moderate PC1 (+0.43), very low PC2 (-1.42, threeRate -0.54, adjde -0.31), and negative PC3 (-0.45) represent teams with limited offensive efficiency and weak perimeter defense."
+    },
+    "6": {
+      "label": "Inefficient, slow-paced grinder",
+      "rationale": "Very low PC1 (-1.38, adjoe +0.61, eFG +0.53), negative PC2 (-0.66), and negative PC3 (-0.39, dreb100 +0.73) show very weak scoring efficiency combined with lack of rebounding edge."
+    },
+    "7": {
+      "label": "Defensive-minded, turnover-limited team",
+      "rationale": "Negative PC1 (-0.39), neutral PC2 (+0.01), and very negative PC3 (-1.22, stltov +0.55, dreb100 +0.73) describe low-output teams that struggle to create turnovers and rebound."
+    },
+    "8": {
+      "label": "Balanced, average-efficiency team",
+      "rationale": "Near-neutral PC1 (+0.14), near-neutral PC2 (+0.03), and slightly positive PC3 (+0.17) suggest balanced teams without strong defining strengths or weaknesses."
+    },
+    "10": {
+      "label": "Rebounding-focused defensive anchor",
+      "rationale": "Very low PC1 (-1.29, adjoe +0.61, eFG +0.53), high PC2 (+0.97, oreb100 +0.56, ftr +0.36), and near-neutral PC3 (-0.01, dreb100 +0.73) indicate teams that lean on rebounding and paint play while lacking scoring punch."
+    }
+  }
+}
