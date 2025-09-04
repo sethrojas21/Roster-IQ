@@ -56,3 +56,4 @@ OldPlayerInformationExtraction/apikeys.json
 !Analysis/Clustering/Players/2024/PCA/*.csv
 
 !Analysis/Clustering/Players/archetypeLables.json
+!Analysis/CalculateScores/CSV/sos_value_adjustment.csv
