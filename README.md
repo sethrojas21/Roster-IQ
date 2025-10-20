@@ -4,8 +4,7 @@ Identifying top college basketball transfer portal talent at any given player an
 
 I am building a [web dashboard](https://github.com/sethrojas21/Roster-IQ-Web) right now -- stay tuned for that. 
 
-Will have a README and poster of the project in the next couple weeks.
+Will have a README in the next couple weeks.
 
-Go Wildcats!
-
-- Seth Rojas
+Go Wildcats,
+Seth Rojas
